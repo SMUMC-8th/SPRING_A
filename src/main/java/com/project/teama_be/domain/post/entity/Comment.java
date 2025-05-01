@@ -28,6 +28,6 @@ public class Comment extends BaseEntity {
     @Column(name = "content")
     private String content;
 
-    @Column(name = "like")
+    @Column(name = "like_count")
     private Integer likeCount;
 }
