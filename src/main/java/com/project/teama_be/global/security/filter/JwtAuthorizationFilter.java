@@ -7,10 +7,9 @@ import com.project.teama_be.global.security.userdetails.CustomUserDetails;
 import com.project.teama_be.global.security.util.JwtUtil;
 import com.project.teama_be.global.utils.HttpResponseUtil;
 import io.jsonwebtoken.ExpiredJwtException;
-import io.jsonwebtoken.MalformedJwtException;
-import io.jsonwebtoken.UnsupportedJwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.NonNull;
@@ -40,29 +39,39 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
         log.info("[ JwtAuthorizationFilter ] 인가 필터 작동");
 
         try {
-            // Request에서 access token 추출
-            String accessToken = jwtUtil.resolveAccessToken(request);
+            // 쿠키에서 access token 추출
+            String accessToken = extractTokenFromCookie(request);
 
             // accessToken 없이 접근할 경우 필터를 건너뜀
             if (accessToken == null) {
-                log.info("[ JwtAuthorizationFilter ] Access Token 이 존재하지 않음. 필터를 건너뜁니다.");
+                log.info("Access Token이 존재하지 않음. 필터를 건너뜁니다.");
                 filterChain.doFilter(request, response);
                 return;
             }
 
             authenticateAccessToken(accessToken);
-            log.info("[ JwtAuthorizationFilter ] 종료. 다음 필터로 넘어갑니다.");
             filterChain.doFilter(request, response);
         } catch (ExpiredJwtException e) {
-            log.warn("[ JwtAuthorizationFilter ] accessToken 이 만료되었습니다.");
+            // 토큰 만료 처리
+            log.warn("accessToken이 만료되었습니다.");
             handleException(response, SecurityErrorCode.TOKEN_EXPIRED);
-        } catch (SecurityException | MalformedJwtException | UnsupportedJwtException | IllegalArgumentException e) {
-            log.warn("[ JwtAuthorizationFilter ] 잘못된 토큰입니다.");
+        } catch (Exception e) {
+            // 기타 예외 처리
+            log.warn("토큰 인증 과정에서 오류 발생: {}", e.getMessage());
             handleException(response, SecurityErrorCode.INVALID_TOKEN);
-        } catch (UsernameNotFoundException e) {
-            log.warn("[ JwtAuthorizationFilter ] 사용자 정보를 찾을 수 없습니다.");
-            handleException(response, SecurityErrorCode.USER_NOT_FOUND);
         }
+    }
+
+    private String extractTokenFromCookie(HttpServletRequest request) {
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if ("access_token".equals(cookie.getName())) {
+                    return cookie.getValue();
+                }
+            }
+        }
+        return null;
     }
 
     // 예외 발생 시 HttpResponseUtil 을 사용하여 에러 응답을 처리하는 메서드

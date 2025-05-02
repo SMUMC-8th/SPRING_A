@@ -11,6 +11,7 @@ import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.UnsupportedJwtException;
 import io.jsonwebtoken.security.SecurityException;
 import io.jsonwebtoken.security.SignatureException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -109,19 +110,22 @@ public class JwtUtil {
         return refreshToken;
     }
 
-    // HTTP 요청의 'Authorization' 헤더에서 JWT 액세스 토큰을 검색
     public String resolveAccessToken(HttpServletRequest request) {
-        log.info("[ JwtUtil ] 헤더에서 토큰을 추출합니다.");
-        String tokenFromHeader = request.getHeader("Authorization");
-
-        if (tokenFromHeader == null || !tokenFromHeader.startsWith("Bearer ")) {
-            log.warn("[ JwtUtil ] Request Header 에 토큰이 존재하지 않습니다.");
-            return null;
+        log.info("쿠키에서 토큰을 추출합니다.");
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if ("access_token".equals(cookie.getName())) {
+                    return cookie.getValue();
+                }
+            }
         }
-
-        log.info("[ JwtUtil ] 헤더에 토큰이 존재합니다.");
-
-        return tokenFromHeader.split(" ")[1]; //Bearer 와 분리
+        // 기존 헤더 방식도 유지 (호환성)
+        String tokenFromHeader = request.getHeader("Authorization");
+        if (tokenFromHeader != null && tokenFromHeader.startsWith("Bearer ")) {
+            return tokenFromHeader.split(" ")[1];
+        }
+        return null;
     }
 
     //토큰의 유효성 검사
@@ -151,6 +155,16 @@ public class JwtUtil {
             //원하는 Exception throw
             throw new ExpiredJwtException(null, null, "만료된 JWT 토큰입니다.");
         }
+    }
+
+    // AccessToken 유효기간 get
+    public long getAccessExpMs() {
+        return this.accessExpMs;
+    }
+
+    // RefreshToken 유효기간 get
+    public long getRefreshExpMs() {
+        return this.refreshExpMs;
     }
 
 //    //주어진 리프레시 토큰을 기반으로 새로운 액세스 토큰을 발급
