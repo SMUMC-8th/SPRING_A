@@ -24,10 +24,10 @@ public class Location extends BaseEntity {
     @Column(name = "longitude", nullable = false)
     private BigDecimal longitude;
 
-    @Column(name = "address_name", nullable = false)
+    @Column(name = "address_name")
     private String addressName;
 
-    @Column(name = "road_address_name", nullable = false)
+    @Column(name = "road_address_name")
     private String roadAddressName;
 
     @Column(name = "place_name")

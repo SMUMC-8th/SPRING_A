@@ -29,7 +29,7 @@ public class Post extends BaseEntity {
     @Column(name = "content", nullable = false)
     private String content;
 
-    @Column(name = "like", nullable = false)
+    @Column(name = "like_count", nullable = false)
     private int likeCount;
 
     @Column(name = "unlike", nullable = false)
