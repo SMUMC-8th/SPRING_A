@@ -32,4 +32,7 @@ public class ChatParticipant extends BaseEntity {
 
     @Column(name = "joined_at", nullable = false)
     private LocalDateTime joinedAt;
+
+    @Column(name = "notification_enabled", nullable = false)
+    private boolean notificationEnabled;
 }
