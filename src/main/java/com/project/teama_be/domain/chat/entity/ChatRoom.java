@@ -31,4 +31,7 @@ public class ChatRoom extends BaseEntity {
 
     @Column(name = "is_active", nullable = false)
     private boolean isActive;
+
+    @Column(name = "last_message_at")
+    private LocalDateTime lastMessageAt;
 }
