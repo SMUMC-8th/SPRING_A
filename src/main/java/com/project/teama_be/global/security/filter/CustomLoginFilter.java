@@ -99,8 +99,8 @@ public class CustomLoginFilter extends UsernamePasswordAuthenticationFilter {
 
         // 응답 바디에는 토큰 없이 성공 메시지만 전송
         JwtDTO jwtInfo = JwtDTO.builder()
-                .accessToken("발급 완료 (쿠키에 저장됨)")
-                .refreshToken("발급 완료 (쿠키에 저장됨)")
+                .accessToken(accessToken)
+                .refreshToken(refreshToken)
                 .build();
 
         HttpResponseUtil.setSuccessResponse(response, HttpStatus.OK, jwtInfo);
