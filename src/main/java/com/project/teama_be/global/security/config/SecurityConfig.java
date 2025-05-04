@@ -33,11 +33,10 @@ public class SecurityConfig {
             "/swagger-ui/**",
             "/swagger-resources/**",
             "/v3/api-docs/**",
-            "/api/members/signup",
-            "/api/members/login",
+            "/api/auth/signup",
+            "/api/auth/login",
             "/ws-stomp/**",  // WebSocket 관련 모든 경로 추가
             "/ws-stomp/info", // SockJS의 정보 엔드포인트 추가
-            "/api/chats/**"
     };
 
     @Bean
@@ -62,7 +61,7 @@ public class SecurityConfig {
         http
                 .csrf(csrf -> csrf
                         .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
-                        .ignoringRequestMatchers("/api/members/login", "/api/members/signup")
+                        .ignoringRequestMatchers("/api/auth/login", "/api/auth/signup")
                 );
 
         // form 로그인 방식 비활성화 -> REST API 로그인을 사용할 것이기 때문에
@@ -90,7 +89,7 @@ public class SecurityConfig {
         CustomLoginFilter customLoginFilter = new CustomLoginFilter(
                 authenticationManager(authenticationConfiguration), jwtUtil);
         // Login Filter URL 지정
-        customLoginFilter.setFilterProcessesUrl("/api/members/login");
+        customLoginFilter.setFilterProcessesUrl("/api/auth/login");
         // 필터 체인에 CustomLoginFilter를 UsernamePasswordAuthenticationFilter 자리에서 동작하도록 추가
         http
                 .addFilterAt(customLoginFilter, UsernamePasswordAuthenticationFilter.class);
