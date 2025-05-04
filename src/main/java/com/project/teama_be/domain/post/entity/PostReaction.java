@@ -1,6 +1,7 @@
 package com.project.teama_be.domain.post.entity;
 
 import com.project.teama_be.domain.member.entity.Member;
+import com.project.teama_be.domain.post.enums.ReactionType;
 import com.project.teama_be.global.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
@@ -26,5 +27,6 @@ public class PostReaction extends BaseEntity {
     private Member member;
 
     @Column(name = "reaction_type", nullable = false)
-    private String reactionType; // 'LIKE' 또는 'UNLIKE'
+    @Enumerated(EnumType.STRING)
+    private ReactionType reactionType;
 }
