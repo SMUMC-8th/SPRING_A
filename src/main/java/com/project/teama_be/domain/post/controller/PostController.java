@@ -76,7 +76,7 @@ public class PostController {
             description = "마이페이지에서 내가 올렸던 게시글을 조회합니다. " +
                     "커서 기반 페이지네이션, 최신 순으로 정렬합니다."
     )
-    public CustomResponse<PostResDTO.PageablePost<PostResDTO.SimplePost>> getAllPostsByMemberId(
+    public CustomResponse<PostResDTO.PageablePost<PostResDTO.SimplePost>> getMyPosts(
             @PathVariable Long memberId,
             @RequestParam(defaultValue = "-1") Long cursor,
             @RequestParam(defaultValue = "1") Long size
@@ -91,7 +91,7 @@ public class PostController {
             description = "마이페이지에서 최근 본 게시글을 조회합니다. " +
                     "커서 기반 페이지네이션, 최신 순으로 정렬합니다."
     )
-    public CustomResponse<PostResDTO.PageablePost<PostResDTO.SimplePost>> getRecentPostsByMemberId(
+    public CustomResponse<PostResDTO.PageablePost<PostResDTO.SimplePost>> getRecentViewPosts(
             @PathVariable Long memberId,
             @RequestParam(defaultValue = "-1") Long cursor,
             @RequestParam(defaultValue = "1") Long size
@@ -106,7 +106,7 @@ public class PostController {
             description = "마이페이지에서 좋아요를 누른 게시글을 조회합니다. " +
                     "커서 기반 페이지네이션, 최신 순으로 정렬합니다."
     )
-    public CustomResponse<PostResDTO.PageablePost<PostResDTO.SimplePost>> getLikePostsByMemberId(
+    public CustomResponse<PostResDTO.PageablePost<PostResDTO.SimplePost>> getLikedPosts(
             @PathVariable Long memberId,
             @RequestParam(defaultValue = "-1") Long cursor,
             @RequestParam(defaultValue = "1") Long size
