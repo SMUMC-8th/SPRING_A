@@ -27,4 +27,11 @@ public class ChatMessage extends BaseEntity {
 
     @Column(name = "content", nullable = false)
     private String content;
+
+    // 클라이언트에서 사용할 고유 ID (UUID)
+    @Column(name = "message_id", unique = true, nullable = false)
+    private String messageId;
+
+    @Column(name = "parent_message_id")
+    private String parentMessageId;  // 답장 대상 메시지 ID (null이면 일반 메시지)
 }
