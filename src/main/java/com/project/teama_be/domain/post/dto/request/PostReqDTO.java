@@ -17,7 +17,6 @@ public class PostReqDTO {
 
     // 게시글 수정
     public record postUpdate(
-            Long memberId,
             String content,
             List<String> tags,
             Long placeId

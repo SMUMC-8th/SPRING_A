@@ -3,7 +3,6 @@ package com.project.teama_be.domain.post.dto.response;
 import com.project.teama_be.domain.post.enums.ReactionType;
 import lombok.Builder;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -32,6 +31,16 @@ public class PostResDTO {
             Long postId,
             String placeName,
             Long placeId
+    ) {}
+
+    // 최근 본 게시글
+    @Builder
+    public record RecentPost(
+            String PostImageUrl,
+            Long PostId,
+            String placeName,
+            Long placeId,
+            LocalDateTime viewedAt
     ) {}
 
     // 커서 기반 페이지네이션 틀

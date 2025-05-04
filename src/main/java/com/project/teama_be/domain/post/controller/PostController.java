@@ -24,7 +24,7 @@ public class PostController {
     // 가게명으로 게시글 조회
     @GetMapping("/places/posts")
     @Operation(
-            summary = "가게명으로 게시글 조회 API",
+            summary = "가게명으로 게시글 조회",
             description = "해당 가게의 게시글 중 최근 게시된 게시글을 조회합니다." +
                     "Query Parameter를 중복하여 사용함으로써 홈화면(지도 화면)에 표시할 게시글을 조회할 수 있습니다." +
                     "커서 기반 페이지네이션, 최신 순으로 정렬합니다."
@@ -91,7 +91,7 @@ public class PostController {
             description = "마이페이지에서 최근 본 게시글을 조회합니다. " +
                     "커서 기반 페이지네이션, 최신 순으로 정렬합니다."
     )
-    public CustomResponse<PostResDTO.PageablePost<PostResDTO.SimplePost>> getRecentViewPosts(
+    public CustomResponse<PostResDTO.PageablePost<PostResDTO.RecentPost>> getRecentViewPosts(
             @PathVariable Long memberId,
             @RequestParam(defaultValue = "-1") Long cursor,
             @RequestParam(defaultValue = "1") Long size
