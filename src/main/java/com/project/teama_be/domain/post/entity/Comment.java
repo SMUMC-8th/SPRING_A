@@ -30,4 +30,7 @@ public class Comment extends BaseEntity {
 
     @Column(name = "like_count")
     private Integer likeCount;
+
+    @Column(name = "parent_id")
+    private Long parentId;
 }
