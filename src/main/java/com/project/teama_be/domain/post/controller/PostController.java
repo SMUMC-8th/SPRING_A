@@ -5,7 +5,6 @@ import com.project.teama_be.domain.post.dto.request.PostReqDTO;
 import com.project.teama_be.domain.post.dto.response.PostResDTO;
 import com.project.teama_be.global.apiPayload.CustomResponse;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
