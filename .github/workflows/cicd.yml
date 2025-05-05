@@ -1,0 +1,70 @@
+name: Java CI/CD with Gradle 
+
+on: 
+  push:
+    branches: [ "main" ] 
+
+jobs:
+  deploy: 
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      #Setting JDK
+      - name: Set up JDK 17 
+        uses: actions/setup-java@v2
+        with:
+          java-version: '17'
+          distribution: 'temurin' # temurin 배포판의 JDK 17 사용
+
+      #Setting yml
+      - name: make application.yml
+        run: | 
+          mkdir -p src/main/resources
+          echo "${{ secrets.APPLICATION_YML }}"  > src/main/resources/application.yml
+          find src
+      #gradlew chmod
+      - name: Grant execute permission for gradlew
+        run: chmod +x ./gradlew 
+
+      # Spring Boot Build
+      - name: Spring Boot Build
+        run: ./gradlew clean build -x test # ./gradlew를 사용하여 Spring Boot 애플리케이션 빌드. 여기서 테스트는 제외 됨.(-x test)
+
+      #------------------- Docker --------------------
+
+
+      # Docker Image Build
+      - name: Docker Image Build 
+        run: docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKERHUB_IMAGENAME }} .
+
+      # DockerHub Login
+      - name: Docker Hub Login
+        uses: docker/login-action@v2
+        with: 
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      # Docker Hub push
+      - name: docker Hub push 
+        run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKERHUB_IMAGENAME }}
+
+      #------------------- EC2 --------------------
+
+      # AWS EC2 Server Connect & Docker 명령어 실행
+      - name: AWS EC2 Connection
+        uses: appleboy/ssh-action@v0.1.6 
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          password: ${{ secrets.EC2_PASSWORD }}
+          port: ${{ secrets.EC2_SSH_PORT }}
+          timeout: 60s
+          script: | 
+            sudo docker stop ${{ secrets.DOCKERHUB_IMAGENAME }}
+            sudo docker rm ${{ secrets.DOCKERHUB_IMAGENAME }}
+            sudo docker pull ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKERHUB_IMAGENAME }}
+            sudo docker run -it -d --network host --name ${{ secrets.DOCKERHUB_IMAGENAME }} -e TZ=Asia/Seoul ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKERHUB_IMAGENAME }}
+        #EC2 서버에서 Docker 컨테이너를 중지하고 삭제한 후, 새 이미지를 pull하고 다시 실행   
