@@ -1,0 +1,65 @@
+package com.project.teama_be.domain.member.controller;
+
+import com.project.teama_be.domain.member.dto.request.MemberReqDTO;
+import com.project.teama_be.domain.member.dto.response.MemberResDTO;
+import com.project.teama_be.domain.member.service.JwtTokenService;
+import com.project.teama_be.global.apiPayload.CustomResponse;
+import com.project.teama_be.global.apiPayload.exception.CustomException;
+import com.project.teama_be.global.security.annotation.CurrentUser;
+import com.project.teama_be.global.security.dto.JwtDTO;
+import com.project.teama_be.global.security.userdetails.AuthUser;
+import com.project.teama_be.global.security.util.JwtUtil;
+import com.project.teama_be.global.utils.HttpResponseUtil;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.*;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
+
+@Slf4j
+@RestController
+@RequiredArgsConstructor
+@RequestMapping("/api/auth")
+@Tag(name = "인증 관련 API", description = "인증 관련 API입니다.")
+public class AuthController {
+
+    private final JwtTokenService jwtTokenService;
+
+    @PostMapping(value = "/signup", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @Operation(summary = "회원가입 API by 김지명 (개발중)", description = "사용자 정보와 프로필 이미지를 함께 받아 회원가입을 처리합니다.")
+    public CustomResponse<MemberResDTO.SignUp> signUp(@RequestPart("SignUp") @Valid MemberReqDTO.SignUp reqDTO,
+                                                      @RequestPart("profileImage") MultipartFile profileImage) {
+
+        return CustomResponse.onSuccess(null);
+    }
+
+    // Swagger용 컨트롤러
+    @PostMapping("/login")
+    @Operation(summary = "로그인 API by 김지명", description = "아이디와 비밀번호를 검증하고 JWT 토큰을 발급합니다.")
+    public CustomResponse<JwtDTO> login(@RequestBody @Valid MemberReqDTO.Login reqDTO) {
+        return CustomResponse.onSuccess(null);
+    }
+
+    // Swagger용 컨트롤러
+    @PostMapping("/logout")
+    @Operation(summary = "로그아웃 API by 김지명 (개발중)", description = "현재 로그인된 사용자의 토큰을 무효화하고 로그아웃 처리합니다.")
+    public CustomResponse<String> logout() {return CustomResponse.onSuccess("로그아웃이 완료되었습니다.");}
+
+    @PostMapping("/refresh")
+    @Operation(summary = "JWT 재발급 API", description = "쿠키에 담긴 RefreshToken을 검증하고 새 JWT를 발급합니다.")
+    public void refreshToken(
+            @CookieValue(value = "refresh_token", required = false) String refreshToken,
+            HttpServletResponse response) throws IOException {
+
+        jwtTokenService.reissueTokenAndSetCookie(refreshToken, response);
+    }
+
+
+}

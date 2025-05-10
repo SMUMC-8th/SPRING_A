@@ -48,15 +48,15 @@ public class CustomLoginFilter extends UsernamePasswordAuthenticationFilter {
         }
 
         // Request Body에서 uid과 비밀번호 추출
-        String uid = requestBody.uid();
+        String loginId = requestBody.loginId();
         String password = requestBody.password();
 
-        log.info("[ Login Filter ] Email ---> {} ", uid);
+        log.info("[ Login Filter ] Email ---> {} ", loginId);
         log.info("[ Login Filter ] Password ---> {} ", password);
 
         // UserNamePasswordToken 생성 (인증용 객체)
         UsernamePasswordAuthenticationToken authToken =
-                new UsernamePasswordAuthenticationToken(uid, password, null);
+                new UsernamePasswordAuthenticationToken(loginId, password, null);
 
         log.info("[ Login Filter ] 인증용 객체 UsernamePasswordAuthenticationToken 이 생성되었습니다. ");
         log.info("[ Login Filter ] 인증을 시도합니다.");
@@ -85,14 +85,15 @@ public class CustomLoginFilter extends UsernamePasswordAuthenticationFilter {
         accessCookie.setPath("/");      // 모든 경로에서 쿠키 접근 가능
         accessCookie.setMaxAge(Math.toIntExact(jwtUtil.getAccessExpMs() / 1000));
         // HTTPS를 사용하는 경우 활성화
-        // accessCookie.setSecure(true);
-        // accessCookie.setAttribute("SameSite", "Strict");
+         accessCookie.setSecure(true);
+         accessCookie.setAttribute("SameSite", "Strict");
 
         Cookie refreshCookie = new Cookie("refresh_token", refreshToken);
         refreshCookie.setHttpOnly(true);
         refreshCookie.setPath("/");
         refreshCookie.setMaxAge(Math.toIntExact(jwtUtil.getRefreshExpMs() / 1000));
-        // refreshCookie.setSecure(true);
+        // HTTPS를 사용하는 경우 활성화
+         refreshCookie.setSecure(true);
 
         response.addCookie(accessCookie);
         response.addCookie(refreshCookie);

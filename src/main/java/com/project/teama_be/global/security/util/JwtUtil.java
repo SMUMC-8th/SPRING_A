@@ -167,20 +167,20 @@ public class JwtUtil {
         return this.refreshExpMs;
     }
 
-//    //주어진 리프레시 토큰을 기반으로 새로운 액세스 토큰을 발급
-//    public JwtDTO reissueToken(String refreshToken) throws SignatureException {
-//        String uid = getUid(refreshToken);
-//
-//        Member member = memberRepository.findByUid(uid)
-//                .orElseThrow(() -> new UsernameNotFoundException("사용자를 찾을 수 없습니다: " + uid));
-//
-//        // CustomUserDetails 생성 시 User 객체 사용
-//        CustomUserDetails userDetails = new CustomUserDetails(member);
-//        log.info("[ JwtUtil ] 새로운 토큰을 재발급 합니다.");
-//
-//        return new JwtDTO(
-//                createJwtAccessToken(userDetails),
-//                createJwtRefreshToken(userDetails)
-//        );
-//    }
+    //주어진 리프레시 토큰을 기반으로 새로운 액세스 토큰을 발급
+    public JwtDTO reissueToken(String refreshToken) throws SignatureException {
+        String uid = getUid(refreshToken);
+
+        Member member = memberRepository.findByUid(uid)
+                .orElseThrow(() -> new UsernameNotFoundException("사용자를 찾을 수 없습니다: " + uid));
+
+        // CustomUserDetails 생성 시 User 객체 사용
+        CustomUserDetails userDetails = new CustomUserDetails(member);
+        log.info("[ JwtUtil ] 새로운 토큰을 재발급 합니다.");
+
+        return new JwtDTO(
+                createJwtAccessToken(userDetails),
+                createJwtRefreshToken(userDetails)
+        );
+    }
 }
