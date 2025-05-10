@@ -11,7 +11,7 @@ public class AuthUser {
 
     private final Long userId;
 
-    private final String uid;
+    private final String loginId;
 
     @JsonIgnore
     private final String password;

@@ -52,15 +52,15 @@ public class JwtUtil {
         this.memberRepository = memberRepository;
     }
 
-    //JWT 토큰을 입력으로 받아 토큰의 subject 로부터 사용자 uid를 추출하는 메서드
-    public String getUid(String token) throws SignatureException {
-        log.info("[ JwtUtil ] 토큰에서 uid를 추출합니다.");
+    //JWT 토큰을 입력으로 받아 토큰의 subject 로부터 사용자 loginId를 추출하는 메서드
+    public String getLoginId(String token) throws SignatureException {
+        log.info("[ JwtUtil ] 토큰에서 loginId를 추출합니다.");
         return Jwts.parser()
                 .verifyWith(secretKey)
                 .build()
                 .parseSignedClaims(token)
                 .getPayload()
-                .getSubject(); //claims의 Subject에서 사용자의 uid 추출 (Subject): 토큰의 주체 (일반적으로 사용자 ID나 이메일)
+                .getSubject(); //claims의 Subject에서 사용자의 loginId 추출 (Subject): 토큰의 주체 (일반적으로 사용자 ID나 이메일)
     }
 
     //토큰을 발급하는 메서드
@@ -80,7 +80,7 @@ public class JwtUtil {
                 .header() //헤더 부분
                 .add("typ", "JWT") //JWT 타입을 추가
                 .and()
-                .subject(userDetails.getUsername()) //Subject 에 uid (uid) 추가
+                .subject(userDetails.getUsername()) //Subject 에 loginId 추가
                 .claim("role", authorities) //권한 정보를 클레임에 추가
                 .issuedAt(Date.from(issuedAt)) //발행 시간(현재 시간)을 추가
                 .expiration(Date.from(expirationTime)) //만료 시간을 추가
@@ -169,10 +169,10 @@ public class JwtUtil {
 
     //주어진 리프레시 토큰을 기반으로 새로운 액세스 토큰을 발급
     public JwtDTO reissueToken(String refreshToken) throws SignatureException {
-        String uid = getUid(refreshToken);
+        String loginId = getLoginId(refreshToken);
 
-        Member member = memberRepository.findByUid(uid)
-                .orElseThrow(() -> new UsernameNotFoundException("사용자를 찾을 수 없습니다: " + uid));
+        Member member = memberRepository.findByLoginId(loginId)
+                .orElseThrow(() -> new UsernameNotFoundException("사용자를 찾을 수 없습니다: " + loginId));
 
         // CustomUserDetails 생성 시 User 객체 사용
         CustomUserDetails userDetails = new CustomUserDetails(member);

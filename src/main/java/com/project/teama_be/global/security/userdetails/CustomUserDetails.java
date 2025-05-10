@@ -11,7 +11,7 @@ public class CustomUserDetails extends AuthUser implements UserDetails {
 
     //인증용 객체 생성자
     public CustomUserDetails(Member member) {
-        super(member.getId(), member.getUid(), member.getPassword());
+        super(member.getId(), member.getLoginId(), member.getPassword());
     }
 
     // 권한을 반환하는 메서드, 현재는 빈 컬렉션을 반환 (권한이 필요하다면 여기에 추가 가능)
@@ -29,7 +29,7 @@ public class CustomUserDetails extends AuthUser implements UserDetails {
     // 이메일을 사용자 이름으로 반환
     @Override
     public String getUsername() {
-        return super.getUid(); // AuthUser 클래스의 getUid 메서드 호출
+        return super.getLoginId(); // AuthUser 클래스의 getLoginId 메서드 호출
     }
 
     // 계정이 만료되지 않았음을 반환

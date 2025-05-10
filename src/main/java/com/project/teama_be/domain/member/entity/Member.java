@@ -22,8 +22,8 @@ public class Member extends BaseEntity {
     @JoinColumn(name = "location_id")
     private Location location;
 
-    @Column(name = "UID")
-    private String uid;
+    @Column(name = "login_id")
+    private String loginId;
 
     @Column(name = "password")
     private String password;

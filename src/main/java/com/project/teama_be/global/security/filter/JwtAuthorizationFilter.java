@@ -89,9 +89,9 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
         log.info("[ JwtAuthorizationFilter ] Access Token 유효성 검증 성공.");
 
         // 사용자 uid로 User 엔티티 조회
-        String uid = jwtUtil.getUid(accessToken);
-        Member member = memberRepository.findByUid(uid)
-                .orElseThrow(() -> new UsernameNotFoundException("사용자를 찾을 수 없습니다: " + uid));
+        String loginId = jwtUtil.getLoginId(accessToken);
+        Member member = memberRepository.findByLoginId(loginId)
+                .orElseThrow(() -> new UsernameNotFoundException("사용자를 찾을 수 없습니다: " + loginId));
 
         // CustomUserDetail 객체 생성
         CustomUserDetails userDetails = new CustomUserDetails(member);
