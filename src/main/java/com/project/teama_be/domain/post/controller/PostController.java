@@ -52,7 +52,7 @@ public class PostController {
     // 키워드 검색
     @GetMapping("/posts")
     @Operation(
-            summary = "키워드 검색 API by 김주헌 (개발중)",
+            summary = "키워드 검색 API by 김주헌",
             description = "키워드를 통해 게시글을 조회합니다. " +
                     "키워드 종류를 선택해야 합니다. (태그, 장소명) " +
                     "커서 기반 페이지네이션, 최신 순으로 정렬합니다."
