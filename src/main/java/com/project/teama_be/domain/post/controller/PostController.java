@@ -4,7 +4,7 @@ package com.project.teama_be.domain.post.controller;
 import com.project.teama_be.domain.post.dto.request.PostReqDTO;
 import com.project.teama_be.domain.post.dto.response.PostResDTO;
 import com.project.teama_be.domain.post.service.command.PostCommandService;
-import com.project.teama_be.domain.post.service.query.PostQuerySerivce;
+import com.project.teama_be.domain.post.service.query.PostQueryService;
 import com.project.teama_be.global.apiPayload.CustomResponse;
 import com.project.teama_be.global.security.userdetails.AuthUser;
 import io.swagger.v3.oas.annotations.Operation;
@@ -31,7 +31,7 @@ import java.util.List;
 public class PostController {
 
     private final PostCommandService postCommandService;
-    private final PostQuerySerivce postQuerySerivce;
+    private final PostQueryService postQueryService;
 
     // GET 요청
     // 가게명으로 게시글 조회

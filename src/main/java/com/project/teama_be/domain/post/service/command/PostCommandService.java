@@ -1,6 +1,7 @@
 package com.project.teama_be.domain.post.service.command;
 
 import com.project.teama_be.domain.location.entity.Location;
+import com.project.teama_be.domain.location.repository.LocationRepository;
 import com.project.teama_be.domain.member.entity.Member;
 import com.project.teama_be.domain.member.repository.MemberRepository;
 import com.project.teama_be.domain.post.converter.PostConverter;
