@@ -1,6 +1,5 @@
 package com.project.teama_be.domain.post.converter;
 
-import com.project.teama_be.domain.post.dto.request.PostReqDTO;
 import com.project.teama_be.domain.post.entity.Tag;
 
 public class TagConverter {

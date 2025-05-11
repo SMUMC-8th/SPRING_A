@@ -2,7 +2,6 @@ package com.project.teama_be.domain.post.service.command;
 
 import com.project.teama_be.domain.location.entity.Location;
 import com.project.teama_be.domain.member.entity.Member;
-import com.project.teama_be.domain.member.enums.LoginType;
 import com.project.teama_be.domain.member.repository.MemberRepository;
 import com.project.teama_be.domain.post.converter.PostConverter;
 import com.project.teama_be.domain.post.converter.TagConverter;
@@ -17,7 +16,6 @@ import com.project.teama_be.domain.post.exception.PostException;
 import com.project.teama_be.domain.post.exception.code.PostErrorCode;
 import com.project.teama_be.domain.post.repository.*;
 import com.project.teama_be.global.aws.util.S3Util;
-import com.project.teama_be.global.security.util.JwtUtil;
 import com.project.teama_be.global.security.userdetails.AuthUser;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,11 +24,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
