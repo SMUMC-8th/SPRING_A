@@ -9,6 +9,8 @@ import com.project.teama_be.domain.post.entity.PostImage;
 import com.project.teama_be.domain.post.entity.PostReaction;
 import com.project.teama_be.domain.post.enums.ReactionType;
 
+import java.util.List;
+
 public class PostConverter {
 
     // 게시글 업로드 : Location, Member, ReqDTO -> Post
@@ -63,6 +65,43 @@ public class PostConverter {
                 .postId(postReaction.getPost().getId())
                 .reactionType(postReaction.getReactionType())
                 .updatedAt(postReaction.getUpdatedAt())
+                .build();
+    }
+
+    // postImageUrl, postId, placeName, placeId -> SimplePost
+    public static PostResDTO.SimplePost of(
+            String postImageUrl,
+            Long postId,
+            String placeName,
+            Long placeId
+    ){
+        return PostResDTO.SimplePost.builder()
+                .postImageUrl(postImageUrl)
+                .postId(postId)
+                .placeName(placeName)
+                .placeId(placeId)
+                .build();
+    }
+
+    // 홈화면용 게시글 조회: List<SimplePost> -> HomePost
+    public static PostResDTO.HomePost of(List<PostResDTO.SimplePost> posts){
+        return PostResDTO.HomePost.builder()
+                .simplePost(posts)
+                .build();
+    }
+
+    // 커서 기반 게시글 조회 : List<T> -> PageablePost
+    public static <T> PostResDTO.PageablePost<T> of(
+            List<T> posts,
+            Long cursor,
+            Boolean hasNext,
+            Long size
+    ){
+        return PostResDTO.PageablePost.<T>builder()
+                .post(posts)
+                .cursor(cursor)
+                .hasNext(hasNext)
+                .pageSize(size)
                 .build();
     }
 }

@@ -37,20 +37,16 @@ public class PostController {
     // 가게명으로 게시글 조회
     @GetMapping("/places/posts")
     @Operation(
-            summary = "가게명으로 게시글 조회 API by 김주헌 (개발중)",
+            summary = "가게명으로 게시글 조회 API by 김주헌",
             description = "해당 가게의 게시글 중 최근 게시된 게시글을 조회합니다." +
                     "Query Parameter를 중복하여 사용함으로써 홈화면(지도 화면)에 표시할 게시글을 조회할 수 있습니다." +
-                    "커서 기반 페이지네이션, 최신 순으로 정렬합니다."
+                    "각 가게의 최신 게시글 하나만 조회합니다."
     )
-    public CustomResponse<PostResDTO.PageablePost<PostResDTO.SimplePost>> getPostsByPlaceName(
+    public CustomResponse<PostResDTO.HomePost> getPostsByPlaceName(
             @RequestParam @Size(min = 1, message = "검색할 가게가 최소 하나 이상 있어야 합니다.")
-            List<String> query,
-            @RequestParam(defaultValue = "-1") @NotNull @Min(value = -1, message = "커서는 -1 이상이어야 합니다.")
-            Long cursor,
-            @RequestParam(defaultValue = "1") @NotNull @Min(value = 1, message = "게시글은 최소 하나 이상 조회해야 합니다.")
-            Long size
+            List<String> query
     ) {
-        return CustomResponse.onSuccess(null);
+        return CustomResponse.onSuccess(postQueryService.getPost(query));
     }
 
     // 키워드 검색
@@ -64,8 +60,10 @@ public class PostController {
     public CustomResponse<PostResDTO.PageablePost<PostResDTO.FullPost>> getPostsByKeyword(
             @RequestParam String query,
             @RequestParam String type,
-            @RequestParam(defaultValue = "-1") Long cursor,
-            @RequestParam(defaultValue = "1") Long size
+            @RequestParam(defaultValue = "-1") @NotNull @Min(value = -1, message = "커서는 -1 이상이어야 합니다.")
+            Long cursor,
+            @RequestParam(defaultValue = "1") @NotNull @Min(value = 1, message = "게시글은 최소 하나 이상 조회해야 합니다.")
+            Long size
     ) {
         log.info("[ 키워드 검색 ] 키워드 검색을 시작합니다.");
         return CustomResponse.onSuccess(null);
@@ -80,8 +78,10 @@ public class PostController {
     )
     public CustomResponse<PostResDTO.PageablePost<PostResDTO.FullPost>> getAllPostsAboutPlace(
             @PathVariable Long placeId,
-            @RequestParam(defaultValue = "-1") Long cursor,
-            @RequestParam(defaultValue = "1") Long size
+            @RequestParam(defaultValue = "-1") @NotNull @Min(value = -1, message = "커서는 -1 이상이어야 합니다.")
+            Long cursor,
+            @RequestParam(defaultValue = "1") @NotNull @Min(value = 1, message = "게시글은 최소 하나 이상 조회해야 합니다.")
+            Long size
     ) {
         return CustomResponse.onSuccess(null);
     }
@@ -95,8 +95,10 @@ public class PostController {
     )
     public CustomResponse<PostResDTO.PageablePost<PostResDTO.SimplePost>> getMyPosts(
             @PathVariable Long memberId,
-            @RequestParam(defaultValue = "-1") Long cursor,
-            @RequestParam(defaultValue = "1") Long size
+            @RequestParam(defaultValue = "-1") @NotNull @Min(value = -1, message = "커서는 -1 이상이어야 합니다.")
+            Long cursor,
+            @RequestParam(defaultValue = "1") @NotNull @Min(value = 1, message = "게시글은 최소 하나 이상 조회해야 합니다.")
+            Long size
     ) {
         return CustomResponse.onSuccess(null);
     }
@@ -110,8 +112,10 @@ public class PostController {
     )
     public CustomResponse<PostResDTO.PageablePost<PostResDTO.RecentPost>> getRecentViewPosts(
             @PathVariable Long memberId,
-            @RequestParam(defaultValue = "-1") Long cursor,
-            @RequestParam(defaultValue = "1") Long size
+            @RequestParam(defaultValue = "-1") @NotNull @Min(value = -1, message = "커서는 -1 이상이어야 합니다.")
+            Long cursor,
+            @RequestParam(defaultValue = "1") @NotNull @Min(value = 1, message = "게시글은 최소 하나 이상 조회해야 합니다.")
+            Long size
     ) {
         return CustomResponse.onSuccess(null);
     }
@@ -125,8 +129,10 @@ public class PostController {
     )
     public CustomResponse<PostResDTO.PageablePost<PostResDTO.SimplePost>> getLikedPosts(
             @PathVariable Long memberId,
-            @RequestParam(defaultValue = "-1") Long cursor,
-            @RequestParam(defaultValue = "1") Long size
+            @RequestParam(defaultValue = "-1") @NotNull @Min(value = -1, message = "커서는 -1 이상이어야 합니다.")
+            Long cursor,
+            @RequestParam(defaultValue = "1") @NotNull @Min(value = 1, message = "게시글은 최소 하나 이상 조회해야 합니다.")
+            Long size
     ) {
         return CustomResponse.onSuccess(null);
     }
