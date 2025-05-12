@@ -29,21 +29,21 @@ public class Post extends BaseEntity {
     @Column(name = "content", nullable = false)
     private String content;
 
-    @Column(name = "like_count", nullable = false)
+    @Column(name = "like_count")
     private Long likeCount;
 
-    @Column(name = "unlike", nullable = false)
+    @Column(name = "unlike")
     private Long unlikeCount;
 
     @Column(name = "is_private", nullable = false)
     private Boolean isPrivate;
 
-    @Column(name = "disable_comment", nullable = false)
+    @Column(name = "disable_comment")
     private Boolean disableComment;
 
-    @Column(name = "hide_like", nullable = false)
+    @Column(name = "hide_like")
     private Boolean hideLike;
 
-    @Column(name = "hide_share", nullable = false)
+    @Column(name = "hide_share")
     private Boolean hideShare;
 }

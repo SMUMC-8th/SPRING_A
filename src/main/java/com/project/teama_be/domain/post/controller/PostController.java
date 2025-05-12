@@ -6,6 +6,7 @@ import com.project.teama_be.domain.post.dto.response.PostResDTO;
 import com.project.teama_be.domain.post.service.command.PostCommandService;
 import com.project.teama_be.domain.post.service.query.PostQueryService;
 import com.project.teama_be.global.apiPayload.CustomResponse;
+import com.project.teama_be.global.security.annotation.CurrentUser;
 import com.project.teama_be.global.security.userdetails.AuthUser;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -35,10 +36,10 @@ public class PostController {
     private final PostQueryService postQueryService;
 
     // GET 요청
-    // 가게명으로 게시글 조회
+    // 각 가게 최신 게시글 조회
     @GetMapping("/places/posts")
     @Operation(
-            summary = "가게명으로 게시글 조회 API by 김주헌",
+            summary = "각 가게 최신 게시글 조회 API by 김주헌",
             description = "해당 가게의 게시글 중 최근 게시된 게시글을 조회합니다." +
                     "Query Parameter를 중복하여 사용함으로써 홈화면(지도 화면)에 표시할 게시글을 조회할 수 있습니다." +
                     "각 가게의 최신 게시글 하나만 조회합니다."
@@ -158,7 +159,7 @@ public class PostController {
                     "PostMan 또는 cURL 등 커스텀 요청이 가능한 방식으로 테스트해주세요."
     )
     public CustomResponse<PostResDTO.PostUpload> uploadPost(
-            @AuthenticationPrincipal AuthUser user,
+            @CurrentUser AuthUser user,
             @RequestPart List<MultipartFile> image,
             @RequestPart @Valid PostReqDTO.PostUpload postContent
     ) {

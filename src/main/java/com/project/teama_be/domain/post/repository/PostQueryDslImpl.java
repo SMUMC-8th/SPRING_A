@@ -23,7 +23,6 @@ import java.util.Map;
 public class PostQueryDslImpl implements PostQueryDsl{
 
     private final JPAQueryFactory jpaQueryFactory;
-    private final MemberRepository memberRepository;
 
     // 각 가게 최신 게시글 조회
     @Override
@@ -44,7 +43,7 @@ public class PostQueryDslImpl implements PostQueryDsl{
                     .orderBy(post.id.desc())
                     .fetchFirst();
             if (result == null) {
-                posts.add(PostConverter.of(null,null,placeName,null));
+                posts.add(PostConverter.toSimplePost(null,null,placeName,null));
                 continue;
             }
             // 해당 게시글 사진 조회
@@ -56,7 +55,7 @@ public class PostQueryDslImpl implements PostQueryDsl{
                     .fetchFirst();
             // SimplePost로 변환
             posts.add(
-                    PostConverter.of(
+                    PostConverter.toSimplePost(
                             imageUrl,
                             result.getId(),
                             result.getLocation().getPlaceName(),
@@ -64,7 +63,7 @@ public class PostQueryDslImpl implements PostQueryDsl{
                     )
             );
         }
-        return PostConverter.of(posts);
+        return PostConverter.toHomePost(posts);
     }
 
     // 키워드 검색 : 키워드를 받고 태그, 가게명, 주소에 따라 달라짐 (최신순)
@@ -104,8 +103,6 @@ public class PostQueryDslImpl implements PostQueryDsl{
         // 조회할 객체 선언
         QPost post = QPost.post;
         QPostImage postImage = QPostImage.postImage;
-        QComment comment = QComment.comment;
-        QPostTag postTag = QPostTag.postTag;
 
         // 조건에 맞는 게시글 모두 조회
         List<Post> postList = jpaQueryFactory
@@ -144,7 +141,7 @@ public class PostQueryDslImpl implements PostQueryDsl{
         // 합치기
         List<PostResDTO.SimplePost> result = postList.stream()
                 .map(eachPost ->
-                        PostConverter.of(
+                        PostConverter.toSimplePost(
                                 postImageList.getOrDefault(eachPost.getId(), null),
                                 eachPost.getId(),
                                 eachPost.getLocation().getPlaceName(),
@@ -153,7 +150,7 @@ public class PostQueryDslImpl implements PostQueryDsl{
                 )
                 .toList();
 
-        return PostConverter.of(result, hasNext, pageSize, nextCursor);
+        return PostConverter.toPageablePost(result, hasNext, pageSize, nextCursor);
     }
 
     // 가게 게시글 모두 조회
@@ -236,7 +233,7 @@ public class PostQueryDslImpl implements PostQueryDsl{
         // 합치기
         List<PostResDTO.FullPost> result = postList.stream()
                 .map(eachPost ->
-                        PostConverter.of(
+                        PostConverter.toFullPost(
                                 eachPost,
                                 eachPost.getMember(),
                                 postImageList.getOrDefault(eachPost.getId(), Collections.emptyList()),
@@ -246,6 +243,6 @@ public class PostQueryDslImpl implements PostQueryDsl{
                 )
                 .toList();
 
-        return PostConverter.of(result, hasNext, pageSize, nextCursor);
+        return PostConverter.toPageablePost(result, hasNext, pageSize, nextCursor);
     }
 }
