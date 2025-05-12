@@ -2,16 +2,21 @@ package com.project.teama_be.domain.post.repository;
 
 
 import com.project.teama_be.domain.location.entity.QLocation;
+import com.project.teama_be.domain.member.entity.Member;
 import com.project.teama_be.domain.member.repository.MemberRepository;
 import com.project.teama_be.domain.post.converter.PostConverter;
 import com.project.teama_be.domain.post.dto.response.PostResDTO;
 import com.project.teama_be.domain.post.entity.*;
 import com.project.teama_be.domain.post.exception.PostException;
 import com.project.teama_be.domain.post.exception.code.PostErrorCode;
+import com.project.teama_be.global.security.exception.SecurityErrorCode;
 import com.querydsl.core.group.GroupBy;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Repository;
 
 import java.util.*;
@@ -26,7 +31,7 @@ public class PostQueryDslImpl implements PostQueryDsl{
     private final JPAQueryFactory jpaQueryFactory;
     private final MemberRepository memberRepository;
 
-    // 가게명으로 게시글 조회
+    // 각 가게 최신 게시글 조회
     @Override
     public PostResDTO.HomePost getPostByPlaceName(List<String> query) {
 
@@ -73,16 +78,11 @@ public class PostQueryDslImpl implements PostQueryDsl{
     public PostResDTO.PageablePost<PostResDTO.FullPost> getPostsByKeyword(
             String query,
             Predicate subQuery,
-            Long cursor,
             int size
     ) {
         // 조회할 객체 선언
         QPost post = QPost.post;
-        QPostImage postImage = QPostImage.postImage;
-        QLocation location = QLocation.location;
-        QComment comment = QComment.comment;
         QPostTag postTag = QPostTag.postTag;
-
 
         // 조건에 맞는 게시글 모두 조회
         List<Post> postList = jpaQueryFactory
@@ -97,11 +97,112 @@ public class PostQueryDslImpl implements PostQueryDsl{
             throw new PostException(PostErrorCode.NOT_FOUND_KEYWORD);
         }
 
+        return findPostAttribute(postList, size);
+    }
+
+    // 내가 작성한 게시글 조회
+    @Override
+    public PostResDTO.PageablePost<PostResDTO.SimplePost> getMyPosts(
+            Long memberId,
+            Predicate subQuery,
+            int size
+    ) {
+        // 조회할 객체 선언
+        QPost post = QPost.post;
+        QPostImage postImage = QPostImage.postImage;
+        QComment comment = QComment.comment;
+        QPostTag postTag = QPostTag.postTag;
+
+        // 조건에 맞는 게시글 모두 조회
+        List<Post> postList = jpaQueryFactory
+                .selectFrom(post)
+                .where(subQuery)
+                .orderBy(post.id.desc())
+                .fetch();
+
+        // 결과가 존재하지 않을때
+        if (postList.isEmpty()) {
+            throw new PostException(PostErrorCode.NOT_FOUND);
+        }
+
         // 커서 지정
         Boolean hasNext = postList.size() > size;
         int pageSize = Math.min(postList.size(), size);
         Long nextCursor = postList.size() > size ?
-                 postList.get(pageSize).getId() : postList.get(pageSize-1).getId();
+                postList.get(pageSize).getId() : postList.get(pageSize-1).getId();
+
+        // 게시글 size 조절
+        postList = postList.subList(0, pageSize);
+
+        // 게시글 ID 목록
+        List<Long> postIdList = postList.stream()
+                .map(Post::getId)
+                .toList();
+
+        // 게시글 사진 조회
+        Map<Long, String> postImageList = jpaQueryFactory
+                .from(postImage)
+                .where(postImage.post.id.in(postIdList))
+                .transform(
+                        GroupBy.groupBy(postImage.post.id).as(postImage.imageUrl)
+                );
+
+        // 합치기
+        List<PostResDTO.SimplePost> result = postList.stream()
+                .map(eachPost ->
+                        PostConverter.of(
+                                postImageList.getOrDefault(eachPost.getId(), null),
+                                eachPost.getId(),
+                                eachPost.getLocation().getPlaceName(),
+                                eachPost.getLocation().getId()
+                        )
+                )
+                .toList();
+
+        return PostConverter.of(result, hasNext, pageSize, nextCursor);
+    }
+
+    // 가게 게시글 모두 조회
+    @Override
+    public PostResDTO.PageablePost<PostResDTO.FullPost> getPostsByPlaceId(
+            Long placeId,
+            Predicate subQuery,
+            int size
+    ) {
+        // 조회할 객체 선언
+        QPost post = QPost.post;
+
+        // 조건에 맞는 게시글 모두 조회
+        List<Post> postList = jpaQueryFactory
+                .selectFrom(post)
+                .where(subQuery)
+                .orderBy(post.id.desc())
+                .fetch();
+
+        // 결과가 존재하지 않을때
+        if (postList.isEmpty()) {
+            throw new PostException(PostErrorCode.NOT_FOUND);
+        }
+
+        return findPostAttribute(postList, size);
+    }
+
+    // 게시글 부가 속성들 조회
+    private PostResDTO.PageablePost<PostResDTO.FullPost> findPostAttribute(
+            List<Post> postList,
+            int size
+    ){
+
+        // 조회할 객체 선언
+        QPostImage postImage = QPostImage.postImage;
+        QComment comment = QComment.comment;
+        QPostTag postTag = QPostTag.postTag;
+
+        // 커서 지정
+        Boolean hasNext = postList.size() > size;
+        int pageSize = Math.min(postList.size(), size);
+        Long nextCursor = postList.size() > size ?
+                postList.get(pageSize).getId() : postList.get(pageSize-1).getId();
 
         // 게시글 size 조절
         postList = postList.subList(0, pageSize);
@@ -152,6 +253,5 @@ public class PostQueryDslImpl implements PostQueryDsl{
                 .toList();
 
         return PostConverter.of(result, hasNext, pageSize, nextCursor);
-
     }
 }
