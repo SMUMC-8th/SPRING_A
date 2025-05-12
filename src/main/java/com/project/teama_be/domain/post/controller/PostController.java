@@ -11,6 +11,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.RequiredArgsConstructor;
@@ -58,15 +59,17 @@ public class PostController {
                     "커서 기반 페이지네이션, 최신 순으로 정렬합니다."
     )
     public CustomResponse<PostResDTO.PageablePost<PostResDTO.FullPost>> getPostsByKeyword(
-            @RequestParam String query,
-            @RequestParam String type,
+            @RequestParam @NotBlank(message = "키워드가 비어있으면 안됩니다.")
+            String query,
+            @RequestParam @NotBlank(message = "키워드 종류가 비어있으면 안됩니다.")
+            String type,
             @RequestParam(defaultValue = "-1") @NotNull @Min(value = -1, message = "커서는 -1 이상이어야 합니다.")
             Long cursor,
             @RequestParam(defaultValue = "1") @NotNull @Min(value = 1, message = "게시글은 최소 하나 이상 조회해야 합니다.")
-            Long size
+            int size
     ) {
         log.info("[ 키워드 검색 ] 키워드 검색을 시작합니다.");
-        return CustomResponse.onSuccess(null);
+        return CustomResponse.onSuccess(postQueryService.getPostsByKeyword(query, type, cursor, size));
     }
 
     // 가게 게시글 모두 조회

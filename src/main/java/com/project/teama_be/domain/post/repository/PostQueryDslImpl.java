@@ -1,23 +1,30 @@
 package com.project.teama_be.domain.post.repository;
 
 
+import com.project.teama_be.domain.location.entity.QLocation;
+import com.project.teama_be.domain.member.repository.MemberRepository;
 import com.project.teama_be.domain.post.converter.PostConverter;
 import com.project.teama_be.domain.post.dto.response.PostResDTO;
-import com.project.teama_be.domain.post.entity.Post;
-import com.project.teama_be.domain.post.entity.QPost;
-import com.project.teama_be.domain.post.entity.QPostImage;
+import com.project.teama_be.domain.post.entity.*;
+import com.project.teama_be.domain.post.exception.PostException;
+import com.project.teama_be.domain.post.exception.code.PostErrorCode;
+import com.querydsl.core.group.GroupBy;
+import com.querydsl.core.types.Predicate;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
+
+import static com.querydsl.jpa.JPAExpressions.select;
+import static com.querydsl.jpa.JPAExpressions.selectDistinct;
 
 @Repository
 @RequiredArgsConstructor
 public class PostQueryDslImpl implements PostQueryDsl{
 
     private final JPAQueryFactory jpaQueryFactory;
+    private final MemberRepository memberRepository;
 
     // 가게명으로 게시글 조회
     @Override
@@ -59,5 +66,92 @@ public class PostQueryDslImpl implements PostQueryDsl{
             );
         }
         return PostConverter.of(posts);
+    }
+
+    // 키워드 검색 : 키워드를 받고 태그, 가게명, 주소에 따라 달라짐 (최신순)
+    @Override
+    public PostResDTO.PageablePost<PostResDTO.FullPost> getPostsByKeyword(
+            String query,
+            Predicate subQuery,
+            Long cursor,
+            int size
+    ) {
+        // 조회할 객체 선언
+        QPost post = QPost.post;
+        QPostImage postImage = QPostImage.postImage;
+        QLocation location = QLocation.location;
+        QComment comment = QComment.comment;
+        QPostTag postTag = QPostTag.postTag;
+
+
+        // 조건에 맞는 게시글 모두 조회
+        List<Post> postList = jpaQueryFactory
+                .selectFrom(post)
+                .leftJoin(postTag).on(postTag.post.id.eq(post.id))
+                .where(subQuery)
+                .orderBy(post.id.desc())
+                .fetch();
+
+        // 결과가 존재하지 않을때
+        if (postList.isEmpty()) {
+            throw new PostException(PostErrorCode.NOT_FOUND_KEYWORD);
+        }
+
+        // 커서 지정
+        Boolean hasNext = postList.size() > size;
+        int pageSize = Math.min(postList.size(), size);
+        Long nextCursor = postList.size() > size ?
+                 postList.get(pageSize).getId() : postList.get(pageSize-1).getId();
+
+        // 게시글 size 조절
+        postList = postList.subList(0, pageSize);
+
+        // 게시글 ID 목록
+        List<Long> postIdList = postList.stream()
+                .map(Post::getId)
+                .toList();
+        // 게시글 사진 조회
+        Map<Long, List<String>> postImageList = jpaQueryFactory
+                .from(postImage)
+                .where(postImage.post.id.in(postIdList))
+                .transform(
+                        GroupBy.groupBy(postImage.post.id).as(
+                                GroupBy.list(postImage.imageUrl)
+                        )
+                );
+
+        // 게시글 태그 조회
+        Map<Long, List<String>> postTagList = jpaQueryFactory
+                .from(postTag)
+                .where(postTag.post.id.in(postIdList))
+                .transform(
+                        GroupBy.groupBy(postTag.post.id).as(
+                                GroupBy.list(postTag.tag.tagName)
+                        )
+                );
+        // 게시글 댓글 조회
+        Map<Long, Long> commentList = jpaQueryFactory
+                .from(comment)
+                .where(comment.post.id.in(postIdList))
+                .transform(
+                        GroupBy.groupBy(comment.post.id).as(
+                                comment.count()
+                        )
+                );
+        // 합치기
+        List<PostResDTO.FullPost> result = postList.stream()
+                .map(eachPost ->
+                        PostConverter.of(
+                                eachPost,
+                                eachPost.getMember(),
+                                postImageList.getOrDefault(eachPost.getId(), Collections.emptyList()),
+                                postTagList.getOrDefault(eachPost.getId(), Collections.emptyList()),
+                                commentList.getOrDefault(eachPost.getId(), 0L)
+                        )
+                )
+                .toList();
+
+        return PostConverter.of(result, hasNext, pageSize, nextCursor);
+
     }
 }

@@ -83,6 +83,29 @@ public class PostConverter {
                 .build();
     }
 
+    // Info -> FullPost
+    public static PostResDTO.FullPost of(
+            Post post,
+            Member member,
+            List<String> imageList,
+            List<String> tagList,
+            Long commentCount
+    ){
+        return PostResDTO.FullPost.builder()
+                .nickname(member.getNickname())
+                .profileUrl(member.getProfileUrl())
+                .postImageUrl(imageList)
+                .imageTotalCount((long) imageList.size())
+                .postId(post.getId())
+                .placeId(post.getLocation().getId())
+                .likeCount(post.getLikeCount())
+                .commentCount(commentCount)
+                .placeName(post.getLocation().getPlaceName())
+                .content(post.getContent())
+                .tags(tagList)
+                .build();
+    }
+
     // 홈화면용 게시글 조회: List<SimplePost> -> HomePost
     public static PostResDTO.HomePost of(List<PostResDTO.SimplePost> posts){
         return PostResDTO.HomePost.builder()
@@ -93,15 +116,15 @@ public class PostConverter {
     // 커서 기반 게시글 조회 : List<T> -> PageablePost
     public static <T> PostResDTO.PageablePost<T> of(
             List<T> posts,
-            Long cursor,
             Boolean hasNext,
-            Long size
+            int pageSize,
+            Long cursor
     ){
         return PostResDTO.PageablePost.<T>builder()
                 .post(posts)
                 .cursor(cursor)
                 .hasNext(hasNext)
-                .pageSize(size)
+                .pageSize(pageSize)
                 .build();
     }
 }
