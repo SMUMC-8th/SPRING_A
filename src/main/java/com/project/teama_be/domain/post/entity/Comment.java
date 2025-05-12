@@ -29,7 +29,7 @@ public class Comment extends BaseEntity {
     private String content;
 
     @Column(name = "like_count")
-    private Integer likeCount;
+    private Long likeCount;
 
     @Column(name = "parent_id")
     private Long parentId;

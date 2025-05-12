@@ -2,6 +2,7 @@ package com.project.teama_be.domain.post.dto.response;
 
 import com.project.teama_be.domain.post.enums.ReactionType;
 import lombok.Builder;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -54,7 +55,7 @@ public class PostResDTO {
     public record PageablePost<T>(
             List<T> post,
             Boolean hasNext,
-            Long pageSize,
+            int pageSize,
             Long cursor
     ) {}
 

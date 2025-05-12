@@ -18,6 +18,7 @@ import com.project.teama_be.domain.post.exception.code.PostErrorCode;
 import com.project.teama_be.domain.post.repository.*;
 import com.project.teama_be.global.aws.util.S3Util;
 import com.project.teama_be.global.security.userdetails.AuthUser;
+import com.project.teama_be.global.security.util.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -44,7 +45,6 @@ public class PostCommandService {
     private final MemberRepository memberRepository;
     private final S3Util s3Util;
     private final LocationRepository locationRepository;
-//    private final JwtUtil jwtUtil;
 
     // 게시글 업로드
     @Transactional
