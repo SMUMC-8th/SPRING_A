@@ -75,9 +75,7 @@ public class PostQueryService {
             }
 
             // 타입이 잘못된 경우
-            default -> {
-                throw new PostException(PostErrorCode.NOT_VALID_TYPE);
-            }
+            default -> throw new PostException(PostErrorCode.NOT_VALID_TYPE);
         }
     }
 

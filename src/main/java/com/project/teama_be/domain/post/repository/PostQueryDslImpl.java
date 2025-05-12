@@ -104,8 +104,6 @@ public class PostQueryDslImpl implements PostQueryDsl{
         // 조회할 객체 선언
         QPost post = QPost.post;
         QPostImage postImage = QPostImage.postImage;
-        QComment comment = QComment.comment;
-        QPostTag postTag = QPostTag.postTag;
 
         // 조건에 맞는 게시글 모두 조회
         List<Post> postList = jpaQueryFactory
