@@ -6,6 +6,7 @@ import com.project.teama_be.domain.post.dto.response.PostResDTO;
 import com.project.teama_be.domain.post.service.command.PostCommandService;
 import com.project.teama_be.domain.post.service.query.PostQueryService;
 import com.project.teama_be.global.apiPayload.CustomResponse;
+import com.project.teama_be.global.security.annotation.CurrentUser;
 import com.project.teama_be.global.security.userdetails.AuthUser;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -75,35 +76,37 @@ public class PostController {
     // 가게 게시글 모두 조회
     @GetMapping("/places/{placeId}/posts")
     @Operation(
-            summary = "가게 게시글 모두 조회 API by 김주헌 (개발중)",
+            summary = "가게 게시글 모두 조회 API by 김주헌",
             description = "해당 가게의 모든 게시글을 조회합니다. " +
                     "커서 기반 페이지네이션, 최신 순으로 정렬합니다."
     )
     public CustomResponse<PostResDTO.PageablePost<PostResDTO.FullPost>> getAllPostsAboutPlace(
-            @PathVariable Long placeId,
+            @PathVariable @NotNull @Min(value = 0, message = "장소ID는 최소 1부터 시작합니다.")
+            Long placeId,
             @RequestParam(defaultValue = "-1") @NotNull @Min(value = -1, message = "커서는 -1 이상이어야 합니다.")
             Long cursor,
             @RequestParam(defaultValue = "1") @NotNull @Min(value = 1, message = "게시글은 최소 하나 이상 조회해야 합니다.")
-            Long size
+            int size
     ) {
-        return CustomResponse.onSuccess(null);
+        return CustomResponse.onSuccess(postQueryService.getPostsByPlaceId(placeId, cursor, size));
     }
 
     // 내가 작성한 게시글 조회 (마이페이지)
     @GetMapping("/members/{memberId}/posts")
     @Operation(
-            summary = "내가 작성한 게시글 조회 (마이페이지) API by 김주헌 (개발중)",
+            summary = "내가 작성한 게시글 조회 (마이페이지) API by 김주헌",
             description = "마이페이지에서 내가 올렸던 게시글을 조회합니다. " +
                     "커서 기반 페이지네이션, 최신 순으로 정렬합니다."
     )
     public CustomResponse<PostResDTO.PageablePost<PostResDTO.SimplePost>> getMyPosts(
-            @PathVariable Long memberId,
+            @PathVariable @NotNull(message = "회원 아이디가 비어있으면 안됩니다.")
+            Long memberId,
             @RequestParam(defaultValue = "-1") @NotNull @Min(value = -1, message = "커서는 -1 이상이어야 합니다.")
             Long cursor,
             @RequestParam(defaultValue = "1") @NotNull @Min(value = 1, message = "게시글은 최소 하나 이상 조회해야 합니다.")
-            Long size
+            int size
     ) {
-        return CustomResponse.onSuccess(null);
+        return CustomResponse.onSuccess(postQueryService.getMyPosts(memberId, cursor, size));
     }
 
     // 최근 본 게시글 조회

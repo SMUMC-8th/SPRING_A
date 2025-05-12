@@ -1,19 +1,19 @@
 package com.project.teama_be.domain.post.service.query;
 
 import com.project.teama_be.domain.location.entity.QLocation;
+import com.project.teama_be.domain.member.entity.Member;
+import com.project.teama_be.domain.member.repository.MemberRepository;
 import com.project.teama_be.domain.post.dto.response.PostResDTO;
 import com.project.teama_be.domain.post.entity.QPost;
 import com.project.teama_be.domain.post.entity.QPostTag;
 import com.project.teama_be.domain.post.exception.PostException;
 import com.project.teama_be.domain.post.exception.code.PostErrorCode;
 import com.project.teama_be.domain.post.repository.PostRepository;
+import com.project.teama_be.global.security.exception.SecurityErrorCode;
 import com.querydsl.core.BooleanBuilder;
-import com.querydsl.core.types.Predicate;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import org.springframework.validation.method.MethodValidationResult;
-import org.springframework.web.method.annotation.HandlerMethodValidationException;
 
 import java.util.List;
 
@@ -23,6 +23,7 @@ import java.util.List;
 public class PostQueryService {
 
     private final PostRepository postRepository;
+    private final MemberRepository memberRepository;
 
     // 가게명으로 게시글 조회
     public PostResDTO.HomePost getPost(
@@ -58,20 +59,20 @@ public class PostQueryService {
             // 태그 검색
             case "tag" -> {
                 builder.and(postTag.tag.tagName.likeIgnoreCase(query + "%"));
-                return postRepository.getPostsByKeyword(query, builder, cursor, size);
+                return postRepository.getPostsByKeyword(query, builder, size);
             }
 
             // 가게명 검색
             case "place" -> {
                 builder.and(post.location.placeName.likeIgnoreCase(query + "%"));
-                return postRepository.getPostsByKeyword(query, builder, cursor, size);
+                return postRepository.getPostsByKeyword(query, builder, size);
             }
 
             // 지역 검색
             case "address" -> {
                 builder.and(post.location.addressName.likeIgnoreCase(query + "%")
                                 .or(post.location.roadAddressName.likeIgnoreCase(query + "%")));
-                return postRepository.getPostsByKeyword(query, builder, cursor, size);
+                return postRepository.getPostsByKeyword(query, builder, size);
             }
 
             // 타입이 잘못된 경우
@@ -79,5 +80,54 @@ public class PostQueryService {
                 throw new PostException(PostErrorCode.NOT_VALID_TYPE);
             }
         }
+    }
+
+    // 가게 게시글 모두 조회
+    public PostResDTO.PageablePost<PostResDTO.FullPost> getPostsByPlaceId(
+            Long placeId,
+            Long cursor,
+            int size
+    ) {
+        log.info("[ 가게 게시글 모두 조회 ] 가게 게시글을 모두 조회합니다.");
+        BooleanBuilder builder = new BooleanBuilder();
+        QPost post = QPost.post;
+
+        builder.and(post.location.id.eq(placeId));
+        if (cursor != -1) {
+            builder.and(post.id.loe(cursor));
+        }
+
+        return postRepository.getPostsByPlaceId(placeId, builder, size);
+    }
+
+    // 내가 작성한 게시글 조회 (마이페이지)
+    public PostResDTO.PageablePost<PostResDTO.SimplePost> getMyPosts(
+            Long memberId,
+            Long cursor,
+            int size
+    ) {
+        log.info("[ 내가 작성한 게시글 조회 ] 내가 작성한 게시글을 조회합니다.");
+        BooleanBuilder builder = new BooleanBuilder();
+        QPost post = QPost.post;
+
+//        // 로그인한 유저 정보 조회
+//        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        Member auth = memberRepository.findByUid("test").orElseThrow(()->
+                new PostException(PostErrorCode.USER_NOT_FOUND));
+
+        // memberId 조회 : 임시로 예외처리
+        Member member = memberRepository.findById(memberId).orElseThrow(()->
+                new PostException(PostErrorCode.USER_NOT_FOUND));
+
+        // 현재 유저와 맞는지 대조
+        if (!member.getUid().equals(auth.getUid())) {
+            throw new PostException(SecurityErrorCode.FORBIDDEN);
+        }
+
+        builder.and(post.member.id.eq(memberId));
+        if (cursor != -1) {
+            builder.and(post.id.loe(cursor));
+        }
+        return postRepository.getMyPosts(memberId, builder, size);
     }
 }
