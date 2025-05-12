@@ -6,7 +6,6 @@ import com.project.teama_be.domain.post.dto.response.PostResDTO;
 import com.project.teama_be.domain.post.service.command.PostCommandService;
 import com.project.teama_be.domain.post.service.query.PostQueryService;
 import com.project.teama_be.global.apiPayload.CustomResponse;
-import com.project.teama_be.global.security.annotation.CurrentUser;
 import com.project.teama_be.global.security.userdetails.AuthUser;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;

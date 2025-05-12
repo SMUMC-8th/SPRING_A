@@ -1,6 +1,5 @@
 package com.project.teama_be.domain.post.service.query;
 
-import com.project.teama_be.domain.location.entity.QLocation;
 import com.project.teama_be.domain.member.entity.Member;
 import com.project.teama_be.domain.member.repository.MemberRepository;
 import com.project.teama_be.domain.post.dto.response.PostResDTO;

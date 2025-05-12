@@ -2,7 +2,6 @@ package com.project.teama_be.domain.post.dto.response;
 
 import com.project.teama_be.domain.post.enums.ReactionType;
 import lombok.Builder;
-import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 import java.util.List;

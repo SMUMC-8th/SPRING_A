@@ -1,28 +1,22 @@
 package com.project.teama_be.domain.post.repository;
 
 
-import com.project.teama_be.domain.location.entity.QLocation;
-import com.project.teama_be.domain.member.entity.Member;
 import com.project.teama_be.domain.member.repository.MemberRepository;
 import com.project.teama_be.domain.post.converter.PostConverter;
 import com.project.teama_be.domain.post.dto.response.PostResDTO;
 import com.project.teama_be.domain.post.entity.*;
 import com.project.teama_be.domain.post.exception.PostException;
 import com.project.teama_be.domain.post.exception.code.PostErrorCode;
-import com.project.teama_be.global.security.exception.SecurityErrorCode;
 import com.querydsl.core.group.GroupBy;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Repository;
 
-import java.util.*;
-
-import static com.querydsl.jpa.JPAExpressions.select;
-import static com.querydsl.jpa.JPAExpressions.selectDistinct;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 
 @Repository
 @RequiredArgsConstructor
