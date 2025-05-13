@@ -2,17 +2,12 @@ package com.project.teama_be.domain.member.controller;
 
 import com.project.teama_be.domain.member.dto.request.MemberReqDTO;
 import com.project.teama_be.domain.member.dto.response.MemberResDTO;
+import com.project.teama_be.domain.member.service.AuthCommandService;
 import com.project.teama_be.domain.member.service.JwtTokenService;
 import com.project.teama_be.global.apiPayload.CustomResponse;
-import com.project.teama_be.global.apiPayload.exception.CustomException;
-import com.project.teama_be.global.security.annotation.CurrentUser;
 import com.project.teama_be.global.security.dto.JwtDTO;
-import com.project.teama_be.global.security.userdetails.AuthUser;
-import com.project.teama_be.global.security.util.JwtUtil;
-import com.project.teama_be.global.utils.HttpResponseUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -31,13 +26,14 @@ import java.io.IOException;
 public class AuthController {
 
     private final JwtTokenService jwtTokenService;
+    private final AuthCommandService authCommandService;
 
     @PostMapping(value = "/signup", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    @Operation(summary = "회원가입 API by 김지명 (개발중)", description = "사용자 정보와 프로필 이미지를 함께 받아 회원가입을 처리합니다.")
+    @Operation(summary = "회원가입 API by 김지명", description = "사용자 정보와 프로필 이미지를 함께 받아 회원가입을 처리합니다.")
     public CustomResponse<MemberResDTO.SignUp> signUp(@RequestPart("SignUp") @Valid MemberReqDTO.SignUp reqDTO,
                                                       @RequestPart("profileImage") MultipartFile profileImage) {
-
-        return CustomResponse.onSuccess(null);
+        MemberResDTO.SignUp resDTO = authCommandService.signUp(reqDTO, profileImage);
+        return CustomResponse.onSuccess(HttpStatus.CREATED, resDTO);
     }
 
     // Swagger용 컨트롤러
