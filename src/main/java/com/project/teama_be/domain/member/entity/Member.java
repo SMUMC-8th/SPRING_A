@@ -34,7 +34,7 @@ public class Member extends BaseEntity {
     @Column(name = "profile_url")
     private String profileUrl;
 
-    @Column(name = "isAgree", nullable = false)
+    @Column(name = "is_agree", nullable = false)
     private boolean isAgree;
 
     @Enumerated(EnumType.STRING)
