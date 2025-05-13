@@ -132,17 +132,21 @@ public class PostCommandService {
         // 현재 반응 조회
         log.info("[ 게시글 좋아요 반영 ] 게시글 좋아요를 반영합니다.");
         PostReaction reaction = postReactionRepository.findByMemberIdAndPostId(member.getId(), postId);
-        // 좋아요 누른 적이 없으면 좋아요 반영
+        // 좋아요 누른 적이 없으면 좋아요 반영 : Dirty Read 문제
         if (reaction == null) {
-            PostReaction result = postReactionRepository.save(PostConverter.toPostReaction(member, post, ReactionType.LIKE));
+            PostReaction result = postReactionRepository.save(
+                    PostConverter.toPostReaction(member, post, ReactionType.LIKE));
+            post.updateLikeCount(post.getLikeCount() + 1);
             return PostConverter.toPostLike(result);
         }
         String reactionType = reaction.getReactionType().name();
         // 현재 좋아요 상태면 취소, 아니면 좋아요 반영
         if (reactionType.equals(ReactionType.LIKE.name())) {
             reaction.updateReactionType(ReactionType.UNLIKE);
+            post.updateLikeCount(post.getLikeCount() - 1);
         } else {
             reaction.updateReactionType(ReactionType.LIKE);
+            post.updateLikeCount(post.getLikeCount() + 1);
         }
         return PostConverter.toPostLike(reaction);
     }
@@ -151,8 +155,8 @@ public class PostCommandService {
     private Member getMember(AuthUser user) {
         log.info("[ 유저 정보 생성 ] 유저 정보를 생성합니다.");
 //        String uid = user.getUid();
-        String uid = "test";
-        return memberRepository.findByUid(uid).orElseThrow(()->
+        String LoginId = "test";
+        return memberRepository.findByLoginId(LoginId).orElseThrow(()->
                 new PostException(PostErrorCode.USER_NOT_FOUND));
     }
 }
