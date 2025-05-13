@@ -8,8 +8,10 @@ import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.HandlerMethodValidationException;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -33,6 +35,42 @@ public class GlobalExceptionHandler {
                 validationErrorCode.getCode(),
                 validationErrorCode.getMessage(),
                 errors
+        );
+        // 에러 코드, 메시지와 함께 errors를 반환
+        return ResponseEntity.status(validationErrorCode.getHttpStatus()).body(errorResponse);
+    }
+
+    // 쿼리 파라미터 검증
+    @ExceptionHandler(HandlerMethodValidationException.class)
+    protected ResponseEntity<CustomResponse<Map<String, String>>> handleHandlerMethodValidationException(
+            HandlerMethodValidationException ex
+    ) {
+        Map<String, String> errors = new HashMap<>();
+        ex.getParameterValidationResults().forEach(result ->
+                errors.put(result.getMethodParameter().getParameterName(), result.getResolvableErrors().get(0).getDefaultMessage()));
+        BaseErrorCode validationErrorCode = GeneralErrorCode.VALIDATION_FAILED; // BaseErrorCode로 통일
+        CustomResponse<Map<String, String>> errorResponse = CustomResponse.onFailure(
+                validationErrorCode.getCode(),
+                validationErrorCode.getMessage(),
+                errors
+        );
+        // 에러 코드, 메시지와 함께 errors를 반환
+        return ResponseEntity.status(validationErrorCode.getHttpStatus()).body(errorResponse);
+
+    }
+
+    // 요청 파라미터가 없을 때 발생하는 예외 처리
+    @ExceptionHandler(MissingServletRequestParameterException.class)
+    protected ResponseEntity<CustomResponse<String>> handleMissingServletRequestParameterException(
+            MissingServletRequestParameterException ex
+    ) {
+
+        log.warn("[ MissingRequestParameterException ]: 필요한 파라미터가 요청에 없습니다.");
+        BaseErrorCode validationErrorCode = GeneralErrorCode.VALIDATION_FAILED; // BaseErrorCode로 통일
+        CustomResponse<String> errorResponse = CustomResponse.onFailure(
+                validationErrorCode.getCode(),
+                validationErrorCode.getMessage(),
+                ex.getParameterName()+" 파라미터가 없습니다."
         );
         // 에러 코드, 메시지와 함께 errors를 반환
         return ResponseEntity.status(validationErrorCode.getHttpStatus()).body(errorResponse);
