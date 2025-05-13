@@ -183,4 +183,32 @@ public class JwtUtil {
                 createJwtRefreshToken(userDetails)
         );
     }
+
+    public long getRefreshTokenRemainingTime(String refreshToken) {
+        log.info("[ JwtUtil ] 리프레시 토큰의 남은 만료 시간을 계산합니다.");
+        try {
+            // 토큰에서 만료 시간(expiration) 클레임 추출
+            Date expiration = Jwts.parser()
+                    .verifyWith(secretKey)
+                    .build()
+                    .parseSignedClaims(refreshToken)
+                    .getPayload()
+                    .getExpiration();
+
+            // 현재 시간과의 차이 계산 (밀리초)
+            long now = System.currentTimeMillis();
+            long expirationTime = expiration.getTime();
+            long remainingTimeMs = expirationTime - now;
+
+            // 초 단위로 변환하여 반환 (음수인 경우 0 반환)
+            return Math.max(0, remainingTimeMs / 1000);
+
+        } catch (ExpiredJwtException e) {
+            log.info("[ JwtUtil ] 이미 만료된 리프레시 토큰입니다.");
+            return 0;
+        } catch (SecurityException | MalformedJwtException | UnsupportedJwtException | IllegalArgumentException e) {
+            log.error("[ JwtUtil ] 리프레시 토큰 검증 중 오류 발생: {}", e.getMessage());
+            return 0;
+        }
+    }
 }
