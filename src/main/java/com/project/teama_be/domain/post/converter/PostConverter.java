@@ -14,7 +14,7 @@ import java.util.List;
 public class PostConverter {
 
     // 게시글 업로드 : Location, Member, ReqDTO -> Post
-    public static Post of(
+    public static Post toPost(
             Location location,
             Member member,
             PostReqDTO.PostUpload postUpload
@@ -28,7 +28,7 @@ public class PostConverter {
     }
 
     // 게시글 이미지 저장 : Post, Url -> PostImage
-    public static PostImage of(Post post, String url){
+    public static PostImage toPostImage(Post post, String url){
         return PostImage.builder()
                 .post(post)
                 .imageUrl(url)
@@ -36,7 +36,7 @@ public class PostConverter {
     }
 
     // 게시글 업로드 완료 : Post -> ResDTO
-    public static PostResDTO.PostUpload of(Post post){
+    public static PostResDTO.PostUpload toPostUpload(Post post){
         return PostResDTO.PostUpload.builder()
                 .postId(post.getId())
                 .placeId(post.getLocation().getId())
@@ -45,7 +45,7 @@ public class PostConverter {
     }
 
     // 게시글 좋아요 : User, Post, ReactionType -> PostReaction
-    public static PostReaction of(
+    public static PostReaction toPostReaction(
             Member member,
             Post post,
             ReactionType reactionType
@@ -58,7 +58,7 @@ public class PostConverter {
     }
 
     // 게시글 좋아요 완료 : User, Post, ReactionType -> ResDTO
-    public static PostResDTO.PostLike of(
+    public static PostResDTO.PostLike toPostLike(
             PostReaction postReaction
     ){
         return PostResDTO.PostLike.builder()
@@ -69,7 +69,7 @@ public class PostConverter {
     }
 
     // postImageUrl, postId, placeName, placeId -> SimplePost
-    public static PostResDTO.SimplePost of(
+    public static PostResDTO.SimplePost toSimplePost(
             String postImageUrl,
             Long postId,
             String placeName,
@@ -84,7 +84,7 @@ public class PostConverter {
     }
 
     // Info -> FullPost
-    public static PostResDTO.FullPost of(
+    public static PostResDTO.FullPost toFullPost(
             Post post,
             Member member,
             List<String> imageList,
@@ -107,14 +107,14 @@ public class PostConverter {
     }
 
     // 홈화면용 게시글 조회: List<SimplePost> -> HomePost
-    public static PostResDTO.HomePost of(List<PostResDTO.SimplePost> posts){
+    public static PostResDTO.HomePost toHomePost(List<PostResDTO.SimplePost> posts){
         return PostResDTO.HomePost.builder()
                 .simplePost(posts)
                 .build();
     }
 
     // 커서 기반 게시글 조회 : List<T> -> PageablePost
-    public static <T> PostResDTO.PageablePost<T> of(
+    public static <T> PostResDTO.PageablePost<T> toPageablePost(
             List<T> posts,
             Boolean hasNext,
             int pageSize,

@@ -88,7 +88,7 @@ public class PostCommandService {
 
         // 게시글 생성
         log.info("[ 게시글 정보 생성 ] 게시글 정보를 생성합니다.");
-        Post post = PostConverter.of(location, member, postUpload);
+        Post post = PostConverter.toPost(location, member, postUpload);
         log.info("[ 게시글 정보 저장 ] 게시글 정보를 저장합니다.");
         postRepository.save(post);
 
@@ -108,11 +108,11 @@ public class PostCommandService {
         List<String> url = s3Util.uploadFile(image, "/post/");
         log.info("[ 사진 <-> 게시글 연동 저장 ] 사진 <-> 게시글 연동을 저장합니다.");
         for (String s : url) {
-            postImageRepository.save(PostConverter.of(post, s));
+            postImageRepository.save(PostConverter.toPostImage(post, s));
         }
 
         log.info("[ 게시글 업로드 완료 ] 게시글 업로드 완료했습니다.");
-        return PostConverter.of(post);
+        return PostConverter.toPostUpload(post);
     }
 
     // 게시글 좋아요
@@ -134,8 +134,8 @@ public class PostCommandService {
         PostReaction reaction = postReactionRepository.findByMemberIdAndPostId(member.getId(), postId);
         // 좋아요 누른 적이 없으면 좋아요 반영
         if (reaction == null) {
-            PostReaction result = postReactionRepository.save(PostConverter.of(member, post, ReactionType.LIKE));
-            return PostConverter.of(result);
+            PostReaction result = postReactionRepository.save(PostConverter.toPostReaction(member, post, ReactionType.LIKE));
+            return PostConverter.toPostLike(result);
         }
         String reactionType = reaction.getReactionType().name();
         // 현재 좋아요 상태면 취소, 아니면 좋아요 반영
@@ -144,7 +144,7 @@ public class PostCommandService {
         } else {
             reaction.updateReactionType(ReactionType.LIKE);
         }
-        return PostConverter.of(reaction);
+        return PostConverter.toPostLike(reaction);
     }
 
     // 유저 정보 생성 : 임시로 예외처리
