@@ -109,7 +109,7 @@ public class PostQueryService {
 
 //        // 로그인한 유저 정보 조회
 //        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        Member auth = memberRepository.findByUid("test").orElseThrow(()->
+        Member auth = memberRepository.findByLoginId("test").orElseThrow(()->
                 new PostException(PostErrorCode.USER_NOT_FOUND));
 
         // memberId 조회 : 임시로 예외처리
@@ -117,7 +117,7 @@ public class PostQueryService {
                 new PostException(PostErrorCode.USER_NOT_FOUND));
 
         // 현재 유저와 맞는지 대조
-        if (!member.getUid().equals(auth.getUid())) {
+        if (!member.getLoginId().equals(auth.getLoginId())) {
             throw new PostException(SecurityErrorCode.FORBIDDEN);
         }
 
