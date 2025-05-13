@@ -12,6 +12,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -45,7 +46,7 @@ public class AuthController {
 
     // Swagger용 컨트롤러
     @PostMapping("/logout")
-    @Operation(summary = "로그아웃 API by 김지명 (개발중)", description = "현재 로그인된 사용자의 토큰을 무효화하고 로그아웃 처리합니다.")
+    @Operation(summary = "로그아웃 API by 김지명", description = "현재 로그인된 사용자의 토큰을 무효화하고 로그아웃 처리합니다.")
     public CustomResponse<String> logout() {return CustomResponse.onSuccess("로그아웃이 완료되었습니다.");}
 
     @PostMapping("/refresh")

@@ -30,21 +30,26 @@ public class Post extends BaseEntity {
     private String content;
 
     @Column(name = "like_count")
+    @Builder.Default
     private Long likeCount = 0L;
 
     @Column(name = "unlike")
+    @Builder.Default
     private Long unlikeCount = 0L;
 
     @Column(name = "is_private", nullable = false)
     private Boolean isPrivate;
 
     @Column(name = "disable_comment")
+    @Builder.Default
     private Boolean disableComment = false;
 
     @Column(name = "hide_like")
+    @Builder.Default
     private Boolean hideLike = false;
 
     @Column(name = "hide_share")
+    @Builder.Default
     private Boolean hideShare = false;
 
     // update
