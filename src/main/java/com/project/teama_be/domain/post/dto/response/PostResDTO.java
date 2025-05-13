@@ -43,12 +43,18 @@ public class PostResDTO {
             LocalDateTime viewedAt
     ) {}
 
+    // 홈화면에 표시할 게시글
+    @Builder
+    public record HomePost(
+            List<SimplePost> simplePost
+    ) {}
+
     // 커서 기반 페이지네이션 틀
     @Builder
     public record PageablePost<T>(
             List<T> post,
             Boolean hasNext,
-            Long pageSize,
+            int pageSize,
             Long cursor
     ) {}
 

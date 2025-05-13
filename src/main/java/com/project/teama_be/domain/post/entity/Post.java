@@ -30,20 +30,20 @@ public class Post extends BaseEntity {
     private String content;
 
     @Column(name = "like_count", nullable = false)
-    private int likeCount;
+    private Long likeCount;
 
     @Column(name = "unlike", nullable = false)
-    private int unlikeCount;
+    private Long unlikeCount;
 
     @Column(name = "is_private", nullable = false)
-    private boolean isPrivate;
+    private Boolean isPrivate;
 
     @Column(name = "disable_comment", nullable = false)
-    private boolean disableComment;
+    private Boolean disableComment;
 
     @Column(name = "hide_like", nullable = false)
-    private boolean hideLike;
+    private Boolean hideLike;
 
     @Column(name = "hide_share", nullable = false)
-    private boolean hideShare;
+    private Boolean hideShare;
 }

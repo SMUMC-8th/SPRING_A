@@ -29,4 +29,9 @@ public class PostReaction extends BaseEntity {
     @Column(name = "reaction_type", nullable = false)
     @Enumerated(EnumType.STRING)
     private ReactionType reactionType;
+
+    // Update
+    public void updateReactionType(ReactionType reactionType) {
+        this.reactionType = reactionType;
+    }
 }

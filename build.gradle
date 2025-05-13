@@ -54,6 +54,21 @@ dependencies {
     // Redis
     implementation 'org.springframework.boot:spring-boot-starter-data-redis'
     implementation 'org.springframework.boot:spring-boot-starter-cache'
+
+    // AWS (S3)
+    implementation platform('io.awspring.cloud:spring-cloud-aws-dependencies:3.3.0')
+    implementation 'io.awspring.cloud:spring-cloud-aws-starter'
+    implementation 'io.awspring.cloud:spring-cloud-aws-starter-s3'
+
+    // Validation
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+
+    // QueryDSL : OpenFeign
+    implementation "io.github.openfeign.querydsl:querydsl-jpa:6.1"
+    implementation "io.github.openfeign.querydsl:querydsl-core:6.1"
+    annotationProcessor "io.github.openfeign.querydsl:querydsl-apt:6.1:jpa"
+    annotationProcessor "jakarta.persistence:jakarta.persistence-api"
+    annotationProcessor "jakarta.annotation:jakarta.annotation-api"
 }
 
 jar{
@@ -62,4 +77,22 @@ jar{
 
 tasks.named('test') {
     useJUnitPlatform()
+}
+
+// QueryDSL 관련 설정
+def querydslDir = layout.buildDirectory.dir("generated/querydsl").get().asFile
+
+// 소스 세트에 생성 경로 추가 (구체적인 경로 지정)
+sourceSets {
+    main.java.srcDirs += [ querydslDir ]
+}
+
+// 컴파일 시 생성 경로 지정
+tasks.withType(JavaCompile).configureEach {
+    options.generatedSourceOutputDirectory.set(querydslDir)
+}
+
+// clean 태스크에 생성 폴더 삭제 로직 추가
+clean.doLast {
+    file(querydslDir).deleteDir()
 }
