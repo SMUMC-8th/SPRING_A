@@ -1,7 +1,6 @@
 package com.project.teama_be.domain.post.repository;
 
 import com.project.teama_be.domain.post.dto.response.CommentResDTO;
-import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Predicate;
 
 public interface CommentQueryDsl {

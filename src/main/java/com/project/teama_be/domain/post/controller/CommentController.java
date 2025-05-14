@@ -2,11 +2,9 @@ package com.project.teama_be.domain.post.controller;
 
 import com.project.teama_be.domain.post.dto.request.CommentReqDTO;
 import com.project.teama_be.domain.post.dto.response.CommentResDTO;
-import com.project.teama_be.domain.post.repository.PostImageRepository;
 import com.project.teama_be.domain.post.service.command.CommentCommandService;
 import com.project.teama_be.domain.post.service.query.CommentQueryService;
 import com.project.teama_be.global.apiPayload.CustomResponse;
-import com.project.teama_be.global.aws.util.S3Util;
 import com.project.teama_be.global.security.annotation.CurrentUser;
 import com.project.teama_be.global.security.userdetails.AuthUser;
 import io.swagger.v3.oas.annotations.Operation;

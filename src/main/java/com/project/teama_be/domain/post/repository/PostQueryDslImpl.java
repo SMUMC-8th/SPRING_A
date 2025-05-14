@@ -1,11 +1,9 @@
 package com.project.teama_be.domain.post.repository;
 
 
-import com.project.teama_be.domain.member.repository.MemberRepository;
 import com.project.teama_be.domain.post.converter.PostConverter;
 import com.project.teama_be.domain.post.dto.response.PostResDTO;
 import com.project.teama_be.domain.post.entity.*;
-import com.project.teama_be.domain.post.enums.ReactionType;
 import com.project.teama_be.domain.post.exception.PostException;
 import com.project.teama_be.domain.post.exception.code.PostErrorCode;
 import com.querydsl.core.group.GroupBy;
