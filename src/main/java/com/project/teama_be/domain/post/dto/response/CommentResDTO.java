@@ -42,7 +42,7 @@ public class CommentResDTO {
     public record PageableComment<T>(
             List<T> comment,
             Boolean hasNext,
-            Long pageSize,
+            int pageSize,
             Long cursor
     ) {}
 

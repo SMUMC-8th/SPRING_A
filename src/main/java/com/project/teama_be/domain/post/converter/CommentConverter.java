@@ -7,6 +7,8 @@ import com.project.teama_be.domain.post.entity.CommentReaction;
 import com.project.teama_be.domain.post.entity.Post;
 import com.project.teama_be.domain.post.enums.ReactionType;
 
+import java.util.List;
+
 public class CommentConverter {
 
     // 댓글 작성
@@ -66,6 +68,21 @@ public class CommentConverter {
                 .commentId(commentReaction.getComment().getId())
                 .reactionType(commentReaction.getReactionType())
                 .updatedAt(commentReaction.getCreatedAt())
+                .build();
+    }
+
+    // List<T> -> PageableComment
+    public static <T> CommentResDTO.PageableComment<T> toPageableComment(
+            List<T> comments,
+            Boolean hasNext,
+            int pageSize,
+            Long cursor
+    ){
+        return CommentResDTO.PageableComment.<T>builder()
+                .comment(comments)
+                .hasNext(hasNext)
+                .pageSize(pageSize)
+                .cursor(cursor)
                 .build();
     }
 }
