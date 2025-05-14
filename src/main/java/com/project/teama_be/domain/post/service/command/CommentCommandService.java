@@ -6,11 +6,14 @@ import com.project.teama_be.domain.member.repository.MemberRepository;
 import com.project.teama_be.domain.post.converter.CommentConverter;
 import com.project.teama_be.domain.post.dto.response.CommentResDTO;
 import com.project.teama_be.domain.post.entity.Comment;
+import com.project.teama_be.domain.post.entity.CommentReaction;
 import com.project.teama_be.domain.post.entity.Post;
+import com.project.teama_be.domain.post.enums.ReactionType;
 import com.project.teama_be.domain.post.exception.CommentException;
 import com.project.teama_be.domain.post.exception.PostException;
 import com.project.teama_be.domain.post.exception.code.CommentErrorCode;
 import com.project.teama_be.domain.post.exception.code.PostErrorCode;
+import com.project.teama_be.domain.post.repository.CommentReactionRepository;
 import com.project.teama_be.domain.post.repository.CommentRepository;
 import com.project.teama_be.domain.post.repository.PostRepository;
 import com.project.teama_be.global.security.userdetails.AuthUser;
@@ -18,6 +21,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -25,6 +29,7 @@ import org.springframework.stereotype.Service;
 public class CommentCommandService {
 
     private final CommentRepository commentRepository;
+    private final CommentReactionRepository commentReactionRepository;
     private final MemberRepository memberRepository;
     private final PostRepository postRepository;
 
@@ -74,6 +79,48 @@ public class CommentCommandService {
 
         return CommentConverter.toCommentUpload(comment);
     }
+
+    // 댓글 좋아요
+    @Transactional
+    public CommentResDTO.CommentLike likeComment(
+            Long commentId,
+            AuthUser user
+    ) {
+        // 유저 정보
+        Member member = getMember();
+
+        // 댓글 좋아요
+        log.info("[ 댓글 좋아요 ] 댓글 좋아요를 반영합니다.");
+        Comment comment = commentRepository.findById(commentId).orElseThrow(()->
+                new CommentException(CommentErrorCode.NOT_FOUND));
+
+        // 좋아요 여부 조회
+        CommentReaction commentReaction= commentReactionRepository
+                .findByCommentId(commentId).orElse(null);
+
+        // 좋아요 누른 적이 없으면 좋아요 반영
+        if (commentReaction == null) {
+            CommentReaction result = commentReactionRepository.save(
+                    CommentConverter.toCommentReaction(
+                            comment, member, ReactionType.LIKE
+                    )
+            );
+            // 댓글 좋아요 수 ++
+            comment.updateLikeCount(comment.getLikeCount() + 1);
+            return CommentConverter.toCommentLike(result);
+        }
+        if (commentReaction.getReactionType().equals(ReactionType.LIKE)) {
+            commentReaction.updateReactionType(ReactionType.UNLIKE);
+            // 댓글 좋아요 수 --
+            comment.updateLikeCount(comment.getLikeCount() - 1);
+        } else {
+            commentReaction.updateReactionType(ReactionType.LIKE);
+            // 댓글 좋아요 수 ++
+            comment.updateLikeCount(comment.getLikeCount() + 1);
+        }
+        return CommentConverter.toCommentLike(commentReaction);
+    }
+
 
     // 유저 정보 : 임시
     private Member getMember() {

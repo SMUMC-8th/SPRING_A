@@ -3,7 +3,9 @@ package com.project.teama_be.domain.post.converter;
 import com.project.teama_be.domain.member.entity.Member;
 import com.project.teama_be.domain.post.dto.response.CommentResDTO;
 import com.project.teama_be.domain.post.entity.Comment;
+import com.project.teama_be.domain.post.entity.CommentReaction;
 import com.project.teama_be.domain.post.entity.Post;
+import com.project.teama_be.domain.post.enums.ReactionType;
 
 public class CommentConverter {
 
@@ -40,6 +42,30 @@ public class CommentConverter {
         return CommentResDTO.CommentUpload.builder()
                 .commentId(comment.getId())
                 .createdAt(comment.getCreatedAt())
+                .build();
+    }
+
+    // comment, member, reactionType -> CommentReaction
+    public static CommentReaction toCommentReaction(
+            Comment comment,
+            Member member,
+            ReactionType reactionType
+    ){
+        return CommentReaction.builder()
+                .comment(comment)
+                .member(member)
+                .reactionType(reactionType)
+                .build();
+    }
+
+    // 댓글 좋아요
+    public static CommentResDTO.CommentLike toCommentLike(
+            CommentReaction commentReaction
+    ){
+        return CommentResDTO.CommentLike.builder()
+                .commentId(commentReaction.getComment().getId())
+                .reactionType(commentReaction.getReactionType())
+                .updatedAt(commentReaction.getCreatedAt())
                 .build();
     }
 }

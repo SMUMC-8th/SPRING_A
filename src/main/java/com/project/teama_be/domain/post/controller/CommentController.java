@@ -113,13 +113,14 @@ public class CommentController {
     // 댓글 좋아요
     @PostMapping("/comments/{commentId}/like")
     @Operation(
-            summary = "댓글 좋아요 API by 김주헌 (개발중)",
+            summary = "댓글 좋아요 API by 김주헌",
             description = "댓글에 좋아요를 표시합니다."
     )
     public CustomResponse<CommentResDTO.CommentLike> likeComment(
-            @PathVariable Long commentId
+            @PathVariable Long commentId,
+            @CurrentUser AuthUser user
     ) {
-        return CustomResponse.onSuccess(null);
+        return CustomResponse.onSuccess(commentCommandService.likeComment(commentId, user));
     }
 
     // 댓글 수정 (미정 기능)

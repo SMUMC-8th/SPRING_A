@@ -35,4 +35,9 @@ public class Comment extends BaseEntity {
     @Column(name = "parent_id")
     @Builder.Default
     private Long parentId = 0L;
+
+    // update
+    public void updateLikeCount(Long likeCount) {
+        this.likeCount = likeCount;
+    }
 }
