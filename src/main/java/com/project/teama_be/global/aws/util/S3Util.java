@@ -8,6 +8,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
 import software.amazon.awssdk.services.s3.model.GetUrlRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.services.s3.model.S3Exception;
@@ -29,6 +30,8 @@ public class S3Util {
 
     @Value("${spring.servlet.multipart.max-file-size}")
     private String maxFileSize;
+
+    private static final String PREFIX = "https://s3.ap-northeast-2.amazonaws.com/api-smp.shop";
 
     /** 사진 S3 업로드
      *
@@ -111,6 +114,31 @@ public class S3Util {
         } catch (S3Exception e) {
             log.error("[ 사진 조회 ] 단일 사진 조회 중 S3Exception 발생: {}", e.getMessage());
             throw new IllegalArgumentException("파일 URL을 가져오는데 실패하였습니다.");
+        }
+    }
+
+    /** 파일 삭제 로직 :
+     * S3에 저장된 파일을 삭제합니다.
+     * @param key DB에 저장되어 있는 URL ex) https://s3.~~/post/~~.png
+     * @return 삭제한 URL ex) https://s3.~~/post/~~.png
+     */
+    public String deleteFile(String key) {
+        log.info("[ 사진 삭제 ] 단일 사진 삭제 시작");
+        try {
+            // 접두사 제거
+            key = key.replace(PREFIX, "");
+
+            // URL 요청
+            s3Client.deleteObject(
+                    DeleteObjectRequest.builder()
+                            .bucket(bucket)
+                            .key(key)
+                            .build()
+            );
+            return PREFIX+key;
+        } catch (S3Exception e) {
+            log.error("[ 사진 삭제 ] 단일 사진 삭제 중 S3Exception 발생: {}", e.getMessage());
+            throw new IllegalArgumentException("파일 삭제를 실패하였습니다.");
         }
     }
 
