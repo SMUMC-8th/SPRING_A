@@ -4,11 +4,14 @@ import com.project.teama_be.domain.member.entity.Member;
 import com.project.teama_be.domain.member.repository.MemberRepository;
 import com.project.teama_be.domain.post.dto.response.PostResDTO;
 import com.project.teama_be.domain.post.entity.QPost;
+import com.project.teama_be.domain.post.entity.QPostReaction;
 import com.project.teama_be.domain.post.entity.QPostTag;
+import com.project.teama_be.domain.post.enums.ReactionType;
 import com.project.teama_be.domain.post.exception.PostException;
 import com.project.teama_be.domain.post.exception.code.PostErrorCode;
 import com.project.teama_be.domain.post.repository.PostRepository;
 import com.project.teama_be.global.security.exception.SecurityErrorCode;
+import com.project.teama_be.global.security.userdetails.AuthUser;
 import com.querydsl.core.BooleanBuilder;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -100,31 +103,63 @@ public class PostQueryService {
     // 내가 작성한 게시글 조회 (마이페이지)
     public PostResDTO.PageablePost<PostResDTO.SimplePost> getMyPosts(
             Long memberId,
+            AuthUser user,
             Long cursor,
             int size
     ) {
+
+        // 로그인 유저와 memberID가 같은지 검증
+        validateMember(user, memberId);
+
         log.info("[ 내가 작성한 게시글 조회 ] 내가 작성한 게시글을 조회합니다.");
         BooleanBuilder builder = new BooleanBuilder();
         QPost post = QPost.post;
-
-//        // 로그인한 유저 정보 조회
-//        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        Member auth = memberRepository.findByLoginId("test").orElseThrow(()->
-                new PostException(PostErrorCode.USER_NOT_FOUND));
-
-        // memberId 조회 : 임시로 예외처리
-        Member member = memberRepository.findById(memberId).orElseThrow(()->
-                new PostException(PostErrorCode.USER_NOT_FOUND));
-
-        // 현재 유저와 맞는지 대조
-        if (!member.getLoginId().equals(auth.getLoginId())) {
-            throw new PostException(SecurityErrorCode.FORBIDDEN);
-        }
 
         builder.and(post.member.id.eq(memberId));
         if (cursor != -1) {
             builder.and(post.id.loe(cursor));
         }
-        return postRepository.getMyPosts(memberId, builder, size);
+        return postRepository.getMyPosts(builder, size);
+    }
+
+    // 내가 좋아요 누른 게시글 조회
+    public PostResDTO.PageablePost<PostResDTO.SimplePost> getMyLikePost(
+            Long memberId,
+            AuthUser user,
+            Long cursor,
+            int size
+    ){
+        // 로그인 유저와 memberID가 같은지 검증
+        validateMember(user, memberId);
+
+        log.info("[ 내가 좋아요 누른 게시글 조회 ] 내가 좋아요 누른 게시글을 조회합니다.");
+        BooleanBuilder builder = new BooleanBuilder();
+        QPost post = QPost.post;
+        QPostReaction postReaction = QPostReaction.postReaction;
+
+        builder.and(postReaction.member.id.eq(memberId))
+                .and(postReaction.reactionType.eq(ReactionType.LIKE));
+        if (cursor != -1) {
+            builder.and(post.id.loe(cursor));
+        }
+        return postRepository.getMyLikePost(builder, size);
+    }
+
+    // 유저 정보 조회 : 임시
+    private Member getMember() {
+        return memberRepository.findByLoginId("another_test").orElseThrow(()->
+                new PostException(PostErrorCode.USER_NOT_FOUND));
+    }
+
+     // 로그인 유저 <-> memberID 대조
+    private void validateMember(AuthUser user, Long memberId) {
+
+        // 임시
+        Member auth = getMember();
+
+        // 현재 유저와 맞는지 대조
+        if (!auth.getId().equals(memberId)) {
+            throw new PostException(SecurityErrorCode.FORBIDDEN);
+        }
     }
 }

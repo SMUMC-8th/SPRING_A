@@ -5,6 +5,7 @@ import com.project.teama_be.domain.member.repository.MemberRepository;
 import com.project.teama_be.domain.post.converter.PostConverter;
 import com.project.teama_be.domain.post.dto.response.PostResDTO;
 import com.project.teama_be.domain.post.entity.*;
+import com.project.teama_be.domain.post.enums.ReactionType;
 import com.project.teama_be.domain.post.exception.PostException;
 import com.project.teama_be.domain.post.exception.code.PostErrorCode;
 import com.querydsl.core.group.GroupBy;
@@ -89,20 +90,17 @@ public class PostQueryDslImpl implements PostQueryDsl{
         if (postList.isEmpty()) {
             throw new PostException(PostErrorCode.NOT_FOUND_KEYWORD);
         }
-
-        return findPostAttribute(postList, size);
+        return findFullPostAttribute(postList, size);
     }
 
     // 내가 작성한 게시글 조회
     @Override
     public PostResDTO.PageablePost<PostResDTO.SimplePost> getMyPosts(
-            Long memberId,
             Predicate subQuery,
             int size
     ) {
         // 조회할 객체 선언
         QPost post = QPost.post;
-        QPostImage postImage = QPostImage.postImage;
 
         // 조건에 맞는 게시글 모두 조회
         List<Post> postList = jpaQueryFactory
@@ -115,6 +113,64 @@ public class PostQueryDslImpl implements PostQueryDsl{
         if (postList.isEmpty()) {
             throw new PostException(PostErrorCode.NOT_FOUND);
         }
+        return findSimplePostAttribute(postList, size);
+    }
+
+    // 내가 좋아요 누른 게시글 조회
+    public PostResDTO.PageablePost<PostResDTO.SimplePost> getMyLikePost(
+            Predicate subQuery,
+            int size
+    ){
+        // 조회할 객체 선언
+        QPost post = QPost.post;
+        QPostReaction postReaction = QPostReaction.postReaction;
+
+        // 조건에 맞는 게시글 모두 조회
+        List<Post> postList = jpaQueryFactory
+                .selectFrom(post)
+                .leftJoin(postReaction).on(postReaction.post.id.eq(post.id))
+                .where(subQuery)
+                .orderBy(post.id.desc())
+                .fetch();
+
+        // 결과가 존재하지 않을때
+        if (postList.isEmpty()) {
+            throw new PostException(PostErrorCode.NOT_FOUND);
+        }
+        return findSimplePostAttribute(postList, size);
+    }
+
+    // 가게 게시글 모두 조회
+    @Override
+    public PostResDTO.PageablePost<PostResDTO.FullPost> getPostsByPlaceId(
+            Long placeId,
+            Predicate subQuery,
+            int size
+    ) {
+        // 조회할 객체 선언
+        QPost post = QPost.post;
+
+        // 조건에 맞는 게시글 모두 조회
+        List<Post> postList = jpaQueryFactory
+                .selectFrom(post)
+                .where(subQuery)
+                .orderBy(post.id.desc())
+                .fetch();
+
+        // 결과가 존재하지 않을때
+        if (postList.isEmpty()) {
+            throw new PostException(PostErrorCode.NOT_FOUND);
+        }
+        return findFullPostAttribute(postList, size);
+    }
+
+    // SimplePost 부가 속성들 조회
+    private PostResDTO.PageablePost<PostResDTO.SimplePost> findSimplePostAttribute(
+            List<Post> postList,
+            int size
+    ){
+        // 조회할 객체 선언
+        QPostImage postImage = QPostImage.postImage;
 
         // 커서 지정
         Boolean hasNext = postList.size() > size;
@@ -153,33 +209,8 @@ public class PostQueryDslImpl implements PostQueryDsl{
         return PostConverter.toPageablePost(result, hasNext, pageSize, nextCursor);
     }
 
-    // 가게 게시글 모두 조회
-    @Override
-    public PostResDTO.PageablePost<PostResDTO.FullPost> getPostsByPlaceId(
-            Long placeId,
-            Predicate subQuery,
-            int size
-    ) {
-        // 조회할 객체 선언
-        QPost post = QPost.post;
-
-        // 조건에 맞는 게시글 모두 조회
-        List<Post> postList = jpaQueryFactory
-                .selectFrom(post)
-                .where(subQuery)
-                .orderBy(post.id.desc())
-                .fetch();
-
-        // 결과가 존재하지 않을때
-        if (postList.isEmpty()) {
-            throw new PostException(PostErrorCode.NOT_FOUND);
-        }
-
-        return findPostAttribute(postList, size);
-    }
-
-    // 게시글 부가 속성들 조회
-    private PostResDTO.PageablePost<PostResDTO.FullPost> findPostAttribute(
+    // FullPost 부가 속성들 조회
+    private PostResDTO.PageablePost<PostResDTO.FullPost> findFullPostAttribute(
             List<Post> postList,
             int size
     ){

@@ -7,7 +7,9 @@ import com.project.teama_be.domain.post.converter.CommentConverter;
 import com.project.teama_be.domain.post.dto.response.CommentResDTO;
 import com.project.teama_be.domain.post.entity.Comment;
 import com.project.teama_be.domain.post.entity.Post;
+import com.project.teama_be.domain.post.exception.CommentException;
 import com.project.teama_be.domain.post.exception.PostException;
+import com.project.teama_be.domain.post.exception.code.CommentErrorCode;
 import com.project.teama_be.domain.post.exception.code.PostErrorCode;
 import com.project.teama_be.domain.post.repository.CommentRepository;
 import com.project.teama_be.domain.post.repository.PostRepository;
@@ -37,12 +39,8 @@ public class CommentCommandService {
         Post post = postRepository.findById(postId).orElseThrow(()->
                 new PostException(PostErrorCode.NOT_FOUND));
 
-        // 유저 정보 조회
-//        Member member = memberRepository.findByLoginId(user.getLoginId()).orElseThrow(()->
-//                new UsernameNotFoundException("사용자를 찾을 수 없습니다."));
-        // 임시
-        Member member = memberRepository.findByLoginId("test").orElseThrow(()->
-                new UsernameNotFoundException("사용자를 찾을 수 없습니다."));
+        // 유저 정보
+        Member member = getMember();
 
         // 댓글 저장
         log.info("[ 댓글 작성 ] 댓글 작성을 요청합니다.");
@@ -53,12 +51,26 @@ public class CommentCommandService {
         return CommentConverter.toCommentUpload(comment);
     }
 
-    // 대댓글 업로드
+    // 대댓글 작성
     public CommentResDTO.Reply createReply(
             Long commentId,
             AuthUser user,
             String content
     ) {
+        // 유저 정보
+        Member member = getMember();
+
+        // 게시글 정보
+//        Long postId = commentRepository.findById(commentId).orElseThrow(()->
+//                new CommentException(CommentErrorCode.NOT_FOUND));
+//        Post post = postRepository.findById()
+
         return null;
+    }
+
+    // 유저 정보 : 임시
+    private Member getMember() {
+        return memberRepository.findByLoginId("test").orElseThrow(()->
+                new UsernameNotFoundException("사용자를 찾을 수 없습니다."));
     }
 }

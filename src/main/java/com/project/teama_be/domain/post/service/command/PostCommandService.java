@@ -132,7 +132,7 @@ public class PostCommandService {
         // 현재 반응 조회
         log.info("[ 게시글 좋아요 반영 ] 게시글 좋아요를 반영합니다.");
         PostReaction reaction = postReactionRepository.findByMemberIdAndPostId(member.getId(), postId);
-        // 좋아요 누른 적이 없으면 좋아요 반영 : Dirty Read 문제
+        // 좋아요 누른 적이 없으면 좋아요 반영
         if (reaction == null) {
             PostReaction result = postReactionRepository.save(
                     PostConverter.toPostReaction(member, post, ReactionType.LIKE));
