@@ -101,7 +101,13 @@ public class CommentController {
             @CurrentUser AuthUser user,
             @RequestBody CommentReqDTO.Commenting commentContent
     ) {
-        return CustomResponse.onSuccess(null);
+        return CustomResponse.onSuccess(
+                commentCommandService.createReply(
+                        commentId,
+                        user,
+                        commentContent.content()
+                )
+        );
     }
 
     // 댓글 좋아요

@@ -7,7 +7,7 @@ import com.project.teama_be.domain.post.entity.Post;
 
 public class CommentConverter {
 
-    // postId, memberId, content -> Comment
+    // 댓글 작성
     public static Comment toComment(
             Post post,
             Member member,
@@ -17,6 +17,21 @@ public class CommentConverter {
               .post(post)
               .member(member)
               .content(content)
+              .build();
+    }
+
+    // 대댓글 작성
+    public static Comment toReply(
+            Post post,
+            Member member,
+            String content,
+            Long parentId
+    ){
+      return Comment.builder()
+              .post(post)
+              .member(member)
+              .content(content)
+              .parentId(parentId)
               .build();
     }
 

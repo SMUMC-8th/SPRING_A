@@ -52,7 +52,7 @@ public class CommentCommandService {
     }
 
     // 대댓글 작성
-    public CommentResDTO.Reply createReply(
+    public CommentResDTO.CommentUpload createReply(
             Long commentId,
             AuthUser user,
             String content
@@ -61,11 +61,18 @@ public class CommentCommandService {
         Member member = getMember();
 
         // 게시글 정보
-//        Long postId = commentRepository.findById(commentId).orElseThrow(()->
-//                new CommentException(CommentErrorCode.NOT_FOUND));
-//        Post post = postRepository.findById()
+        Post post = commentRepository.findById(commentId).orElseThrow(()->
+                new CommentException(CommentErrorCode.NOT_FOUND))
+                .getPost();
 
-        return null;
+        // 대댓글 저장
+        log.info("[ 대댓글 작성 ] 대댓글 작성을 시작합니다.");
+
+        Comment comment = commentRepository.save(
+                CommentConverter.toReply(post, member, content, commentId)
+        );
+
+        return CommentConverter.toCommentUpload(comment);
     }
 
     // 유저 정보 : 임시

@@ -29,8 +29,10 @@ public class Comment extends BaseEntity {
     private String content;
 
     @Column(name = "like_count")
+    @Builder.Default
     private Long likeCount = 0L;
 
     @Column(name = "parent_id")
+    @Builder.Default
     private Long parentId = 0L;
 }
