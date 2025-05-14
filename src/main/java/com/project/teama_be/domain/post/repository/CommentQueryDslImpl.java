@@ -78,7 +78,7 @@ public class CommentQueryDslImpl implements CommentQueryDsl{
         // 조회할 객체 선언
         QComment comment = QComment.comment;
 
-        List<CommentResDTO.Reply> replies = jpaQueryFactory
+        List<CommentResDTO.Reply> comments = jpaQueryFactory
                 .from(comment)
                 .where(subQuery)
                 .orderBy(comment.id.asc())
@@ -95,19 +95,60 @@ public class CommentQueryDslImpl implements CommentQueryDsl{
                 ));
 
         // 대댓글이 없는 경우
-        if (replies.isEmpty()) {
+        if (comments.isEmpty()) {
             throw new CommentException(CommentErrorCode.NOT_FOUND_REPLY);
         }
 
         // 페이징 정보 설정
-        boolean hasNext = replies.size() > size;
-        int pageSize = Math.min(replies.size(), size);
-        Long cursor = replies.get(replies.size()-1).commentId();
+        boolean hasNext = comments.size() > size;
+        int pageSize = Math.min(comments.size(), size);
+        Long cursor = comments.get(comments.size()-1).commentId();
 
         // 데이터 정제
-        replies = replies.subList(0, pageSize);
+        comments = comments.subList(0, pageSize);
         return CommentConverter.toPageableComment(
-                replies, hasNext, pageSize, cursor
+                comments, hasNext, pageSize, cursor
+        );
+    }
+
+    // 내가 작성한 댓글 조회
+    @Override
+    public CommentResDTO.PageableComment<CommentResDTO.SimpleComment> getMyComments(
+            Predicate subQuery,
+            int size
+    ) {
+
+        // 조회할 객체 선언
+        QComment comment = QComment.comment;
+
+        List<CommentResDTO.SimpleComment> comments = jpaQueryFactory
+                .from(comment)
+                .where(subQuery)
+                .orderBy(comment.id.desc())
+                .limit(size+1)
+                .transform(GroupBy.groupBy(comment.id).list(
+                        Projections.constructor(
+                                CommentResDTO.SimpleComment.class,
+                                comment.id,
+                                comment.content,
+                                comment.likeCount
+                        )
+                ));
+
+        // 작성한 댓글이 없는 경우
+        if (comments.isEmpty()) {
+            throw new CommentException(CommentErrorCode.NOT_FOUND_MY_COMMENT);
+        }
+
+        // 페이징 정보 설정
+        boolean hasNext = comments.size() > size;
+        int pageSize = Math.min(comments.size(), size);
+        Long cursor = comments.get(comments.size()-1).commentId();
+
+        // 데이터 정제
+        comments = comments.subList(0, pageSize);
+        return CommentConverter.toPageableComment(
+                comments, hasNext, pageSize, cursor
         );
     }
 }

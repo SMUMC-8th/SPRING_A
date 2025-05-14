@@ -65,21 +65,20 @@ public class CommentController {
     // 내가 작성한 댓글 조회
     @GetMapping("/members/{memberId}/comments")
     @Operation(
-            summary = "내가 작성한 댓글 조회 API by 김주헌 (개발중)",
+            summary = "내가 작성한 댓글 조회 API by 김주헌",
             description = "내가 작성한 모든 댓글을 조회합니다. " +
                     "커서 기반 페이지네이션, 최신 순으로 정렬합니다."
     )
     public CustomResponse<CommentResDTO.PageableComment<CommentResDTO.SimpleComment>> getMyComments(
-            @PathVariable
-            Long memberId,
+            @PathVariable Long memberId,
             @CurrentUser
             AuthUser user,
-            @RequestParam(defaultValue = "-1")
+            @RequestParam(defaultValue = "-1") @Min(value = -1, message = "커서는 -1 이상이어야 합니다.")
             Long cursor,
-            @RequestParam(defaultValue = "1")
-            Long size
+            @RequestParam(defaultValue = "1") @Min(value = 1, message = "댓글은 최소 하나 이상 조회해야 합니다.")
+            int size
     ) {
-        return CustomResponse.onSuccess(null);
+        return CustomResponse.onSuccess(commentQueryService.findMyComments(memberId, user, cursor, size));
     }
 
     // POST 요청
@@ -90,7 +89,7 @@ public class CommentController {
             description = "댓글을 작성합니다."
     )
     public CustomResponse<CommentResDTO.CommentUpload> uploadComment(
-            @PathVariable @NotNull(message = "게시글ID는 필수 입력입니다.")
+            @PathVariable
             Long postId,
             @CurrentUser AuthUser user,
             @RequestBody CommentReqDTO.Commenting content
