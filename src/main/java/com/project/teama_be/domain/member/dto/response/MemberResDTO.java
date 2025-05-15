@@ -22,6 +22,7 @@ public class MemberResDTO {
     ) {
     }
 
+    @Builder
     public record memberInfo(
             Long memberId,
             String loginId,

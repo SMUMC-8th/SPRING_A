@@ -33,4 +33,13 @@ public class MemberConverter {
                 .createdAt(member.getCreatedAt())
                 .build();
     }
+
+    public static MemberResDTO.memberInfo toMemberInfoResDTO(Member member) {
+        return MemberResDTO.memberInfo.builder()
+                .memberId(member.getId())
+                .loginId(member.getLoginId())
+                .nickname(member.getNickname())
+                .profileUrl(member.getProfileUrl())
+                .build();
+    }
 }

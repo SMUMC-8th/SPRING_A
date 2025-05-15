@@ -3,6 +3,7 @@ package com.project.teama_be.domain.member.controller;
 import com.project.teama_be.domain.member.dto.request.MemberReqDTO;
 import com.project.teama_be.domain.member.dto.response.MemberResDTO;
 import com.project.teama_be.domain.member.service.command.MemberCommandService;
+import com.project.teama_be.domain.member.service.query.MemberQueryService;
 import com.project.teama_be.global.apiPayload.CustomResponse;
 import com.project.teama_be.global.security.annotation.CurrentUser;
 import com.project.teama_be.global.security.userdetails.AuthUser;
@@ -21,6 +22,7 @@ import org.springframework.web.multipart.MultipartFile;
 public class MemberController {
 
     private final MemberCommandService memberCommandService;
+    private final MemberQueryService memberQueryService;
 
     @PostMapping("/blocks")
     @Operation(summary = "사용자 추천 안함 API by 김지명", description = "사용자 추천 안함 API")
@@ -31,10 +33,10 @@ public class MemberController {
     }
 
     @GetMapping("")
-    @Operation(summary = "회원 정보 조회 API by 김지명 (개발중)", description = "현재 로그인한 회원의 정보를 조회합니다.")
+    @Operation(summary = "회원 정보 조회 API by 김지명", description = "현재 로그인한 회원의 정보를 조회합니다.")
     public CustomResponse<MemberResDTO.memberInfo> getMemberInfo(@CurrentUser AuthUser authUser) {
-
-        return CustomResponse.onSuccess(null);
+        MemberResDTO.memberInfo resDTO = memberQueryService.getMemberInfo(authUser.getLoginId());
+        return CustomResponse.onSuccess(resDTO);
     }
 
     @GetMapping("/check-id")
