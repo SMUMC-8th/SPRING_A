@@ -16,6 +16,7 @@ public class MemberResDTO {
     ) {
     }
 
+    @Builder
     public record blockMember(
             Long targetMemberId
     ) {

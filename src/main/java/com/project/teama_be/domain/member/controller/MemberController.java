@@ -2,6 +2,7 @@ package com.project.teama_be.domain.member.controller;
 
 import com.project.teama_be.domain.member.dto.request.MemberReqDTO;
 import com.project.teama_be.domain.member.dto.response.MemberResDTO;
+import com.project.teama_be.domain.member.service.command.MemberCommandService;
 import com.project.teama_be.global.apiPayload.CustomResponse;
 import com.project.teama_be.global.security.annotation.CurrentUser;
 import com.project.teama_be.global.security.userdetails.AuthUser;
@@ -19,12 +20,14 @@ import org.springframework.web.multipart.MultipartFile;
 @Tag(name = "사용자 관련 API", description = "사용자 관련 API입니다.")
 public class MemberController {
 
+    private final MemberCommandService memberCommandService;
+
     @PostMapping("/blocks")
-    @Operation(summary = "사용자 추천 안함 API by 김지명 (개발중)", description = "사용자 추천 안함 API")
+    @Operation(summary = "사용자 추천 안함 API by 김지명", description = "사용자 추천 안함 API")
     public CustomResponse<MemberResDTO.blockMember> blockMember(@CurrentUser AuthUser authUser,
                                                                 @RequestBody MemberReqDTO.blockMember reqDTO) {
-
-        return CustomResponse.onSuccess(null);
+        MemberResDTO.blockMember resDTO = memberCommandService.blockMember(authUser.getLoginId(), reqDTO);
+        return CustomResponse.onSuccess(resDTO);
     }
 
     @GetMapping("")
