@@ -1,6 +1,6 @@
 package com.project.teama_be.global.security.handler;
 
-import com.project.teama_be.domain.member.service.JwtTokenService;
+import com.project.teama_be.domain.member.service.command.JwtTokenService;
 import com.project.teama_be.global.security.util.JwtUtil;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;

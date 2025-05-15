@@ -1,4 +1,4 @@
-package com.project.teama_be.domain.member.service;
+package com.project.teama_be.domain.member.service.command;
 
 import com.project.teama_be.domain.member.converter.MemberConverter;
 import com.project.teama_be.domain.member.dto.request.MemberReqDTO;
@@ -13,14 +13,10 @@ import com.project.teama_be.global.aws.util.S3Util;
 import com.project.teama_be.global.security.dto.JwtDTO;
 import com.project.teama_be.global.security.userdetails.CustomUserDetails;
 import com.project.teama_be.global.security.util.JwtUtil;
-import com.project.teama_be.global.utils.HttpResponseUtil;
-import jakarta.servlet.http.Cookie;
-import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -115,6 +111,7 @@ public class AuthCommandService {
                     .orElseGet(() -> memberRepository.save(
                             Member.builder()
                                     .email(email)
+                                    .loginId(email)
                                     .nickname("임시닉네임_" + System.currentTimeMillis())
                                     .loginType(LoginType.KAKAO)
                                     .isAgree(true)
