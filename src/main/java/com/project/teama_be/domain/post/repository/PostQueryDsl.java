@@ -19,7 +19,12 @@ public interface PostQueryDsl {
 
     // 내가 작성한 게시글 조회
     PostResDTO.PageablePost<PostResDTO.SimplePost> getMyPosts(
-            Long memberId,
+            Predicate subQuery,
+            int size
+    );
+
+    // 내가 좋아요 누른 게시글 조회
+    PostResDTO.PageablePost<PostResDTO.SimplePost> getMyLikePost(
             Predicate subQuery,
             int size
     );

@@ -101,18 +101,19 @@ public class PostController {
     public CustomResponse<PostResDTO.PageablePost<PostResDTO.SimplePost>> getMyPosts(
             @PathVariable @NotNull(message = "회원 아이디가 비어있으면 안됩니다.")
             Long memberId,
+            @CurrentUser AuthUser user,
             @RequestParam(defaultValue = "-1") @NotNull @Min(value = -1, message = "커서는 -1 이상이어야 합니다.")
             Long cursor,
             @RequestParam(defaultValue = "1") @NotNull @Min(value = 1, message = "게시글은 최소 하나 이상 조회해야 합니다.")
             int size
     ) {
-        return CustomResponse.onSuccess(postQueryService.getMyPosts(memberId, cursor, size));
+        return CustomResponse.onSuccess(postQueryService.getMyPosts(memberId, user, cursor, size));
     }
 
     // 최근 본 게시글 조회
     @GetMapping("/members/{memberId}/posts/recent")
     @Operation(
-            summary = "최근 본 게시글 조회 API by 김주헌 (개발중)",
+            summary = "최근 본 게시글 조회 API by 김주헌 (보류)",
             description = "마이페이지에서 최근 본 게시글을 조회합니다. " +
                     "커서 기반 페이지네이션, 최신 순으로 정렬합니다."
     )
@@ -121,7 +122,7 @@ public class PostController {
             @RequestParam(defaultValue = "-1") @NotNull @Min(value = -1, message = "커서는 -1 이상이어야 합니다.")
             Long cursor,
             @RequestParam(defaultValue = "1") @NotNull @Min(value = 1, message = "게시글은 최소 하나 이상 조회해야 합니다.")
-            Long size
+            int size
     ) {
         return CustomResponse.onSuccess(null);
     }
@@ -129,18 +130,19 @@ public class PostController {
     // 내가 좋아요 누른 게시글 조회
     @GetMapping("/members/{memberId}/posts/like")
     @Operation(
-            summary = "내가 좋아요 누른 게시글 조회 API by 김주헌 (개발중)",
+            summary = "내가 좋아요 누른 게시글 조회 API by 김주헌",
             description = "마이페이지에서 좋아요를 누른 게시글을 조회합니다. " +
                     "커서 기반 페이지네이션, 최신 순으로 정렬합니다."
     )
     public CustomResponse<PostResDTO.PageablePost<PostResDTO.SimplePost>> getLikedPosts(
             @PathVariable Long memberId,
+            @CurrentUser AuthUser user,
             @RequestParam(defaultValue = "-1") @NotNull @Min(value = -1, message = "커서는 -1 이상이어야 합니다.")
             Long cursor,
             @RequestParam(defaultValue = "1") @NotNull @Min(value = 1, message = "게시글은 최소 하나 이상 조회해야 합니다.")
-            Long size
+            int size
     ) {
-        return CustomResponse.onSuccess(null);
+        return CustomResponse.onSuccess(postQueryService.getMyLikePost(memberId, user, cursor, size));
     }
 
     // POST 요청

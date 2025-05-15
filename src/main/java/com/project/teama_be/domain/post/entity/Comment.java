@@ -25,12 +25,19 @@ public class Comment extends BaseEntity {
     @JoinColumn(name = "member_id", nullable = false)
     private Member member;
 
-    @Column(name = "content")
+    @Column(name = "content", nullable = false)
     private String content;
 
     @Column(name = "like_count")
-    private Long likeCount;
+    @Builder.Default
+    private Long likeCount = 0L;
 
     @Column(name = "parent_id")
-    private Long parentId;
+    @Builder.Default
+    private Long parentId = 0L;
+
+    // update
+    public void updateLikeCount(Long likeCount) {
+        this.likeCount = likeCount;
+    }
 }
