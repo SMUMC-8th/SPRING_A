@@ -38,7 +38,6 @@ public class S3Util {
      * @param image 업로드할 파일
      * @param folderName 폴더명 ex)../test/
      * @return 업로드 성공시 파일 경로 반환
-     * @exception IllegalArgumentException
      */
     public List<String> uploadFile(List<MultipartFile> image, String folderName) {
         List<String> imageUrls = new ArrayList<>();
@@ -65,6 +64,7 @@ public class S3Util {
         ObjectMetadata metadata = ObjectMetadata.builder()
                 .contentType(image.getContentType())
                 .contentLength(image.getSize())
+                .contentDisposition("inline")
                 .build();
 
         log.info("[ 사진 업로드 ] 단일 사진 업로드 시작 : {}.{}", fileName, fileExtension);
