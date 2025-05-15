@@ -33,8 +33,9 @@ public class AuthController {
 
     @PostMapping(value = "/api/auth/signup", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @Operation(summary = "회원가입 API by 김지명", description = "사용자 정보와 프로필 이미지를 함께 받아 회원가입을 처리합니다.")
-    public CustomResponse<MemberResDTO.SignUp> signUp(@RequestPart("SignUp") @Valid MemberReqDTO.SignUp reqDTO,
-                                                      @RequestPart("profileImage") MultipartFile profileImage) {
+    public CustomResponse<MemberResDTO.SignUp> signUp(
+            @RequestPart(value = "SignUp") @Valid MemberReqDTO.SignUp reqDTO,
+            @RequestPart(value = "profileImage", required = false) MultipartFile profileImage) {
         MemberResDTO.SignUp resDTO = authCommandService.signUp(reqDTO, profileImage);
         return CustomResponse.onSuccess(HttpStatus.CREATED, resDTO);
     }
