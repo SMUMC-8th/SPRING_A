@@ -24,8 +24,6 @@ public class RedisUtil {
         return redisTemplate.opsForValue().get(key);
     }
 
-    public boolean delete(String key) {
-        return Boolean.TRUE.equals(redisTemplate.delete(key));
-    }
+    public void delete(String key) { redisTemplate.delete(key); }
 
 }

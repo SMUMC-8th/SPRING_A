@@ -1,13 +1,17 @@
 package com.project.teama_be.domain.member.dto.response;
 
+import lombok.Builder;
+
 import java.time.LocalDateTime;
 
 public class MemberResDTO {
 
+    @Builder
     public record SignUp(
             Long memberId,
             String loginId,
             String nickname,
+            String profileImageUrl,
             LocalDateTime createdAt
     ) {
     }

@@ -18,12 +18,15 @@ public class Member extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "location_id")
+    @ManyToOne(fetch = FetchType.LAZY, optional = true)
+    @JoinColumn(name = "location_id", nullable = true)
     private Location location;
 
     @Column(name = "login_id")
     private String loginId;
+
+    @Column(name = "email")
+    private String email;
 
     @Column(name = "password")
     private String password;
