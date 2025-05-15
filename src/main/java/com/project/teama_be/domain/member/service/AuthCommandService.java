@@ -40,9 +40,10 @@ public class AuthCommandService {
     private final MemberRepository memberRepository;
     private final PasswordEncoder passwordEncoder;
     private final S3Util s3Util;
-    private static final String PROFILE_IMAGE_FOLDER = "profiles/";
     private final WebClient webClient = WebClient.builder().build();
     private final JwtUtil jwtUtil;
+    private static final String PROFILE_IMAGE_FOLDER = "user-image/";
+    private static final String DEFAULT_PROFILE_IMAGE_URI = "https://s3.ap-northeast-2.amazonaws.com/api-smp.shop/user-image/TempUser.png";
 
     @Value("${spring.security.oauth2.client.provider.kakao.token-uri}")
     private String tokenURI;
@@ -82,8 +83,7 @@ public class AuthCommandService {
             }
         } else {
             log.info("[ 회원가입 ] 프로필 이미지 없음, 기본 이미지 사용");
-            // Todo: 기본 프로필 이미지 URL 설정
-            // profileImageUrl = "https://your-bucket.s3.region.amazonaws.com/profiles/default.png";
+            profileImageUrl = DEFAULT_PROFILE_IMAGE_URI;
         }
 
         Member member = MemberConverter.toMember(reqDTO, passwordEncoder, profileImageUrl);
@@ -118,8 +118,7 @@ public class AuthCommandService {
                                     .nickname("임시닉네임_" + System.currentTimeMillis())
                                     .loginType(LoginType.KAKAO)
                                     .isAgree(true)
-                                    // Todo: 기본 이미지로 설정하기
-                                    //.profileUrl()
+                                    .profileUrl(DEFAULT_PROFILE_IMAGE_URI)
                                     .build()));
 
             CustomUserDetails customUserDetails = new CustomUserDetails(member);
