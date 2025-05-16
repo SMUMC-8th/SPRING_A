@@ -54,11 +54,22 @@ public class AuthController {
 
     @PostMapping("/api/auth/refresh")
     @Operation(summary = "JWT 재발급 API", description = "쿠키에 담긴 RefreshToken을 검증하고 새 JWT를 발급합니다.")
-    public void refreshToken(
+    public CustomResponse<JwtDTO> refreshToken(
             @CookieValue(value = "refresh_token", required = false) String refreshToken,
-            HttpServletResponse response) throws IOException {
+            HttpServletResponse response) {
 
-        jwtTokenService.reissueTokenAndSetCookie(refreshToken, response);
+        if (refreshToken == null) {
+            log.error("[ AuthController ] 쿠키에 refresh_token이 없습니다.");
+            return CustomResponse.onFailure("401", "Refresh Token이 존재하지 않습니다.");
+        }
+
+        try {
+            JwtDTO jwtDTO = jwtTokenService.reissueTokenAndSetCookie(refreshToken, response);
+            return CustomResponse.onSuccess(jwtDTO);
+        } catch (Exception e) {
+            log.error("[ AuthController ] 토큰 재발급 실패: {}", e.getMessage());
+            return CustomResponse.onFailure("401", "유효하지 않은 Refresh Token입니다.");
+        }
     }
 
     @GetMapping("/oauth2/callback/kakao")
