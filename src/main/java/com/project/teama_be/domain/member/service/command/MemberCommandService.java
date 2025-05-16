@@ -27,7 +27,7 @@ public class MemberCommandService {
         Member member = memberRepository.findByLoginId(loginId)
                 .orElseThrow(() -> new MemberException(MemberErrorCode.MEMBER_NOT_FOUND));
 
-        if (memberRepository.existsById(reqDTO.targetMemberId())) {
+        if (!memberRepository.existsById(reqDTO.targetMemberId())) {
             throw new MemberException(MemberErrorCode.TARGET_MEMBER_NOT_FOUND);
         }
 
