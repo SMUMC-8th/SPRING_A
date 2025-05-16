@@ -1,5 +1,6 @@
 package com.project.teama_be.domain.member.service.command;
 
+import com.project.teama_be.domain.member.converter.MemberConverter;
 import com.project.teama_be.domain.member.converter.NotRecommendedConverter;
 import com.project.teama_be.domain.member.dto.request.MemberReqDTO;
 import com.project.teama_be.domain.member.dto.response.MemberResDTO;
@@ -52,6 +53,17 @@ public class MemberCommandService {
 
         String encodedPassword = passwordEncoder.encode(reqDTO.newPassword());
         member.updatePassword(encodedPassword);
+    }
+
+    public MemberResDTO.changeNickname changeNickname(AuthUser authUser, MemberReqDTO.changeNickname reqDTO) {
+        Member member = findMemberByAuthUser(authUser);
+
+        if (reqDTO.newNickname().equals(member.getNickname())) {
+            throw new MemberException(MemberErrorCode.NEW_NICKNAME_SAME_AS_CURRENT);
+        }
+
+        member.updateNickname(reqDTO.newNickname());
+        return MemberConverter.toChangeNicknameResDTO(member);
     }
 
     private Member findMemberByAuthUser(AuthUser authUser) {

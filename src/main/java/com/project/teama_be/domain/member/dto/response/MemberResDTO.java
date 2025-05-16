@@ -31,6 +31,7 @@ public class MemberResDTO {
     ) {
     }
 
+    @Builder
     public record changeNickname(
             String newNickname
     ) {

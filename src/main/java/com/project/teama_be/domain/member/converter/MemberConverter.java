@@ -42,4 +42,10 @@ public class MemberConverter {
                 .profileUrl(member.getProfileUrl())
                 .build();
     }
+
+    public static MemberResDTO.changeNickname toChangeNicknameResDTO(Member member) {
+        return MemberResDTO.changeNickname.builder()
+                .newNickname(member.getNickname())
+                .build();
+    }
 }

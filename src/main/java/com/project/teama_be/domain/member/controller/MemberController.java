@@ -62,12 +62,12 @@ public class MemberController {
     }
 
     @PatchMapping("/nickname")
-    @Operation(summary = "닉네임 변경 API by 김지명 (개발중)", description = "사용자의 닉네임을 새로운 닉네임으로 변경합니다.")
+    @Operation(summary = "닉네임 변경 API by 김지명", description = "사용자의 닉네임을 새로운 닉네임으로 변경합니다.")
     public CustomResponse<MemberResDTO.changeNickname> changeNickname(
             @CurrentUser AuthUser authUser,
             @RequestBody @Valid MemberReqDTO.changeNickname reqDTO) {
-
-        return CustomResponse.onSuccess(null);
+        MemberResDTO.changeNickname resDTO = memberCommandService.changeNickname(authUser, reqDTO);
+        return CustomResponse.onSuccess(resDTO);
     }
 
     @PatchMapping(value = "/profile-image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)

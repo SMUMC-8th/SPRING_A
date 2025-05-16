@@ -47,4 +47,8 @@ public class Member extends BaseEntity {
     public void updatePassword(String encodedPassword) {
         this.password = encodedPassword;
     }
+
+    public void updateNickname(String newNickname) {
+        this.nickname = newNickname;
+    }
 }

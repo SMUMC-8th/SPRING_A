@@ -16,6 +16,7 @@ public enum MemberErrorCode implements BaseErrorCode {
     PROFILE_IMAGE_UPLOAD_FAILED(HttpStatus.BAD_REQUEST, "MEMBER400_4", "프로필 사진 업로드 실패"),
     CURRENT_PASSWORD_NOT_MATCH(HttpStatus.BAD_REQUEST, "MEMBER400_5", "현재 비밀번호가 일치하지 않습니다."),
     NEW_PASSWORD_SAME_AS_CURRENT(HttpStatus.BAD_REQUEST, "MEMBER400_6", "새 비밀번호가 현재 비밀번호와 동일합니다."),
+    NEW_NICKNAME_SAME_AS_CURRENT(HttpStatus.BAD_REQUEST, "MEMBER400_7", "새 닉네임이 현재 닉네임과 동일합니다."),
 
     OAUTH_LOGIN_FAIL(HttpStatus.UNAUTHORIZED, "MEMBER401_0", "로그인에 실패하였습니다."),
 
