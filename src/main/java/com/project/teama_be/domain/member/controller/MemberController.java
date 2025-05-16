@@ -57,7 +57,7 @@ public class MemberController {
     @Operation(summary = "비밀번호 변경 API by 김지명", description = "기존 비밀번호를 확인하고 새 비밀번호로 변경합니다.")
     public CustomResponse<String> changePassword(@CurrentUser AuthUser authUser,
                                                  @RequestBody @Valid MemberReqDTO.changePassword reqDTO) {
-
+        memberCommandService.changePassword(authUser,reqDTO);
         return CustomResponse.onSuccess("비밀번호가 변경되었습니다.");
     }
 

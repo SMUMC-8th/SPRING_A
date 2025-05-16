@@ -43,4 +43,8 @@ public class Member extends BaseEntity {
     @Enumerated(EnumType.STRING)
     @Column(name = "login_type", nullable = false)
     private LoginType loginType;
+
+    public void updatePassword(String encodedPassword) {
+        this.password = encodedPassword;
+    }
 }
