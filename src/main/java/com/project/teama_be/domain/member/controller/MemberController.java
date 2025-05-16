@@ -74,8 +74,8 @@ public class MemberController {
     @Operation(summary = "프로필 이미지 변경 API by 김지명 (개발중)", description = "회원의 프로필 이미지를 업로드하고 URL을 반환합니다.")
     public CustomResponse<MemberResDTO.changeProfileImg> updateProfileImage(@CurrentUser AuthUser authUser,
                                                                             @RequestPart("file") MultipartFile file) {
-
-        return CustomResponse.onSuccess(null);
+        MemberResDTO.changeProfileImg resDTO = memberCommandService.changeProfileImg(authUser, file);
+        return CustomResponse.onSuccess(resDTO);
     }
 
     @DeleteMapping("")

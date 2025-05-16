@@ -10,12 +10,14 @@ import com.project.teama_be.domain.member.exceptioin.MemberErrorCode;
 import com.project.teama_be.domain.member.exceptioin.MemberException;
 import com.project.teama_be.domain.member.repository.MemberRepository;
 import com.project.teama_be.domain.member.repository.NotRecommendedRepository;
+import com.project.teama_be.global.aws.util.S3Util;
 import com.project.teama_be.global.security.userdetails.AuthUser;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 @Slf4j
 @Service
@@ -26,6 +28,9 @@ public class MemberCommandService {
     private final MemberRepository memberRepository;
     private final NotRecommendedRepository notRecommendedRepository;
     private final PasswordEncoder passwordEncoder;
+    private final S3Util s3Util;
+    private static final String PROFILE_IMAGE_FOLDER = "user-image/";
+    private static final String DEFAULT_PROFILE_IMAGE_URI = "https://s3.ap-northeast-2.amazonaws.com/api-smp.shop/user-image/TempUser.png";
 
     public MemberResDTO.blockMember blockMember(AuthUser authUser, MemberReqDTO.blockMember reqDTO) {
         Member member = findMemberByAuthUser(authUser);
@@ -64,6 +69,45 @@ public class MemberCommandService {
 
         member.updateNickname(reqDTO.newNickname());
         return MemberConverter.toChangeNicknameResDTO(member);
+    }
+
+    public MemberResDTO.changeProfileImg changeProfileImg(AuthUser authUser, MultipartFile profileImage) {
+        Member member = findMemberByAuthUser(authUser);
+
+        if (profileImage == null || profileImage.isEmpty()) {
+            log.error("[ 프로필 변경 ] 프로필 이미지가 없습니다.");
+            throw new MemberException(MemberErrorCode.PROFILE_IMAGE_NOT_FOUND);
+        }
+
+        try {
+            // 기존 프로필 이미지 URL 저장
+            String oldProfileUrl = member.getProfileUrl();
+
+            // 새 프로필 이미지 업로드
+            String imageKey = s3Util.uploadFile(profileImage, PROFILE_IMAGE_FOLDER);
+            String profileImageUrl = s3Util.getImageUrl(imageKey);
+            log.info("[ 프로필 변경 ] 프로필 이미지 업로드 성공: {}", profileImageUrl);
+
+            // 회원 프로필 이미지 URL 업데이트
+            member.updateProfileUrl(profileImageUrl);
+
+            // 기존 이미지가 기본 이미지가 아닌 경우 삭제
+            if (oldProfileUrl != null && !oldProfileUrl.equals(DEFAULT_PROFILE_IMAGE_URI)) {
+                try {
+                    s3Util.deleteFile(oldProfileUrl);
+                    log.info("[ 프로필 변경 ] 기존 프로필 이미지 삭제 성공: {}", oldProfileUrl);
+                } catch (IllegalArgumentException e) {
+                    // 기존 이미지 삭제 실패해도 새 이미지 업로드는 성공했으므로 오류 로깅만 하고 계속 진행
+                    log.warn("[ 프로필 변경 ] 기존 프로필 이미지 삭제 실패: {}", e.getMessage());
+                }
+            }
+
+            return MemberConverter.toChangeProfileImgResDTO(member);
+
+        } catch (IllegalArgumentException e) {
+            log.error("[ 프로필 변경 ] 프로필 이미지 업로드 실패: {}", e.getMessage());
+            throw new MemberException(MemberErrorCode.PROFILE_IMAGE_UPLOAD_FAILED);
+        }
     }
 
     private Member findMemberByAuthUser(AuthUser authUser) {

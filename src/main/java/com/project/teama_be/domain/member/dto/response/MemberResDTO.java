@@ -37,7 +37,9 @@ public class MemberResDTO {
     ) {
     }
 
+    @Builder
     public record changeProfileImg(
+            Long memberId,
             String profileImageUrl
     ) {
     }

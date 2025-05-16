@@ -48,4 +48,11 @@ public class MemberConverter {
                 .newNickname(member.getNickname())
                 .build();
     }
+
+    public static MemberResDTO.changeProfileImg toChangeProfileImgResDTO(Member member) {
+        return MemberResDTO.changeProfileImg.builder()
+                .memberId(member.getId())
+                .profileImageUrl(member.getProfileUrl())
+                .build();
+    }
 }
