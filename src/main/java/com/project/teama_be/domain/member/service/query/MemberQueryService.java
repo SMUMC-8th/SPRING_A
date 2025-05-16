@@ -24,4 +24,10 @@ public class MemberQueryService {
                 .orElseThrow(() -> new MemberException(MemberErrorCode.MEMBER_NOT_FOUND));
         return MemberConverter.toMemberInfoResDTO(member);
     }
+
+    public void checkDuplicateId(String loginId) {
+        if (memberRepository.existsByLoginId(loginId)) {
+            throw new MemberException(MemberErrorCode.LOGIN_ID_ALREADY_EXISTS);
+        }
+    }
 }

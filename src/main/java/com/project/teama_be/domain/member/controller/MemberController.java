@@ -40,9 +40,9 @@ public class MemberController {
     }
 
     @GetMapping("/check-id")
-    @Operation(summary = "아이디 중복 확인 API by 김지명 (개발중)", description = "loginId가 이미 사용 중인지 확인합니다.")
+    @Operation(summary = "아이디 중복 확인 API by 김지명", description = "loginId가 이미 사용 중인지 확인합니다.")
     public CustomResponse<String> checkDuplicateId(@RequestParam("id") String loginId) {
-
+        memberQueryService.checkDuplicateId(loginId);
         return CustomResponse.onSuccess("사용가능한 ID 입니다.");
     }
 
