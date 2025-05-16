@@ -55,4 +55,10 @@ public class MemberConverter {
                 .profileImageUrl(member.getProfileUrl())
                 .build();
     }
+
+    public static MemberResDTO.deleteMember toDeleteMemberResDTO(Member member) {
+        return MemberResDTO.deleteMember.builder()
+                .memberId(member.getId())
+                .build();
+    }
 }

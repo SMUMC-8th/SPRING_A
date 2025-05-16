@@ -44,9 +44,9 @@ public class MemberResDTO {
     ) {
     }
 
+    @Builder
     public record deleteMember(
-            Long memberId,
-            LocalDateTime deletedAt
+            Long memberId
     ) {
     }
 }

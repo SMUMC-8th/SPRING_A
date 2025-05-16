@@ -10,6 +10,8 @@ import com.project.teama_be.domain.member.exceptioin.MemberErrorCode;
 import com.project.teama_be.domain.member.exceptioin.MemberException;
 import com.project.teama_be.domain.member.repository.MemberRepository;
 import com.project.teama_be.domain.member.repository.NotRecommendedRepository;
+import com.project.teama_be.domain.post.entity.Post;
+import com.project.teama_be.domain.post.entity.PostImage;
 import com.project.teama_be.global.aws.util.S3Util;
 import com.project.teama_be.global.security.userdetails.AuthUser;
 import lombok.RequiredArgsConstructor;
@@ -108,6 +110,37 @@ public class MemberCommandService {
             log.error("[ 프로필 변경 ] 프로필 이미지 업로드 실패: {}", e.getMessage());
             throw new MemberException(MemberErrorCode.PROFILE_IMAGE_UPLOAD_FAILED);
         }
+    }
+
+    public MemberResDTO.deleteMember deleteMember(AuthUser authUser) {
+        Member member = findMemberByAuthUser(authUser);
+        MemberResDTO.deleteMember resDTO = MemberConverter.toDeleteMemberResDTO(member);
+
+        // S3에 저장된 프로필 이미지 처리
+        String profileUrl = member.getProfileUrl();
+        if (profileUrl != null && !profileUrl.equals(DEFAULT_PROFILE_IMAGE_URI)) {
+            try {
+                s3Util.deleteFile(profileUrl);
+            } catch (Exception e) {
+                log.warn("프로필 이미지 삭제 실패: {}", e.getMessage());
+            }
+        }
+
+        // S3에 저장된 게시물 이미지 삭제 처리
+        for (Post post : member.getPosts()) {
+            for (PostImage image : post.getPostImages()) {
+                try {
+                    s3Util.deleteFile(image.getImageUrl());
+                } catch (Exception e) {
+                    log.warn("게시물 이미지 삭제 실패: {}", e.getMessage());
+                }
+            }
+        }
+
+        // 회원 삭제 (cascade로 연관 엔티티들도 모두 삭제됨)
+        memberRepository.delete(member);
+
+        return resDTO;
     }
 
     private Member findMemberByAuthUser(AuthUser authUser) {
