@@ -36,7 +36,7 @@ public class S3Util {
     /** 사진 S3 업로드
      *
      * @param image 업로드할 파일
-     * @param folderName 폴더명 ex)../test/
+     * @param folderName 폴더명 ex) test/
      * @return 업로드 성공시 파일 경로 반환
      */
     public List<String> uploadFile(List<MultipartFile> image, String folderName) {
@@ -68,7 +68,7 @@ public class S3Util {
             PutObjectRequest uploadRequest = PutObjectRequest.builder()
                             .bucket(bucket)
                             .key(folderName + fileName + "." + fileExtension)
-                            .contentType(image.getContentType())
+                            .contentType("image/" + fileExtension)
                             .contentLength(image.getSize())
                             .contentDisposition("inline")
                             .build();
