@@ -1,15 +1,19 @@
 package com.project.teama_be.global.security.config;
 
 import com.project.teama_be.domain.member.repository.MemberRepository;
+import com.project.teama_be.domain.member.service.command.JwtTokenService;
 import com.project.teama_be.global.config.CorsConfig;
 import com.project.teama_be.global.security.exception.JwtAccessDeniedHandler;
 import com.project.teama_be.global.security.exception.JwtAuthenticationEntryPoint;
 import com.project.teama_be.global.security.filter.CustomLoginFilter;
 import com.project.teama_be.global.security.filter.JwtAuthorizationFilter;
+import com.project.teama_be.global.security.handler.CustomLogoutHandler;
 import com.project.teama_be.global.security.util.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
@@ -32,6 +36,7 @@ public class SecurityConfig {
     private final MemberRepository memberRepository;
     private final JwtAccessDeniedHandler jwtAccessDeniedHandler;
     private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
+    private final JwtTokenService jwtTokenService;
 
     //인증이 필요하지 않은 url
     private final String[] allowedUrls = {
@@ -118,6 +123,19 @@ public class SecurityConfig {
         // JwtFilter를 CustomLoginFilter 앞에서 동작하도록 필터 체인에 추가
         http
                 .addFilterBefore(new JwtAuthorizationFilter(jwtUtil, memberRepository), CustomLoginFilter.class);
+
+        // Logout Handler 추가
+        http
+                .logout(logout -> logout
+                        .logoutUrl("/api/auth/logout")
+                        .addLogoutHandler(new CustomLogoutHandler(jwtTokenService, jwtUtil))
+                        .logoutSuccessHandler((request, response, authentication) -> {
+                            response.setStatus(HttpStatus.OK.value());
+                            response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+                            response.setCharacterEncoding("UTF-8");
+                            response.getWriter().write("{\"message\":\"로그아웃 성공\"}");
+                        })
+                );
 
 
         return http.build();
