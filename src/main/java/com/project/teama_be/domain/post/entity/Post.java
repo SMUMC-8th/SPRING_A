@@ -2,9 +2,14 @@ package com.project.teama_be.domain.post.entity;
 
 import com.project.teama_be.domain.location.entity.Location;
 import com.project.teama_be.domain.member.entity.Member;
+import com.project.teama_be.domain.member.entity.RecentlyViewed;
+import com.project.teama_be.domain.notification.entity.Notification;
 import com.project.teama_be.global.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "post")
@@ -51,6 +56,30 @@ public class Post extends BaseEntity {
     @Column(name = "hide_share")
     @Builder.Default
     private Boolean hideShare = false;
+
+    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<PostImage> postImages = new ArrayList<>();
+
+    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<PostTag> postTags = new ArrayList<>();
+
+    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<Comment> comments = new ArrayList<>();
+
+    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<PostReaction> reactions = new ArrayList<>();
+
+    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<Notification> notifications = new ArrayList<>();
+
+    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<RecentlyViewed> recentlyVieweds = new ArrayList<>();
 
     // update
     public void updateLikeCount(Long likeCount) {

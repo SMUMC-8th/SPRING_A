@@ -5,6 +5,9 @@ import com.project.teama_be.global.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Entity
 @Table(name = "comment")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -35,6 +38,10 @@ public class Comment extends BaseEntity {
     @Column(name = "parent_id")
     @Builder.Default
     private Long parentId = 0L;
+
+    @OneToMany(mappedBy = "comment", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<CommentReaction> reactions = new ArrayList<>();
 
     // update
     public void updateLikeCount(Long likeCount) {

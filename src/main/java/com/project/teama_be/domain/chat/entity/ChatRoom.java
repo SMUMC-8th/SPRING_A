@@ -6,6 +6,8 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "chat_room")
@@ -34,4 +36,12 @@ public class ChatRoom extends BaseEntity {
 
     @Column(name = "last_message_at")
     private LocalDateTime lastMessageAt;
+
+    @OneToMany(mappedBy = "chatRoom", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<ChatParticipant> participants = new ArrayList<>();
+
+    @OneToMany(mappedBy = "chatRoom", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<ChatMessage> messages = new ArrayList<>();
 }

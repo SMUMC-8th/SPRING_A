@@ -111,6 +111,7 @@ public class AuthCommandService {
                     .orElseGet(() -> memberRepository.save(
                             Member.builder()
                                     .email(email)
+                                    .loginId(email)
                                     .nickname("임시닉네임_" + System.currentTimeMillis())
                                     .loginType(LoginType.KAKAO)
                                     .isAgree(true)
