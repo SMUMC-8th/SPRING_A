@@ -42,8 +42,9 @@ public class Post extends BaseEntity {
     @Builder.Default
     private Long unlikeCount = 0L;
 
-    @Column(name = "is_private", nullable = false)
-    private Boolean isPrivate;
+    @Column(name = "is_private")
+    @Builder.Default
+    private Boolean isPrivate = false;
 
     @Column(name = "disable_comment")
     @Builder.Default

@@ -103,7 +103,7 @@ public class PostCommandService {
         }
 
         // 사진 업로드, 게시글 <-> 이미지 연동
-        List<String> url = s3Util.uploadFile(image, "/post/");
+        List<String> url = s3Util.uploadFile(image, "post/");
         for (String s : url) {
             log.info("[ 사진 업로드 ] s3Url:{}", s);
             postImageRepository.save(PostConverter.toPostImage(post, s));

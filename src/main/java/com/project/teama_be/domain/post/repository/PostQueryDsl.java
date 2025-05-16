@@ -8,7 +8,10 @@ import java.util.List;
 public interface PostQueryDsl {
 
     // 각 가게 최신 게시글 조회
-    PostResDTO.HomePost getPostByPlaceName(List<String> query);
+    PostResDTO.HomePost getPostByPlaceName(
+            Predicate subQuery,
+            List<String> query
+    );
 
     // 키워드 검색
     PostResDTO.PageablePost<PostResDTO.FullPost> getPostsByKeyword(

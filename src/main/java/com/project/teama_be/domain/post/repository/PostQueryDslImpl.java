@@ -8,6 +8,7 @@ import com.project.teama_be.domain.post.exception.PostException;
 import com.project.teama_be.domain.post.exception.code.PostErrorCode;
 import com.querydsl.core.group.GroupBy;
 import com.querydsl.core.types.Predicate;
+import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -27,44 +28,55 @@ public class PostQueryDslImpl implements PostQueryDsl{
 
     // 각 가게 최신 게시글 조회
     @Override
-    public PostResDTO.HomePost getPostByPlaceName(List<String> query) {
+    public PostResDTO.HomePost getPostByPlaceName(
+            Predicate subQuery,
+            List<String> query
+    ) {
 
         // 조회할 객체 선언
         QPost post = QPost.post;
         QPostImage postImage = QPostImage.postImage;
 
-        List<PostResDTO.SimplePost> posts = new ArrayList<>();
+        // 조건에 맞는 게시글 모두 조회
+        List<PostResDTO.SimplePost> posts = jpaQueryFactory
+                .from(post)
+                .leftJoin(postImage).on(postImage.post.id.eq(post.id))
+                .where(subQuery)
+                .orderBy(post.id.desc())
+                .transform(GroupBy.groupBy(post.location.id).list(
+                        Projections.constructor(
+                                PostResDTO.SimplePost.class,
+                                postImage.imageUrl,
+                                post.id,
+                                post.location.placeName,
+                                post.location.id
+                        )
+                ));
 
-        // 가게명이 일치하는 가게의 최신 게시글 조회 : 최적화 필요 O(3N)
-        for (String placeName : query) {
-            // 쿼리의 가게 최신 게시글 조회
-            Post result = jpaQueryFactory
-                    .selectFrom(post)
-                    .where(post.location.placeName.eq(placeName))
-                    .orderBy(post.id.desc())
-                    .fetchFirst();
-            if (result == null) {
-                posts.add(PostConverter.toSimplePost(null,null,placeName,null));
-                continue;
+        // 가게의 게시글이 없거나 해당 가게가 없는 경우
+        List<PostResDTO.SimplePost> result = new ArrayList<>();
+        for (String eachQuery : query) {
+            boolean isExist = false;
+            for (PostResDTO.SimplePost eachPost : posts) {
+                if (eachPost.placeName().equals(eachQuery)) {
+                    result.add(eachPost);
+                    isExist = true;
+                    break;
+                }
             }
-            // 해당 게시글 사진 조회
-            String imageUrl = jpaQueryFactory
-                    .select(postImage.imageUrl)
-                    .from(postImage)
-                    .where(postImage.post.eq(result))
-                    .orderBy(postImage.id.desc())
-                    .fetchFirst();
-            // SimplePost로 변환
-            posts.add(
-                    PostConverter.toSimplePost(
-                            imageUrl,
-                            result.getId(),
-                            result.getLocation().getPlaceName(),
-                            result.getLocation().getId()
-                    )
-            );
+            if (!isExist) {
+                PostResDTO.SimplePost emptyPost = PostConverter.toSimplePost(
+                        null,
+                        null,
+                        eachQuery,
+                        null
+                );
+                result.add(emptyPost);
+            }
         }
-        return PostConverter.toHomePost(posts);
+
+        log.info("[ 게시글 조회 ] posts:{}", result);
+        return PostConverter.toHomePost(result);
     }
 
     // 키워드 검색 ✅

@@ -29,7 +29,13 @@ public class PostQueryService {
             List<String> query
     ) {
 
-        return postRepository.getPostByPlaceName(query);
+        // 조회할 객체 선언
+        QPost post = QPost.post;
+        BooleanBuilder builder = new BooleanBuilder();
+
+        builder.and(post.location.placeName.in(query));
+
+        return postRepository.getPostByPlaceName(builder, query);
 
     }
 
