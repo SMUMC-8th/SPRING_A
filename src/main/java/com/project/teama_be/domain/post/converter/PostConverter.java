@@ -23,7 +23,6 @@ public class PostConverter {
                 .location(location)
                 .member(member)
                 .content(postUpload.content())
-                .isPrivate(postUpload.isPrivate())
                 .build();
     }
 
@@ -107,7 +106,9 @@ public class PostConverter {
     }
 
     // 홈화면용 게시글 조회: List<SimplePost> -> HomePost
-    public static PostResDTO.HomePost toHomePost(List<PostResDTO.SimplePost> posts){
+    public static PostResDTO.HomePost toHomePost(
+            List<PostResDTO.SimplePost> posts
+    ){
         return PostResDTO.HomePost.builder()
                 .simplePost(posts)
                 .build();

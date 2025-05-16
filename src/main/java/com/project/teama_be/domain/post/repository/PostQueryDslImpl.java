@@ -10,6 +10,7 @@ import com.querydsl.core.group.GroupBy;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
 
 import java.util.ArrayList;
@@ -17,6 +18,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+@Slf4j
 @Repository
 @RequiredArgsConstructor
 public class PostQueryDslImpl implements PostQueryDsl{
@@ -65,7 +67,7 @@ public class PostQueryDslImpl implements PostQueryDsl{
         return PostConverter.toHomePost(posts);
     }
 
-    // 키워드 검색 : 키워드를 받고 태그, 가게명, 주소에 따라 달라짐 (최신순)
+    // 키워드 검색 ✅
     @Override
     public PostResDTO.PageablePost<PostResDTO.FullPost> getPostsByKeyword(
             String query,
@@ -88,10 +90,11 @@ public class PostQueryDslImpl implements PostQueryDsl{
         if (postList.isEmpty()) {
             throw new PostException(PostErrorCode.NOT_FOUND_KEYWORD);
         }
+
         return findFullPostAttribute(postList, size);
     }
 
-    // 내가 작성한 게시글 조회
+    // 내가 작성한 게시글 조회 ✅
     @Override
     public PostResDTO.PageablePost<PostResDTO.SimplePost> getMyPosts(
             Predicate subQuery,
@@ -111,10 +114,11 @@ public class PostQueryDslImpl implements PostQueryDsl{
         if (postList.isEmpty()) {
             throw new PostException(PostErrorCode.NOT_FOUND);
         }
+
         return findSimplePostAttribute(postList, size);
     }
 
-    // 내가 좋아요 누른 게시글 조회
+    // 내가 좋아요 누른 게시글 조회 ✅
     public PostResDTO.PageablePost<PostResDTO.SimplePost> getMyLikePost(
             Predicate subQuery,
             int size
@@ -135,10 +139,11 @@ public class PostQueryDslImpl implements PostQueryDsl{
         if (postList.isEmpty()) {
             throw new PostException(PostErrorCode.NOT_FOUND);
         }
+
         return findSimplePostAttribute(postList, size);
     }
 
-    // 가게 게시글 모두 조회
+    // 가게 게시글 모두 조회 ✅
     @Override
     public PostResDTO.PageablePost<PostResDTO.FullPost> getPostsByPlaceId(
             Long placeId,
@@ -162,7 +167,7 @@ public class PostQueryDslImpl implements PostQueryDsl{
         return findFullPostAttribute(postList, size);
     }
 
-    // SimplePost 부가 속성들 조회
+    // SimplePost 부가 속성들 조회✅
     private PostResDTO.PageablePost<PostResDTO.SimplePost> findSimplePostAttribute(
             List<Post> postList,
             int size
@@ -204,10 +209,12 @@ public class PostQueryDslImpl implements PostQueryDsl{
                 )
                 .toList();
 
+        log.info("[ 게시글 페이지네이션 ] result:{}, hasNext:{}, pageSize:{}, nextCursor:{}",
+                result, hasNext, pageSize, nextCursor);
         return PostConverter.toPageablePost(result, hasNext, pageSize, nextCursor);
     }
 
-    // FullPost 부가 속성들 조회
+    // FullPost 부가 속성들 조회 ✅
     private PostResDTO.PageablePost<PostResDTO.FullPost> findFullPostAttribute(
             List<Post> postList,
             int size
@@ -272,6 +279,8 @@ public class PostQueryDslImpl implements PostQueryDsl{
                 )
                 .toList();
 
+        log.info("[ 게시글 페이지네이션 ] result:{}, hasNext:{}, pageSize:{}, nextCursor:{}",
+                result, hasNext, pageSize, nextCursor);
         return PostConverter.toPageablePost(result, hasNext, pageSize, nextCursor);
     }
 }

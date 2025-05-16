@@ -1,7 +1,7 @@
 package com.project.teama_be.domain.post.service.query;
 
-import com.project.teama_be.domain.member.entity.Member;
-import com.project.teama_be.domain.member.repository.MemberRepository;
+import com.project.teama_be.domain.member.exceptioin.MemberErrorCode;
+import com.project.teama_be.domain.member.exceptioin.MemberException;
 import com.project.teama_be.domain.post.dto.response.CommentResDTO;
 import com.project.teama_be.domain.post.entity.QComment;
 import com.project.teama_be.domain.post.repository.CommentRepository;
@@ -17,7 +17,6 @@ import org.springframework.stereotype.Service;
 public class CommentQueryService {
 
     private final CommentRepository commentRepository;
-    private final MemberRepository memberRepository;
 
     // 댓글 목록 조회 ✅
     public CommentResDTO.PageableComment<CommentResDTO.Comment> findComments(
@@ -88,7 +87,7 @@ public class CommentQueryService {
     private void validateMember(AuthUser user, Long memberId) {
 
         if (!user.getUserId().equals(memberId)) {
-            throw new IllegalArgumentException("유저 정보가 일치하지 않습니다.");
+            throw new MemberException(MemberErrorCode.MEMBER_NOT_FOUND);
         }
     }
 }

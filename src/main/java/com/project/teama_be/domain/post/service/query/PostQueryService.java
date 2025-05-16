@@ -1,7 +1,5 @@
 package com.project.teama_be.domain.post.service.query;
 
-import com.project.teama_be.domain.member.entity.Member;
-import com.project.teama_be.domain.member.repository.MemberRepository;
 import com.project.teama_be.domain.post.dto.response.PostResDTO;
 import com.project.teama_be.domain.post.entity.QPost;
 import com.project.teama_be.domain.post.entity.QPostReaction;
@@ -25,19 +23,17 @@ import java.util.List;
 public class PostQueryService {
 
     private final PostRepository postRepository;
-    private final MemberRepository memberRepository;
 
-    // 가게명으로 게시글 조회
+    // 각 가게 최신 게시글 조회 ✅
     public PostResDTO.HomePost getPost(
             List<String> query
     ) {
 
-        log.info("[ 게시글 조회 ] 홈화면용 게시글을 조회합니다.]");
         return postRepository.getPostByPlaceName(query);
 
     }
 
-    // 키워드 검색
+    // 키워드 검색 ✅
     public PostResDTO.PageablePost<PostResDTO.FullPost> getPostsByKeyword(
             String query,
             String type,
@@ -45,12 +41,11 @@ public class PostQueryService {
             int size
     ) {
 
-        log.info("[ 키워드 검색 ] 키워드 검색을 시작합니다.");
-
         // 동적 쿼리 : 검색 타입에 따라 조건을 추가
         BooleanBuilder builder = new BooleanBuilder();
         QPostTag postTag = QPostTag.postTag;
         QPost post = QPost.post;
+
         // 커서가 존재하면 이전에 조회한 게시글부터 조회
         if (cursor != -1){
             builder.and(post.id.loe(cursor));
@@ -59,36 +54,29 @@ public class PostQueryService {
         switch (type.toLowerCase()) {
 
             // 태그 검색
-            case "tag" -> {
-                builder.and(postTag.tag.tagName.likeIgnoreCase(query + "%"));
-                return postRepository.getPostsByKeyword(query, builder, size);
-            }
+            case "tag" -> builder.and(postTag.tag.tagName.likeIgnoreCase(query + "%"));
 
             // 가게명 검색
-            case "place" -> {
-                builder.and(post.location.placeName.likeIgnoreCase(query + "%"));
-                return postRepository.getPostsByKeyword(query, builder, size);
-            }
+            case "place" -> builder.and(post.location.placeName.likeIgnoreCase(query + "%"));
 
             // 지역 검색
-            case "address" -> {
-                builder.and(post.location.addressName.likeIgnoreCase(query + "%")
-                                .or(post.location.roadAddressName.likeIgnoreCase(query + "%")));
-                return postRepository.getPostsByKeyword(query, builder, size);
-            }
+            case "address" -> builder.and(post.location.addressName.likeIgnoreCase(query + "%")
+                            .or(post.location.roadAddressName.likeIgnoreCase(query + "%")));
 
             // 타입이 잘못된 경우
             default -> throw new PostException(PostErrorCode.NOT_VALID_TYPE);
         }
+
+        log.info("[ 키워드 검색 ] subQuery:{}", builder);
+        return postRepository.getPostsByKeyword(query, builder, size);
     }
 
-    // 가게 게시글 모두 조회
+    // 가게 게시글 모두 조회 ✅
     public PostResDTO.PageablePost<PostResDTO.FullPost> getPostsByPlaceId(
             Long placeId,
             Long cursor,
             int size
     ) {
-        log.info("[ 가게 게시글 모두 조회 ] 가게 게시글을 모두 조회합니다.");
         BooleanBuilder builder = new BooleanBuilder();
         QPost post = QPost.post;
 
@@ -97,10 +85,11 @@ public class PostQueryService {
             builder.and(post.id.loe(cursor));
         }
 
+        log.info("[ 가게 게시글 모두 조회 ] subQuery:{}", builder);
         return postRepository.getPostsByPlaceId(placeId, builder, size);
     }
 
-    // 내가 작성한 게시글 조회 (마이페이지)
+    // 내가 작성한 게시글 조회 (마이페이지) ✅
     public PostResDTO.PageablePost<PostResDTO.SimplePost> getMyPosts(
             Long memberId,
             AuthUser user,
@@ -111,7 +100,6 @@ public class PostQueryService {
         // 로그인 유저와 memberID가 같은지 검증
         validateMember(user, memberId);
 
-        log.info("[ 내가 작성한 게시글 조회 ] 내가 작성한 게시글을 조회합니다.");
         BooleanBuilder builder = new BooleanBuilder();
         QPost post = QPost.post;
 
@@ -119,10 +107,12 @@ public class PostQueryService {
         if (cursor != -1) {
             builder.and(post.id.loe(cursor));
         }
+
+        log.info("[ 내가 작성한 게시글 조회 ] subQuery:{}", builder);
         return postRepository.getMyPosts(builder, size);
     }
 
-    // 내가 좋아요 누른 게시글 조회
+    // 내가 좋아요 누른 게시글 조회 ✅
     public PostResDTO.PageablePost<PostResDTO.SimplePost> getMyLikePost(
             Long memberId,
             AuthUser user,
@@ -132,7 +122,6 @@ public class PostQueryService {
         // 로그인 유저와 memberID가 같은지 검증
         validateMember(user, memberId);
 
-        log.info("[ 내가 좋아요 누른 게시글 조회 ] 내가 좋아요 누른 게시글을 조회합니다.");
         BooleanBuilder builder = new BooleanBuilder();
         QPost post = QPost.post;
         QPostReaction postReaction = QPostReaction.postReaction;
@@ -142,6 +131,8 @@ public class PostQueryService {
         if (cursor != -1) {
             builder.and(post.id.loe(cursor));
         }
+
+        log.info("[ 내가 좋아요 누른 게시글 조회 ] subQuery:{}", builder);
         return postRepository.getMyLikePost(builder, size);
     }
 

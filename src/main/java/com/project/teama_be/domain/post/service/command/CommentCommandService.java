@@ -79,19 +79,16 @@ public class CommentCommandService {
         return CommentConverter.toCommentUpload(comment);
     }
 
-    // 댓글 좋아요
+    // 댓글 좋아요 ✅
     @Transactional
     public CommentResDTO.CommentLike likeComment(
             Long commentId,
             AuthUser user
     ) {
         // 유저 정보
-        Member member = memberRepository.findByLoginId(user.getLoginId()).orElseThrow(
-                () -> new UsernameNotFoundException("로그인된 유저를 찾을 수 없습니다.")
-        );
+        Member member = getMember(user);
 
         // 댓글 좋아요
-        log.info("[ 댓글 좋아요 ] 댓글 좋아요를 반영합니다.");
         Comment comment = commentRepository.findById(commentId).orElseThrow(()->
                 new CommentException(CommentErrorCode.NOT_FOUND));
 
@@ -101,11 +98,14 @@ public class CommentCommandService {
 
         // 좋아요 누른 적이 없으면 좋아요 반영
         if (commentReaction == null) {
+
+            log.info("[ 댓글 좋아요 ] comment:{}, member:{}", comment, member);
             CommentReaction result = commentReactionRepository.save(
                     CommentConverter.toCommentReaction(
                             comment, member, ReactionType.LIKE
                     )
             );
+
             // 댓글 좋아요 수 ++
             comment.updateLikeCount(comment.getLikeCount() + 1);
             return CommentConverter.toCommentLike(result);
@@ -119,10 +119,11 @@ public class CommentCommandService {
             // 댓글 좋아요 수 ++
             comment.updateLikeCount(comment.getLikeCount() + 1);
         }
+
         return CommentConverter.toCommentLike(commentReaction);
     }
 
-    // 멤버 조회
+    // 멤버 조회 ✅
     private Member getMember(AuthUser user) {
 
         return memberRepository.findByLoginId(user.getLoginId()).orElseThrow(() ->
