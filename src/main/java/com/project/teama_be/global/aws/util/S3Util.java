@@ -60,12 +60,6 @@ public class S3Util {
         String fileName = UUID.randomUUID().toString();
         // 파일 확장자 추출
         String fileExtension = getExtension(image);
-        // 메타데이터 생성
-        ObjectMetadata metadata = ObjectMetadata.builder()
-                .contentType(image.getContentType())
-                .contentLength(image.getSize())
-                .contentDisposition("inline")
-                .build();
 
         log.info("[ 사진 업로드 ] 단일 사진 업로드 시작 : {}.{}", fileName, fileExtension);
 
@@ -74,7 +68,9 @@ public class S3Util {
             PutObjectRequest uploadRequest = PutObjectRequest.builder()
                             .bucket(bucket)
                             .key(folderName + fileName + "." + fileExtension)
-                            .metadata(metadata.getMetadata())
+                            .contentType(image.getContentType())
+                            .contentLength(image.getSize())
+                            .contentDisposition("inline")
                             .build();
 
             s3Client.putObject(

@@ -33,7 +33,7 @@ public class CommentCommandService {
     private final MemberRepository memberRepository;
     private final PostRepository postRepository;
 
-    // 댓글 작성
+    // 댓글 작성 ✅
     public CommentResDTO.CommentUpload createComment(
             Long postId,
             AuthUser user,
@@ -45,10 +45,10 @@ public class CommentCommandService {
                 new PostException(PostErrorCode.NOT_FOUND));
 
         // 유저 정보
-        Member member = getMember();
+        Member member = getMember(user);
 
         // 댓글 저장
-        log.info("[ 댓글 작성 ] 댓글 작성을 요청합니다.");
+        log.info("[ 댓글 작성 ] post:{}, member:{}, content:{}", post, member, content);
         Comment comment = commentRepository.save(
                 CommentConverter.toComment(post, member, content)
         );
@@ -56,14 +56,14 @@ public class CommentCommandService {
         return CommentConverter.toCommentUpload(comment);
     }
 
-    // 대댓글 작성
+    // 대댓글 작성 ✅
     public CommentResDTO.CommentUpload createReply(
             Long commentId,
             AuthUser user,
             String content
     ) {
         // 유저 정보
-        Member member = getMember();
+        Member member = getMember(user);
 
         // 게시글 정보
         Post post = commentRepository.findById(commentId).orElseThrow(()->
@@ -71,8 +71,7 @@ public class CommentCommandService {
                 .getPost();
 
         // 대댓글 저장
-        log.info("[ 대댓글 작성 ] 대댓글 작성을 시작합니다.");
-
+        log.info("[ 대댓글 작성 ] post:{}, member:{}, content:{}, commentID:{}", post, member, content, commentId);
         Comment comment = commentRepository.save(
                 CommentConverter.toReply(post, member, content, commentId)
         );
@@ -87,7 +86,9 @@ public class CommentCommandService {
             AuthUser user
     ) {
         // 유저 정보
-        Member member = getMember();
+        Member member = memberRepository.findByLoginId(user.getLoginId()).orElseThrow(
+                () -> new UsernameNotFoundException("로그인된 유저를 찾을 수 없습니다.")
+        );
 
         // 댓글 좋아요
         log.info("[ 댓글 좋아요 ] 댓글 좋아요를 반영합니다.");
@@ -121,10 +122,10 @@ public class CommentCommandService {
         return CommentConverter.toCommentLike(commentReaction);
     }
 
+    // 멤버 조회
+    private Member getMember(AuthUser user) {
 
-    // 유저 정보 : 임시
-    private Member getMember() {
-        return memberRepository.findByLoginId("test").orElseThrow(()->
-                new UsernameNotFoundException("사용자를 찾을 수 없습니다."));
+        return memberRepository.findByLoginId(user.getLoginId()).orElseThrow(() ->
+                new UsernameNotFoundException("로그인된 유저를 찾을 수 없습니다."));
     }
 }

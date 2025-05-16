@@ -19,7 +19,7 @@ public class CommentQueryService {
     private final CommentRepository commentRepository;
     private final MemberRepository memberRepository;
 
-    // 댓글 목록 조회
+    // 댓글 목록 조회 ✅
     public CommentResDTO.PageableComment<CommentResDTO.Comment> findComments(
             Long postId,
             Long cursor,
@@ -35,8 +35,7 @@ public class CommentQueryService {
         if (cursor != -1) {
             builder.and(comment.id.loe(cursor));
         }
-
-        log.info("[ 댓글 목록 조회 ] 댓글 목록을 조회합니다.");
+        log.info("[ 댓글 목록 조회 ] subQuery:{}", builder);
         return commentRepository.findCommentList(builder, size);
     }
 
@@ -46,6 +45,7 @@ public class CommentQueryService {
             Long cursor,
             int size
     ) {
+
         // 조회할 객체 선언
         QComment comment = QComment.comment;
         BooleanBuilder builder = new BooleanBuilder();
@@ -55,10 +55,11 @@ public class CommentQueryService {
             builder.and(comment.id.goe(cursor));
         }
 
+        log.info("[ 대댓글 목록 조회 ] subQuery:{}", builder);
         return commentRepository.findReplyComments(builder, size);
     }
 
-    // 내가 작성한 댓글 조회
+    // 내가 작성한 댓글 조회 ✅
     public CommentResDTO.PageableComment<CommentResDTO.SimpleComment> findMyComments(
             Long memberId,
             AuthUser user,
@@ -79,17 +80,14 @@ public class CommentQueryService {
             builder.and(comment.id.loe(cursor));
         }
 
+        log.info("[ 내가 작성한 댓글 조회 ] subQuery:{}", builder);
         return commentRepository.getMyComments(builder, size);
 
     }
 
     private void validateMember(AuthUser user, Long memberId) {
 
-        // 임시
-        Member member = memberRepository.findByLoginId("test").orElseThrow(()->
-                new IllegalArgumentException("유저 정보를 찾을 수 없습니다."));
-
-        if (!member.getId().equals(memberId)) {
+        if (!user.getUserId().equals(memberId)) {
             throw new IllegalArgumentException("유저 정보가 일치하지 않습니다.");
         }
     }

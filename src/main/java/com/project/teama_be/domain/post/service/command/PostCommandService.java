@@ -151,12 +151,10 @@ public class PostCommandService {
         return PostConverter.toPostLike(reaction);
     }
 
-    // 유저 정보 생성 : 임시로 예외처리
+    // 유저 정보 생성
     private Member getMember(AuthUser user) {
         log.info("[ 유저 정보 생성 ] 유저 정보를 생성합니다.");
-//        String uid = user.getUid();
-        String LoginId = "test";
-        return memberRepository.findByLoginId(LoginId).orElseThrow(()->
+        return memberRepository.findByLoginId(user.getLoginId()).orElseThrow(()->
                 new PostException(PostErrorCode.USER_NOT_FOUND));
     }
 }
