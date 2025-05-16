@@ -1,18 +1,14 @@
-package com.project.teama_be.domain.member.service;
+package com.project.teama_be.domain.member.service.command;
 
-import com.project.teama_be.global.apiPayload.CustomResponse;
 import com.project.teama_be.global.security.dto.JwtDTO;
 import com.project.teama_be.global.security.util.JwtUtil;
-import com.project.teama_be.global.utils.HttpResponseUtil;
 import com.project.teama_be.global.utils.RedisUtil;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
-import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
 @Slf4j

@@ -1,7 +1,7 @@
 package com.project.teama_be.global.security.config;
 
 import com.project.teama_be.domain.member.repository.MemberRepository;
-import com.project.teama_be.domain.member.service.JwtTokenService;
+import com.project.teama_be.domain.member.service.command.JwtTokenService;
 import com.project.teama_be.global.config.CorsConfig;
 import com.project.teama_be.global.security.exception.JwtAccessDeniedHandler;
 import com.project.teama_be.global.security.exception.JwtAuthenticationEntryPoint;
@@ -14,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
@@ -24,6 +25,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 
 import java.io.IOException;
 
