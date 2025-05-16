@@ -9,6 +9,7 @@ import com.project.teama_be.global.security.filter.CustomLoginFilter;
 import com.project.teama_be.global.security.filter.JwtAuthorizationFilter;
 import com.project.teama_be.global.security.handler.CustomLogoutHandler;
 import com.project.teama_be.global.security.util.JwtUtil;
+import com.project.teama_be.global.utils.HttpResponseUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -25,6 +26,8 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
+
+import java.io.IOException;
 
 @Configuration
 @EnableWebSecurity
@@ -130,10 +133,16 @@ public class SecurityConfig {
                         .logoutUrl("/api/auth/logout")
                         .addLogoutHandler(new CustomLogoutHandler(jwtTokenService, jwtUtil))
                         .logoutSuccessHandler((request, response, authentication) -> {
-                            response.setStatus(HttpStatus.OK.value());
-                            response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-                            response.setCharacterEncoding("UTF-8");
-                            response.getWriter().write("{\"message\":\"로그아웃 성공\"}");
+                            try {
+                                HttpResponseUtil.setSuccessResponse(
+                                        response,
+                                        HttpStatus.OK,
+                                        "로그아웃이 완료되었습니다."
+                                );
+                            } catch (IOException e) {
+                                // 예외 처리
+                                response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+                            }
                         })
                 );
 
