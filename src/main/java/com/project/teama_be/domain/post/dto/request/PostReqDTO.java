@@ -25,9 +25,7 @@ public class PostReqDTO {
             List<String> tags,
 
             @NotBlank(message = "내용은 필수 입력값입니다.")
-            String content,
-
-            Boolean isPrivate
+            String content
     ) {}
 
     // 게시글 수정

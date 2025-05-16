@@ -138,6 +138,7 @@ public class CommentController {
             @PathVariable Long commentId,
             @CurrentUser AuthUser user
     ) {
+        log.info("[ 댓글 좋아요 ] commentID:{}, user:{}", commentId, user);
         return CustomResponse.onSuccess(commentCommandService.likeComment(commentId, user));
     }
 

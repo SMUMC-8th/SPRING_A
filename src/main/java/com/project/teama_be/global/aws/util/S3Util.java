@@ -1,6 +1,7 @@
 package com.project.teama_be.global.aws.util;
 
-import io.awspring.cloud.s3.ObjectMetadata;
+import com.project.teama_be.global.aws.exception.S3Exception;
+import com.project.teama_be.global.aws.exception.code.S3ErrorCode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -11,7 +12,6 @@ import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
 import software.amazon.awssdk.services.s3.model.GetUrlRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
-import software.amazon.awssdk.services.s3.model.S3Exception;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -36,7 +36,7 @@ public class S3Util {
     /** 사진 S3 업로드
      *
      * @param image 업로드할 파일
-     * @param folderName 폴더명 ex)../test/
+     * @param folderName 폴더명 ex) test/
      * @return 업로드 성공시 파일 경로 반환
      */
     public List<String> uploadFile(List<MultipartFile> image, String folderName) {
@@ -44,7 +44,7 @@ public class S3Util {
         for (MultipartFile file : image) {
             if (file.getSize() > Long.parseLong(maxFileSize)) {
                 log.warn("[ 사진 업로드 ] 파일 크기가 제한 크기를 초과하였습니다.");
-                throw new IllegalArgumentException("파일 크기가 제한 크기를 초과하였습니다.");
+                throw new S3Exception(S3ErrorCode.FILE_SIZE_OVER);
             }
             String fileName = uploadFile(file, folderName);
             imageUrls.add(getImageUrl(fileName));
@@ -68,7 +68,7 @@ public class S3Util {
             PutObjectRequest uploadRequest = PutObjectRequest.builder()
                             .bucket(bucket)
                             .key(folderName + fileName + "." + fileExtension)
-                            .contentType(image.getContentType())
+                            .contentType("image/" + fileExtension)
                             .contentLength(image.getSize())
                             .contentDisposition("inline")
                             .build();
@@ -81,10 +81,10 @@ public class S3Util {
             return folderName + fileName + "." + fileExtension;
         } catch (IOException e) {
             log.error("[ 사진 업로드 ] 단일 사진 업로드 중 IOException 발생: {}", e.getMessage());
-            throw new IllegalArgumentException("파일 업로드 중 오류가 발생하였습니다.");
+            throw new S3Exception(S3ErrorCode.IO_EXCEPTION);
         } catch (S3Exception e) {
             log.error("[ 사진 업로드 ] 단일 사진 업로드 중 S3Exception 발생: {}", e.getMessage());
-            throw new IllegalArgumentException("S3에 파일 업로드 실패하였습니다.");
+            throw new S3Exception(S3ErrorCode.S3_EXCEPTION);
         }
     }
 
@@ -92,11 +92,9 @@ public class S3Util {
      *
      * @param key 조회할 사진 경로명 ex)../test/123456789.jpg
      * @return 파일 URL
-     * @exception IllegalArgumentException 파일이 존재하지 않은 경우
      */
     public String getImageUrl(String key) {
 
-        log.info("[ 사진 조회 ] 단일 사진 조회 시작");
         try {
             // URL 요청
             GetUrlRequest urlRequest = GetUrlRequest.builder()
@@ -105,11 +103,11 @@ public class S3Util {
                     .build();
 
             String url = s3Client.utilities().getUrl(urlRequest).toString();
-            log.info("[ 사진 조회 ] 단일 사진 조회 성공");
+            log.info("[ 사진 조회 ] url:{}", url);
             return url;
         } catch (S3Exception e) {
             log.error("[ 사진 조회 ] 단일 사진 조회 중 S3Exception 발생: {}", e.getMessage());
-            throw new IllegalArgumentException("파일 URL을 가져오는데 실패하였습니다.");
+            throw new S3Exception(S3ErrorCode.S3_EXCEPTION);
         }
     }
 
@@ -119,11 +117,12 @@ public class S3Util {
      * @return 삭제한 URL ex) https://s3.~~/post/~~.png
      */
     public String deleteFile(String key) {
-        log.info("[ 사진 삭제 ] 단일 사진 삭제 시작");
+
         try {
             // 접두사 제거
             key = key.replace(PREFIX, "");
 
+            log.info("[ 사진 삭제 ] key:{}", key);
             // URL 요청
             s3Client.deleteObject(
                     DeleteObjectRequest.builder()
@@ -131,10 +130,11 @@ public class S3Util {
                             .key(key)
                             .build()
             );
+            log.info("[ 사진 삭제 ] OriginUrl:{}", PREFIX+key);
             return PREFIX+key;
         } catch (S3Exception e) {
             log.error("[ 사진 삭제 ] 단일 사진 삭제 중 S3Exception 발생: {}", e.getMessage());
-            throw new IllegalArgumentException("파일 삭제를 실패하였습니다.");
+            throw new S3Exception(S3ErrorCode.S3_EXCEPTION);
         }
     }
 
@@ -143,15 +143,16 @@ public class S3Util {
 
         String fileName = file.getOriginalFilename();
         if (fileName == null) {
-            log.warn("[ 사진 정보 추출 ] 파일명이 존재하지 않습니다.]");
-            throw new IllegalArgumentException("이미지 파일이 존재하지 않습니다.");
+            log.warn("[ 사진 정보 추출 ] 파일명이 존재하지 않습니다.");
+            throw new S3Exception(S3ErrorCode.NOT_FOUND_FILE);
         }
 
         String fileExtension = fileName.substring(fileName.lastIndexOf(".") + 1).toLowerCase();
         if (fileExtension.equals("jpg") || fileExtension.equals("jpeg") || fileExtension.equals("png")) {
             return fileExtension;
         }
+
         log.warn("[ 사진 정보 추출 ] 사진이 아닙니다.");
-        throw new IllegalArgumentException("이미지 파일은 jpg, jpeg, png 파일만 가능합니다.");
+        throw new S3Exception(S3ErrorCode.NOT_IMAGE_FILE);
     }
 }

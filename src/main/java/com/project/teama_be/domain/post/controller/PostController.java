@@ -36,7 +36,7 @@ public class PostController {
     private final PostQueryService postQueryService;
 
     // GET 요청
-    // 각 가게 최신 게시글 조회
+    // 각 가게 최신 게시글 조회 ✅
     @GetMapping("/places/posts")
     @Operation(
             summary = "각 가게 최신 게시글 조회 API by 김주헌",
@@ -48,10 +48,12 @@ public class PostController {
             @RequestParam @Size(min = 1, message = "검색할 가게가 최소 하나 이상 있어야 합니다.")
             List<String> query
     ) {
+
+        log.info("[ 각 가게 최신 게시글 조회 ] query:{}", query);
         return CustomResponse.onSuccess(postQueryService.getPost(query));
     }
 
-    // 키워드 검색
+    // 키워드 검색 ✅
     @GetMapping("/posts")
     @Operation(
             summary = "키워드 검색 API by 김주헌",
@@ -69,11 +71,11 @@ public class PostController {
             @RequestParam(defaultValue = "1") @NotNull @Min(value = 1, message = "게시글은 최소 하나 이상 조회해야 합니다.")
             int size
     ) {
-        log.info("[ 키워드 검색 ] 키워드 검색을 시작합니다.");
+        log.info("[ 키워드 검색 ] query:{}, type:{}, cursor:{}, size:{}", query, type, cursor, size);
         return CustomResponse.onSuccess(postQueryService.getPostsByKeyword(query, type, cursor, size));
     }
 
-    // 가게 게시글 모두 조회
+    // 가게 게시글 모두 조회 ✅
     @GetMapping("/places/{placeId}/posts")
     @Operation(
             summary = "가게 게시글 모두 조회 API by 김주헌",
@@ -88,10 +90,11 @@ public class PostController {
             @RequestParam(defaultValue = "1") @NotNull @Min(value = 1, message = "게시글은 최소 하나 이상 조회해야 합니다.")
             int size
     ) {
+        log.info("[ 가게 게시글 모두 조회 ] placeId:{}, cursor:{}, size:{}", placeId, cursor, size);
         return CustomResponse.onSuccess(postQueryService.getPostsByPlaceId(placeId, cursor, size));
     }
 
-    // 내가 작성한 게시글 조회 (마이페이지)
+    // 내가 작성한 게시글 조회 (마이페이지) ✅
     @GetMapping("/members/{memberId}/posts")
     @Operation(
             summary = "내가 작성한 게시글 조회 (마이페이지) API by 김주헌",
@@ -107,6 +110,8 @@ public class PostController {
             @RequestParam(defaultValue = "1") @NotNull @Min(value = 1, message = "게시글은 최소 하나 이상 조회해야 합니다.")
             int size
     ) {
+        log.info("[ 내가 작성한 게시글 조회 ] memberID:{}, user:{}, cursor:{}, size:{}",
+                memberId, user, cursor, size);
         return CustomResponse.onSuccess(postQueryService.getMyPosts(memberId, user, cursor, size));
     }
 
@@ -124,10 +129,11 @@ public class PostController {
             @RequestParam(defaultValue = "1") @NotNull @Min(value = 1, message = "게시글은 최소 하나 이상 조회해야 합니다.")
             int size
     ) {
+        log.info("[ 최근 본 게시글 조회 ] memberID:{}, cursor:{}, size:{}", memberId, cursor, size);
         return CustomResponse.onSuccess(null);
     }
 
-    // 내가 좋아요 누른 게시글 조회
+    // 내가 좋아요 누른 게시글 조회 ✅
     @GetMapping("/members/{memberId}/posts/like")
     @Operation(
             summary = "내가 좋아요 누른 게시글 조회 API by 김주헌",
@@ -142,11 +148,13 @@ public class PostController {
             @RequestParam(defaultValue = "1") @NotNull @Min(value = 1, message = "게시글은 최소 하나 이상 조회해야 합니다.")
             int size
     ) {
+        log.info("[ 내가 좋아요 누른 게시글 조회 ] memberID:{}, user:{}, cursor:{}, size:{}",
+                memberId, user, cursor, size);
         return CustomResponse.onSuccess(postQueryService.getMyLikePost(memberId, user, cursor, size));
     }
 
     // POST 요청
-    // 게시글 업로드 (파일은 multipart/form-data, 게시글 관련 데이터는 application/json)
+    // 게시글 업로드 ✅ (파일은 multipart/form-data, 게시글 관련 데이터는 application/json)
     @PostMapping(
             value = "/posts",
             consumes = {
@@ -164,7 +172,7 @@ public class PostController {
             @RequestPart @Valid PostReqDTO.PostUpload postContent
     ) {
 
-        log.info("[ 게시글 업로드 ] 게시글 업로드를 시작합니다.");
+        log.info("[ 게시글 업로드 ] user:{}, image:{}, postContent:{}", user, image, postContent);
         return CustomResponse.onSuccess(
                 postCommandService.PostUpload(
                         user,
@@ -174,7 +182,7 @@ public class PostController {
         );
     }
 
-    // 게시글 좋아요
+    // 게시글 좋아요 ✅
     @PostMapping("/posts/{postId}/like")
     @Operation(
             summary = "게시글 좋아요 API by 김주헌",
@@ -184,6 +192,7 @@ public class PostController {
             @AuthenticationPrincipal AuthUser user,
             @PathVariable Long postId
     ) {
+        log.info("[ 게시글 좋아요 ] user:{}, postId:{}", user, postId);
         return CustomResponse.onSuccess(postCommandService.PostLike(user, postId));
     }
 
