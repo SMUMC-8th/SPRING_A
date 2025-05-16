@@ -30,4 +30,10 @@ public class MemberQueryService {
             throw new MemberException(MemberErrorCode.LOGIN_ID_ALREADY_EXISTS);
         }
     }
+
+    public void checkDuplicateNickname(String nickname) {
+        if (memberRepository.existsByNickname(nickname)) {
+            throw new MemberException(MemberErrorCode.NICKNAME_ALREADY_EXISTS);
+        }
+    }
 }

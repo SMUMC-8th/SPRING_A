@@ -47,9 +47,9 @@ public class MemberController {
     }
 
     @GetMapping("/check-nickname")
-    @Operation(summary = "닉네임 중복 확인 API by 김지명 (개발중)", description = "nickname이 이미 사용 중인지 확인합니다.")
+    @Operation(summary = "닉네임 중복 확인 API by 김지명", description = "nickname이 이미 사용 중인지 확인합니다.")
     public CustomResponse<String> checkDuplicateNickname(@RequestParam("nickname") String nickname) {
-
+        memberQueryService.checkDuplicateNickname(nickname);
         return CustomResponse.onSuccess("사용가능한 닉네임 입니다.");
     }
 
