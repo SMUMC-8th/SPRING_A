@@ -71,7 +71,7 @@ public class MemberController {
     }
 
     @PatchMapping(value = "/profile-image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    @Operation(summary = "프로필 이미지 변경 API by 김지명 (개발중)", description = "회원의 프로필 이미지를 업로드하고 URL을 반환합니다.")
+    @Operation(summary = "프로필 이미지 변경 API by 김지명", description = "회원의 프로필 이미지를 업로드하고 URL을 반환합니다.")
     public CustomResponse<MemberResDTO.changeProfileImg> updateProfileImage(@CurrentUser AuthUser authUser,
                                                                             @RequestPart("file") MultipartFile file) {
         MemberResDTO.changeProfileImg resDTO = memberCommandService.changeProfileImg(authUser, file);
@@ -79,10 +79,10 @@ public class MemberController {
     }
 
     @DeleteMapping("")
-    @Operation(summary = "회원 탈퇴 API by 김지명 (개발중)", description = "회원 탈퇴(soft delete) 후 삭제 시간을 반환합니다.")
+    @Operation(summary = "회원 탈퇴 API by 김지명", description = "사용자를 탈퇴시킵니다.")
     public CustomResponse<MemberResDTO.deleteMember> deleteMember(@CurrentUser AuthUser authUser) {
-
-        return CustomResponse.onSuccess(null);
+        MemberResDTO.deleteMember resDTO = memberCommandService.deleteMember(authUser);
+        return CustomResponse.onSuccess(resDTO);
     }
 
 }
