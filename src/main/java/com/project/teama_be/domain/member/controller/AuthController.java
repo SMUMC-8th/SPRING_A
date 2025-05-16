@@ -2,8 +2,8 @@ package com.project.teama_be.domain.member.controller;
 
 import com.project.teama_be.domain.member.dto.request.MemberReqDTO;
 import com.project.teama_be.domain.member.dto.response.MemberResDTO;
-import com.project.teama_be.domain.member.service.AuthCommandService;
-import com.project.teama_be.domain.member.service.JwtTokenService;
+import com.project.teama_be.domain.member.service.command.AuthCommandService;
+import com.project.teama_be.domain.member.service.command.JwtTokenService;
 import com.project.teama_be.global.apiPayload.CustomResponse;
 import com.project.teama_be.global.security.dto.JwtDTO;
 import com.project.teama_be.global.security.util.JwtUtil;

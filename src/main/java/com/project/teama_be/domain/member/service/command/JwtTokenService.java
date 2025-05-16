@@ -1,4 +1,4 @@
-package com.project.teama_be.domain.member.service;
+package com.project.teama_be.domain.member.service.command;
 
 import com.project.teama_be.global.apiPayload.CustomResponse;
 import com.project.teama_be.global.security.dto.JwtDTO;

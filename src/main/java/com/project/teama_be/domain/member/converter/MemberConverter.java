@@ -33,4 +33,32 @@ public class MemberConverter {
                 .createdAt(member.getCreatedAt())
                 .build();
     }
+
+    public static MemberResDTO.memberInfo toMemberInfoResDTO(Member member) {
+        return MemberResDTO.memberInfo.builder()
+                .memberId(member.getId())
+                .loginId(member.getLoginId())
+                .nickname(member.getNickname())
+                .profileUrl(member.getProfileUrl())
+                .build();
+    }
+
+    public static MemberResDTO.changeNickname toChangeNicknameResDTO(Member member) {
+        return MemberResDTO.changeNickname.builder()
+                .newNickname(member.getNickname())
+                .build();
+    }
+
+    public static MemberResDTO.changeProfileImg toChangeProfileImgResDTO(Member member) {
+        return MemberResDTO.changeProfileImg.builder()
+                .memberId(member.getId())
+                .profileImageUrl(member.getProfileUrl())
+                .build();
+    }
+
+    public static MemberResDTO.deleteMember toDeleteMemberResDTO(Member member) {
+        return MemberResDTO.deleteMember.builder()
+                .memberId(member.getId())
+                .build();
+    }
 }
