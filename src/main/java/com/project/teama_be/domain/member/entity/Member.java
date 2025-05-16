@@ -1,10 +1,20 @@
 package com.project.teama_be.domain.member.entity;
 
+import com.project.teama_be.domain.chat.entity.ChatMessage;
+import com.project.teama_be.domain.chat.entity.ChatParticipant;
 import com.project.teama_be.domain.location.entity.Location;
 import com.project.teama_be.domain.member.enums.LoginType;
+import com.project.teama_be.domain.notification.entity.Notification;
+import com.project.teama_be.domain.post.entity.Comment;
+import com.project.teama_be.domain.post.entity.CommentReaction;
+import com.project.teama_be.domain.post.entity.Post;
+import com.project.teama_be.domain.post.entity.PostReaction;
 import com.project.teama_be.global.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "member")
@@ -43,6 +53,43 @@ public class Member extends BaseEntity {
     @Enumerated(EnumType.STRING)
     @Column(name = "login_type", nullable = false)
     private LoginType loginType;
+
+    // 양방향 관계 설정
+    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<Post> posts = new ArrayList<>();
+
+    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<Comment> comments = new ArrayList<>();
+
+    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<CommentReaction> commentReactions = new ArrayList<>();
+
+    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<PostReaction> postReactions = new ArrayList<>();
+
+    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<NotRecommended> notRecommendeds = new ArrayList<>();
+
+    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<RecentlyViewed> recentlyVieweds = new ArrayList<>();
+
+    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<Notification> notifications = new ArrayList<>();
+
+    @OneToMany(mappedBy = "sender", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<ChatMessage> chatMessages = new ArrayList<>();
+
+    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<ChatParticipant> chatParticipants = new ArrayList<>();
 
     public void updatePassword(String encodedPassword) {
         this.password = encodedPassword;
