@@ -28,14 +28,14 @@ public class MemberController {
     @Operation(summary = "사용자 추천 안함 API by 김지명", description = "사용자 추천 안함 API")
     public CustomResponse<MemberResDTO.blockMember> blockMember(@CurrentUser AuthUser authUser,
                                                                 @RequestBody MemberReqDTO.blockMember reqDTO) {
-        MemberResDTO.blockMember resDTO = memberCommandService.blockMember(authUser.getLoginId(), reqDTO);
+        MemberResDTO.blockMember resDTO = memberCommandService.blockMember(authUser, reqDTO);
         return CustomResponse.onSuccess(resDTO);
     }
 
     @GetMapping("")
     @Operation(summary = "회원 정보 조회 API by 김지명", description = "현재 로그인한 회원의 정보를 조회합니다.")
     public CustomResponse<MemberResDTO.memberInfo> getMemberInfo(@CurrentUser AuthUser authUser) {
-        MemberResDTO.memberInfo resDTO = memberQueryService.getMemberInfo(authUser.getLoginId());
+        MemberResDTO.memberInfo resDTO = memberQueryService.getMemberInfo(authUser);
         return CustomResponse.onSuccess(resDTO);
     }
 
@@ -54,7 +54,7 @@ public class MemberController {
     }
 
     @PatchMapping("/password")
-    @Operation(summary = "비밀번호 변경 API by 김지명 (개발중)", description = "기존 비밀번호를 확인하고 새 비밀번호로 변경합니다.")
+    @Operation(summary = "비밀번호 변경 API by 김지명", description = "기존 비밀번호를 확인하고 새 비밀번호로 변경합니다.")
     public CustomResponse<String> changePassword(@CurrentUser AuthUser authUser,
                                                  @RequestBody @Valid MemberReqDTO.changePassword reqDTO) {
 

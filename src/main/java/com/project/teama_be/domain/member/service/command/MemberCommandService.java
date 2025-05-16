@@ -9,6 +9,7 @@ import com.project.teama_be.domain.member.exceptioin.MemberErrorCode;
 import com.project.teama_be.domain.member.exceptioin.MemberException;
 import com.project.teama_be.domain.member.repository.MemberRepository;
 import com.project.teama_be.domain.member.repository.NotRecommendedRepository;
+import com.project.teama_be.global.security.userdetails.AuthUser;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -23,9 +24,8 @@ public class MemberCommandService {
     private final MemberRepository memberRepository;
     private final NotRecommendedRepository notRecommendedRepository;
 
-    public MemberResDTO.blockMember blockMember(String loginId, MemberReqDTO.blockMember reqDTO) {
-        Member member = memberRepository.findByLoginId(loginId)
-                .orElseThrow(() -> new MemberException(MemberErrorCode.MEMBER_NOT_FOUND));
+    public MemberResDTO.blockMember blockMember(AuthUser authUser, MemberReqDTO.blockMember reqDTO) {
+        Member member = findMemberByAuthUser(authUser);
 
         if (!memberRepository.existsById(reqDTO.targetMemberId())) {
             throw new MemberException(MemberErrorCode.TARGET_MEMBER_NOT_FOUND);
@@ -35,5 +35,10 @@ public class MemberCommandService {
         notRecommendedRepository.save(notRecommended);
 
         return NotRecommendedConverter.toBlockMemberResDTO(notRecommended);
+    }
+
+    private Member findMemberByAuthUser(AuthUser authUser) {
+         return memberRepository.findByLoginId(authUser.getLoginId())
+                .orElseThrow(() -> new MemberException(MemberErrorCode.MEMBER_NOT_FOUND));
     }
 }

@@ -6,6 +6,7 @@ import com.project.teama_be.domain.member.entity.Member;
 import com.project.teama_be.domain.member.exceptioin.MemberErrorCode;
 import com.project.teama_be.domain.member.exceptioin.MemberException;
 import com.project.teama_be.domain.member.repository.MemberRepository;
+import com.project.teama_be.global.security.userdetails.AuthUser;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -19,8 +20,8 @@ public class MemberQueryService {
 
     private final MemberRepository memberRepository;
 
-    public MemberResDTO.memberInfo getMemberInfo(String loginId) {
-        Member member = memberRepository.findByLoginId(loginId)
+    public MemberResDTO.memberInfo getMemberInfo(AuthUser authUser) {
+        Member member = memberRepository.findByLoginId(authUser.getLoginId())
                 .orElseThrow(() -> new MemberException(MemberErrorCode.MEMBER_NOT_FOUND));
         return MemberConverter.toMemberInfoResDTO(member);
     }
