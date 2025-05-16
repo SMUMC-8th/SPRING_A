@@ -156,9 +156,7 @@ public class PostController {
     @Operation(
             summary = "게시글 업로드 API by 김주헌",
             description = "게시글을 업로드합니다." +
-                    "파일은 image/**, JSON은 application/json으로 요청해주세요." +
-                    "현재 Swagger로 요청시, JSON이 application/octet-stream으로 요청되는 버그가 존재합니다." +
-                    "PostMan 또는 cURL 등 커스텀 요청이 가능한 방식으로 테스트해주세요."
+                    "파일은 image/**, JSON은 application/json으로 요청해주세요."
     )
     public CustomResponse<PostResDTO.PostUpload> uploadPost(
             @CurrentUser AuthUser user,
@@ -167,7 +165,6 @@ public class PostController {
     ) {
 
         log.info("[ 게시글 업로드 ] 게시글 업로드를 시작합니다.");
-
         return CustomResponse.onSuccess(
                 postCommandService.PostUpload(
                         user,

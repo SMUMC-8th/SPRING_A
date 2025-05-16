@@ -11,19 +11,21 @@ import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
 import static com.querydsl.jpa.JPAExpressions.select;
 
+@Slf4j
 @Repository
 @RequiredArgsConstructor
 public class CommentQueryDslImpl implements CommentQueryDsl{
 
     private final JPAQueryFactory jpaQueryFactory;
 
-    // 댓글 목록 조회
+    // 댓글 목록 조회✅
     @Override
     public CommentResDTO.PageableComment<CommentResDTO.Comment> findCommentList(
             Predicate subQuery,
@@ -57,6 +59,7 @@ public class CommentQueryDslImpl implements CommentQueryDsl{
         if (comments.isEmpty()) {
             throw new CommentException(CommentErrorCode.NOT_FOUND_COMMENT);
         }
+
         // 페이징 정보 설정
         boolean hasNext = comments.size() > size;
         int pageSize = Math.min(comments.size(), size);
@@ -64,12 +67,15 @@ public class CommentQueryDslImpl implements CommentQueryDsl{
 
         // 데이터 정제
         comments = comments.subList(0, pageSize);
+
+        log.info("[ 댓글 목록 조회 ] result:{}, hasNext:{}, pageSize:{}, cursor:{}",
+                comments, hasNext, pageSize, cursor);
         return CommentConverter.toPageableComment(
                 comments, hasNext, pageSize, cursor
         );
     }
 
-    // 대댓글 목록 조회
+    // 대댓글 목록 조회 ✅
     @Override
     public CommentResDTO.PageableComment<CommentResDTO.Reply> findReplyComments(
             Predicate subQuery,
@@ -106,12 +112,15 @@ public class CommentQueryDslImpl implements CommentQueryDsl{
 
         // 데이터 정제
         comments = comments.subList(0, pageSize);
+
+        log.info("[ 대댓글 목록 조회 ] result:{}, hasNext:{}, pageSize:{}, cursor:{}",
+                comments, hasNext, pageSize, cursor);
         return CommentConverter.toPageableComment(
                 comments, hasNext, pageSize, cursor
         );
     }
 
-    // 내가 작성한 댓글 조회
+    // 내가 작성한 댓글 조회 ✅
     @Override
     public CommentResDTO.PageableComment<CommentResDTO.SimpleComment> getMyComments(
             Predicate subQuery,
@@ -147,6 +156,9 @@ public class CommentQueryDslImpl implements CommentQueryDsl{
 
         // 데이터 정제
         comments = comments.subList(0, pageSize);
+
+        log.info("[ 내가 작성한 댓글 조회 ] result:{}, hasNext:{}, pageSize:{}, cursor:{}",
+                comments, hasNext, pageSize, cursor);
         return CommentConverter.toPageableComment(
                 comments, hasNext, pageSize, cursor
         );

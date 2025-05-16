@@ -145,20 +145,11 @@ public class PostQueryService {
         return postRepository.getMyLikePost(builder, size);
     }
 
-    // 유저 정보 조회 : 임시
-    private Member getMember() {
-        return memberRepository.findByLoginId("another_test").orElseThrow(()->
-                new PostException(PostErrorCode.USER_NOT_FOUND));
-    }
-
      // 로그인 유저 <-> memberID 대조
     private void validateMember(AuthUser user, Long memberId) {
 
-        // 임시
-        Member auth = getMember();
-
         // 현재 유저와 맞는지 대조
-        if (!auth.getId().equals(memberId)) {
+        if (!user.getUserId().equals(memberId)) {
             throw new PostException(SecurityErrorCode.FORBIDDEN);
         }
     }

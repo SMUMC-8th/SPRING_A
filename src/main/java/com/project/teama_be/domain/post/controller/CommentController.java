@@ -12,8 +12,10 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
+@Slf4j
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api")
@@ -24,7 +26,7 @@ public class CommentController {
     private final CommentQueryService commentQueryService;
 
     // GET 요청
-    // 댓글 목록 조회
+    // 댓글 목록 조회 ✅
     @GetMapping("/posts/{postId}/comments")
     @Operation(
             summary = "댓글 목록 조회 API by 김주헌",
@@ -39,10 +41,11 @@ public class CommentController {
             @RequestParam(defaultValue = "1") @Min(value = 1, message = "댓글은 최소 하나 이상 조회해야 합니다.")
             int size
     ) {
+        log.info("[ 댓글 목록 조회 ] postID:{}, cursor:{}, size:{}", postId, cursor, size);
         return CustomResponse.onSuccess(commentQueryService.findComments(postId, cursor, size));
     }
 
-    // 대댓글 목록 조회
+    // 대댓글 목록 조회 ✅
     @GetMapping("/comments/{commentId}/reply")
     @Operation(
             summary = "대댓글 목록 조회 API by 김주헌",
@@ -57,10 +60,11 @@ public class CommentController {
             @RequestParam(defaultValue = "1") @Min(value = 1, message = "대댓글은 최소 하나 이상 조회해야 합니다.")
             int size
     ) {
+        log.info("[ 대댓글 목록 조회 ] commentID:{}, cursor:{}, size:{}", commentId, cursor, size);
         return CustomResponse.onSuccess(commentQueryService.findReplyComments(commentId, cursor, size));
     }
 
-    // 내가 작성한 댓글 조회
+    // 내가 작성한 댓글 조회 ✅
     @GetMapping("/members/{memberId}/comments")
     @Operation(
             summary = "내가 작성한 댓글 조회 API by 김주헌",
@@ -76,11 +80,12 @@ public class CommentController {
             @RequestParam(defaultValue = "1") @Min(value = 1, message = "댓글은 최소 하나 이상 조회해야 합니다.")
             int size
     ) {
+        log.info("[ 내가 작성한 댓글 조회 ] memberID:{}, user:{}, cursor:{}, size:{}", memberId, user, cursor, size);
         return CustomResponse.onSuccess(commentQueryService.findMyComments(memberId, user, cursor, size));
     }
 
     // POST 요청
-    // 댓글 달기
+    // 댓글 달기 ✅
     @PostMapping("/posts/{postId}/comments")
     @Operation(
             summary = "댓글 작성 API by 김주헌",
@@ -92,6 +97,7 @@ public class CommentController {
             @CurrentUser AuthUser user,
             @RequestBody CommentReqDTO.Commenting content
     ) {
+        log.info("[ 댓글 작성 ] postID:{}, user:{}, content:{}", postId, user, content);
         return CustomResponse.onSuccess(
                 commentCommandService.createComment(
                         postId,
@@ -101,7 +107,7 @@ public class CommentController {
         );
     }
 
-    // 대댓글 작성
+    // 대댓글 작성✅
     @PostMapping("/comments/{commentId}/replies")
     @Operation(
             summary = "대댓글 작성 API by 김주헌",
@@ -112,6 +118,7 @@ public class CommentController {
             @CurrentUser AuthUser user,
             @RequestBody CommentReqDTO.Commenting commentContent
     ) {
+        log.info("[ 대댓글 작성 ] commentID:{}, user:{}, content:{}", commentId, user, commentContent);
         return CustomResponse.onSuccess(
                 commentCommandService.createReply(
                         commentId,
@@ -121,7 +128,7 @@ public class CommentController {
         );
     }
 
-    // 댓글 좋아요
+    // 댓글 좋아요 ✅
     @PostMapping("/comments/{commentId}/like")
     @Operation(
             summary = "댓글 좋아요 API by 김주헌",
