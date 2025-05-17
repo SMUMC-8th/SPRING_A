@@ -1,8 +1,13 @@
 package com.project.teama_be.domain.post.service.command;
 
 
+import com.google.firebase.messaging.FirebaseMessagingException;
 import com.project.teama_be.domain.member.entity.Member;
 import com.project.teama_be.domain.member.repository.MemberRepository;
+import com.project.teama_be.domain.notification.enums.NotiType;
+import com.project.teama_be.domain.notification.exception.NotiException;
+import com.project.teama_be.domain.notification.exception.code.NotiErrorCode;
+import com.project.teama_be.domain.notification.service.NotiService;
 import com.project.teama_be.domain.post.converter.CommentConverter;
 import com.project.teama_be.domain.post.dto.response.CommentResDTO;
 import com.project.teama_be.domain.post.entity.Comment;
@@ -23,6 +28,8 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Optional;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -32,6 +39,7 @@ public class CommentCommandService {
     private final CommentReactionRepository commentReactionRepository;
     private final MemberRepository memberRepository;
     private final PostRepository postRepository;
+    private final NotiService notiService;
 
     // 댓글 작성 ✅
     public CommentResDTO.CommentUpload createComment(
@@ -52,6 +60,12 @@ public class CommentCommandService {
         Comment comment = commentRepository.save(
                 CommentConverter.toComment(post, member, content)
         );
+
+        try {   //member:로그인된 사용자, post에서 member:알림을 받는 사람
+            notiService.sendMessage(member, post.getMember(), NotiType.COMMENT);
+        } catch (FirebaseMessagingException e) {
+            throw new NotiException(NotiErrorCode.FCM_SEND_FAIL);
+        }
 
         return CommentConverter.toCommentUpload(comment);
     }

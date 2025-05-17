@@ -3,7 +3,7 @@ package com.project.teama_be.domain.post.entity;
 import com.project.teama_be.domain.location.entity.Location;
 import com.project.teama_be.domain.member.entity.Member;
 import com.project.teama_be.domain.member.entity.RecentlyViewed;
-import com.project.teama_be.domain.notification.entity.Notification;
+import com.project.teama_be.domain.notification.entity.Noti;
 import com.project.teama_be.global.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
@@ -76,7 +76,7 @@ public class Post extends BaseEntity {
 
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
-    private List<Notification> notifications = new ArrayList<>();
+    private List<Noti> notifications = new ArrayList<>();
 
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default

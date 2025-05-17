@@ -4,7 +4,7 @@ import com.project.teama_be.domain.chat.entity.ChatMessage;
 import com.project.teama_be.domain.chat.entity.ChatParticipant;
 import com.project.teama_be.domain.location.entity.Location;
 import com.project.teama_be.domain.member.enums.LoginType;
-import com.project.teama_be.domain.notification.entity.Notification;
+import com.project.teama_be.domain.notification.entity.Noti;
 import com.project.teama_be.domain.post.entity.Comment;
 import com.project.teama_be.domain.post.entity.CommentReaction;
 import com.project.teama_be.domain.post.entity.Post;
@@ -81,7 +81,7 @@ public class Member extends BaseEntity {
 
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
-    private List<Notification> notifications = new ArrayList<>();
+    private List<Noti> notifications = new ArrayList<>();
 
     @OneToMany(mappedBy = "sender", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
