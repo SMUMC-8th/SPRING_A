@@ -14,7 +14,8 @@ import lombok.*;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Builder
 @Getter
-public class Notification extends BaseEntity {
+public class Noti extends BaseEntity {
+//firebase에서 제공하는 Notification임포트 할 때 중복돼서 Noti로 변경
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -22,20 +23,32 @@ public class Notification extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id", nullable = false)
-    private Member member;
+    private Member member;  //알림을 받는 사람: receiver
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "post_id", nullable = false)
     private Post post;
 
-    @Column(name = "content", nullable = false)
-    private String content;
+    @Column(name = "title", nullable = false)
+    private String title;
+
+    @Column(name = "body", nullable = false)
+    private String body;
+    //content지우고 title, body, isRead 생성
+
+    @Column(name = "isRead", nullable = false)
+    private Boolean isRead = false;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "상태", nullable = false)
-    private NotificationStatus status;
+    @Column(name = "status", nullable = false)
+    private NotificationStatus status = NotificationStatus.FAIL;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "알림유형", nullable = false)
+    @Column(name = "type", nullable = false)
     private NotificationType type;
+
+    public void setIsRead(Boolean isRead) {
+        this.isRead = isRead;
+    }
 }
+

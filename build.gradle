@@ -78,6 +78,9 @@ dependencies {
 
     // OAuth2 login
     implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
+
+    // FCM
+    implementation 'com.google.firebase:firebase-admin:9.3.0'
 }
 
 jar{
