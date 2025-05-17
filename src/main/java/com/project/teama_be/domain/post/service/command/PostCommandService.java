@@ -1,9 +1,14 @@
 package com.project.teama_be.domain.post.service.command;
 
+import com.google.firebase.messaging.FirebaseMessagingException;
 import com.project.teama_be.domain.location.entity.Location;
 import com.project.teama_be.domain.location.repository.LocationRepository;
 import com.project.teama_be.domain.member.entity.Member;
 import com.project.teama_be.domain.member.repository.MemberRepository;
+import com.project.teama_be.domain.notification.enums.NotiType;
+import com.project.teama_be.domain.notification.exception.NotiException;
+import com.project.teama_be.domain.notification.exception.code.NotiErrorCode;
+import com.project.teama_be.domain.notification.service.NotiService;
 import com.project.teama_be.domain.post.converter.PostConverter;
 import com.project.teama_be.domain.post.converter.TagConverter;
 import com.project.teama_be.domain.post.dto.request.PostReqDTO;
@@ -43,6 +48,7 @@ public class PostCommandService {
     private final MemberRepository memberRepository;
     private final S3Util s3Util;
     private final LocationRepository locationRepository;
+    private final NotiService notiService;
 
     // 게시글 업로드 ✅
     @Transactional
@@ -150,6 +156,13 @@ public class PostCommandService {
             post.updateLikeCount(post.getLikeCount() + 1);
         }
         log.info("[ 게시글 좋아요 ] reaction:{}", reaction);
+
+        try {   //member:로그인된 사용자, post에서 member:알림을 받는 사람
+            notiService.sendMessage(member, post.getMember(), NotiType.LIKE);
+        } catch (FirebaseMessagingException e) {
+            throw new NotiException(NotiErrorCode.FCM_SEND_FAIL);
+        }
+
         return PostConverter.toPostLike(reaction);
     }
 

@@ -1,8 +1,8 @@
 package com.project.teama_be.domain.notification.entity;
 
 import com.project.teama_be.domain.member.entity.Member;
-import com.project.teama_be.domain.notification.enums.NotificationStatus;
-import com.project.teama_be.domain.notification.enums.NotificationType;
+import com.project.teama_be.domain.notification.enums.NotiStatus;
+import com.project.teama_be.domain.notification.enums.NotiType;
 import com.project.teama_be.domain.post.entity.Post;
 import com.project.teama_be.global.entity.BaseEntity;
 import jakarta.persistence.*;
@@ -41,11 +41,11 @@ public class Noti extends BaseEntity {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
-    private NotificationStatus status = NotificationStatus.FAIL;
+    private NotiStatus status = NotiStatus.FAIL;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "type", nullable = false)
-    private NotificationType type;
+    private NotiType type;
 
     public void setIsRead(Boolean isRead) {
         this.isRead = isRead;
