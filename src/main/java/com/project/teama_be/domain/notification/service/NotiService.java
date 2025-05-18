@@ -100,7 +100,7 @@ public class NotiService {
             return response;
         } catch (FirebaseMessagingException e) {
             log.error("[ FCM 전송 실패 ]", e);
-            throw new NotiException(NotiErrorCode.FCM_SEND_FAIL);
+            throw new NotiException(NotiErrorCode.FCM_SEND_FAIL2);
         }
     }
 
@@ -186,7 +186,7 @@ public class NotiService {
             return FirebaseMessaging.getInstance().sendAll(messages);
         } catch (FirebaseMessagingException e) {
             log.error("[ FCM 멀티캐스트 전송 실패 ]", e);
-            throw new NotiException(NotiErrorCode.FCM_SEND_FAIL);
+            throw new NotiException(NotiErrorCode.FCM_SEND_FAIL3);
         }
     }
 
