@@ -1,5 +1,5 @@
 package com.project.teama_be.domain.notification.enums;
 
-public enum NotificationStatus {
-    SUCCESS, FAIL
+public enum NotiStatus {
+    PENDING, SUCCESS, FAIL
 }

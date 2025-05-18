@@ -1,4 +1,5 @@
 *.yml
+firebase-umc-smp.json
 
 HELP.md
 .gradle
