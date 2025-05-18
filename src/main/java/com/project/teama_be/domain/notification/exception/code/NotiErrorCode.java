@@ -16,7 +16,8 @@ public enum NotiErrorCode implements BaseErrorCode {
     FCM_SEND_FAIL(HttpStatus.BAD_REQUEST, "NOTI400_3", "알림 전송 실패"),
     NOTIFICATION_NOT_FOUND(HttpStatus.NOT_FOUND, "NOTI404_2", "알림을 찾을 수 없습니다."),
     NOTIFICATION_ACCESS_DENIED(HttpStatus.BAD_REQUEST, "NOTI400_4", "알림 이용 불가"),
-    NOT_FOUND_MEMBER(HttpStatus.NOT_FOUND, "NOTI400_5" ,"존재하지 않는 회원입니다." );
+    NOT_FOUND_MEMBER(HttpStatus.NOT_FOUND, "NOTI400_5" ,"존재하지 않는 회원입니다." ),
+    NOTI_NOT_SAVE(HttpStatus.INTERNAL_SERVER_ERROR, "NOTI500_1", "알림 저장 실패");
 
     private final HttpStatus httpStatus;
     private final String code;

@@ -72,7 +72,11 @@ public class NotiService {
 
         // 3. 알림 저장(알림을 받는 사람 기준)
         Noti noti = notiConverter.toNoty(receiver, post, type, message.title(), message.body());
-        notiRepository.save(noti);
+        try {
+            notiRepository.save(noti);
+        } catch (Exception e) {
+            throw new NotiException(NotiErrorCode.NOTI_NOT_SAVE);
+        }
         log.info("[ fcm 알림 저장 ]: {}", noti);
 
         return notiConverter.toSendResDTO(noti, fcmMessageId);
@@ -148,7 +152,12 @@ public class NotiService {
 
             // 알림 저장  - 채팅방번호라던지 같이 저장해야할거같은데 Noti 엔티티도 수정해야됨 ....
             Noti noti = notiConverter.toChatNoti(receiver, NotiType.CHAT, message.title(), message.body());
-            notiRepository.save(noti);
+            try {
+                notiRepository.save(noti);
+            } catch (Exception e) {
+                throw new NotiException(NotiErrorCode.NOTI_NOT_SAVE);
+            }
+
         }
 
         if (!tokens.isEmpty()) {
