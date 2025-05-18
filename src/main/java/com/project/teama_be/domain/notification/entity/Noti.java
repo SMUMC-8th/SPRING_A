@@ -26,7 +26,7 @@ public class Noti extends BaseEntity {
     private Member member;  //알림을 받는 사람: receiver
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "post_id", nullable = false)
+    @JoinColumn(name = "post_id")
     private Post post;
 
     @Column(name = "title", nullable = false)

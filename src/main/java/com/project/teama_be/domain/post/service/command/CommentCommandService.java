@@ -62,7 +62,7 @@ public class CommentCommandService {
         );
 
         try {   //member:로그인된 사용자, post에서 member:알림을 받는 사람
-            notiService.sendMessage(member, post.getMember(), NotiType.COMMENT);
+            notiService.sendMessage(member, post.getMember(), post, NotiType.COMMENT);
         } catch (FirebaseMessagingException e) {
             throw new NotiException(NotiErrorCode.FCM_SEND_FAIL);
         }
@@ -89,6 +89,12 @@ public class CommentCommandService {
         Comment comment = commentRepository.save(
                 CommentConverter.toReply(post, member, content, commentId)
         );
+
+        try {   //member:로그인된 사용자, post에서 member:알림을 받는 사람
+            notiService.sendMessage(member, post.getMember(), post, NotiType.COMMENT_COMMENT);
+        } catch (FirebaseMessagingException e) {
+            throw new NotiException(NotiErrorCode.FCM_SEND_FAIL);
+        }
 
         return CommentConverter.toCommentUpload(comment);
     }

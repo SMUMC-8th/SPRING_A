@@ -70,21 +70,22 @@ public class NotiController {
     @GetMapping("/get-list")
     @Operation(summary = "FCM API by 신윤진", description = "FCM 알림 조회 목록")
     public CustomResponse<NotiResDTO.NotificationPageResponseDTO> getNotifications(
-            @CurrentUser Member member,
+            @CurrentUser AuthUser user,
             @RequestParam(required = false) Long cursor,
-            @RequestParam(defaultValue = "20") Long size
+            @RequestParam(defaultValue = "10") Long size
     ) {
-        return CustomResponse.onSuccess(null);
+        NotiResDTO.NotificationPageResponseDTO response = notiService.getNotifications(user.getUserId(), cursor, size);
+        return CustomResponse.onSuccess(response);
     }
 
     //알림 읽음 처리
     @PatchMapping("/{notificationId}/read")
-    public CustomResponse<Void> markNotificationAsRead(
+    public CustomResponse<String> markNotificationAsRead(
             @CurrentUser AuthUser user,
             @PathVariable Long notificationId
     ) {
         notiService.markAsRead(user.getUserId(), notificationId);
-        return CustomResponse.onSuccess(null);
+        return CustomResponse.onSuccess("알림 읽음 처리 완료");
     }
 
 
