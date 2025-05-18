@@ -43,19 +43,19 @@ public class NotiController {
         return CustomResponse.onSuccess(null);
     }
 
-    //fcm 푸시 알림 전송
-    @PostMapping("/send/{postId}")
-    @Operation(summary = "FCM API by 신윤진", description = "FCM 게시물 좋아요 알림 테스트용 전송")
-    public CustomResponse<String> sendMessage(@CurrentUser AuthUser user, @PathVariable Long postId) throws FirebaseMessagingException {
-        postCommandService.PostLike(user, postId);
-        //여기 잠시만 좀 서비스로직좀 넣겟습니다(테스트할때만요)
-        //잠깐 string반환으로 테스트할게요...
-        Member sender = memberRepository.findById(user.getUserId()).get();  //로그인한 사용자
-        Post post = postRepository.findById(postId).isPresent() ? postRepository.findById(postId).get() : null;
-        Member receiver = post.getMember(); //가 좋아요 누른 postId에서 receiver을 추출
-        String sendMessage = notiService.sendMessage(sender, receiver, NotiType.COMMENT);
-        return CustomResponse.onSuccess(sendMessage);
-    }
+//    //fcm 푸시 알림 전송
+//    @PostMapping("/send/{postId}")
+//    @Operation(summary = "FCM API by 신윤진", description = "FCM 게시물 좋아요 알림 테스트용 전송")
+//    public CustomResponse<String> sendMessage(@CurrentUser AuthUser user, @PathVariable Long postId) throws FirebaseMessagingException {
+//        postCommandService.PostLike(user, postId);
+//        //여기 잠시만 좀 서비스로직좀 넣겟습니다(테스트할때만요)
+//        //잠깐 string반환으로 테스트할게요...
+//        Member sender = memberRepository.findById(user.getUserId()).get();  //로그인한 사용자
+//        Post post = postRepository.findById(postId).isPresent() ? postRepository.findById(postId).get() : null;
+//        Member receiver = post.getMember(); //가 좋아요 누른 postId에서 receiver을 추출
+//        String sendMessage = notiService.sendMessage(sender, receiver, NotiType.COMMENT);
+//        return CustomResponse.onSuccess(sendMessage);
+//    }
 
 //    @PostMapping("/send-chat")
 //    @Operation(summary = "FCM API by 신윤진", description = "FCM 채팅 알림 테스트용 전송")

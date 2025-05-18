@@ -15,7 +15,6 @@ import com.project.teama_be.domain.notification.enums.NotiType;
 import com.project.teama_be.domain.notification.exception.NotiException;
 import com.project.teama_be.domain.notification.exception.code.NotiErrorCode;
 import com.project.teama_be.domain.notification.repository.NotiRepository;
-import com.project.teama_be.domain.post.entity.Post;
 import com.project.teama_be.domain.post.exception.PostException;
 import com.project.teama_be.domain.post.exception.code.PostErrorCode;
 import com.project.teama_be.global.security.userdetails.AuthUser;
@@ -69,12 +68,12 @@ public class NotiService {
         NotiResDTO.FcmMessage message = notiMessageConverter(type, senderName);
 
         // 1. 알림 전송
-        String fcmToken = getFcmToken(receiver.getId()).fcmToken(); //record라서 .fctToken()했네
-        String sendMessage = makeMessage(fcmToken, message.title(), message.body());//record라서 get아닌게 헷갈림
-        //말이 title이지 지금 title에 보내는 사람, body에 님이 댓글/좋아요를 달았습니다. 가 들어가는중
+        String fcmToken = getFcmToken(receiver.getId()).fcmToken(); //record라서 .fctToken()
+        String sendMessage = makeMessage(fcmToken, message.title(), message.body());
+        // title에 보내는 사람, body에 님이 댓글/좋아요를 달았습니다. 가 들어가는중
 
         // 2. 알림 저장(알림을 받는 사람 기준)
-        Noti noti = notiConverter.toEntity(receiver, type, message.title(), message.body());
+        Noti noti = notiConverter.toNoty(receiver, type, message.title(), message.body());
         notiRepository.save(noti);
         log.info("[ fcm 알림 저장 ]: {}", noti);
 
