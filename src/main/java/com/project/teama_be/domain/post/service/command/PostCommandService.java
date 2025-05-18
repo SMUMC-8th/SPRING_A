@@ -158,7 +158,7 @@ public class PostCommandService {
         log.info("[ 게시글 좋아요 ] reaction:{}", reaction);
 
         try {   //member:로그인된 사용자, post에서 member:알림을 받는 사람
-            notiService.sendMessage(member, post.getMember(), NotiType.LIKE);
+            notiService.sendMessage(member, post.getMember(), post, NotiType.LIKE);
         } catch (FirebaseMessagingException e) {
             throw new NotiException(NotiErrorCode.FCM_SEND_FAIL);
         }
