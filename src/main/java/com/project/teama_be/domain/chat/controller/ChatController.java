@@ -57,7 +57,7 @@ public class ChatController {
                 .map(CustomResponse::onSuccess);
     }
 
-    @PutMapping("/rooms/{chatRoomId}/notification")
+    @PatchMapping("/rooms/{chatRoomId}/notification")
     @Operation(summary = "채팅방 알림 설정 API", description = "채팅방의 알림 설정을 변경합니다.")
     public Mono<CustomResponse<ChatResDTO.ChatRoomNotificationInfo>> updateNotification(
             @PathVariable String chatRoomId,
@@ -67,5 +67,14 @@ public class ChatController {
         log.info("채팅방 알림 설정 변경 - 채팅방: {}, 설정: {}", chatRoomId, reqDTO.notificationEnabled());
         return chatCommandService.updateNotificationSetting(chatRoomId, authUser.getUserId(), reqDTO.notificationEnabled())
                 .map(CustomResponse::onSuccess);
+    }
+
+    @DeleteMapping("/rooms/{chatRoomId}")
+    @Operation(summary = "채팅방 나가기 API", description = "채팅방에서 나갑니다.")
+    public Mono<CustomResponse<String>> leaveChatRoom(@PathVariable String chatRoomId,
+                                                      @CurrentUser AuthUser authUser) {
+        log.info("채팅방 나가기 - 채팅방: {}", chatRoomId);
+        return chatCommandService.leaveChatRoom(chatRoomId, authUser.getUserId())
+                .thenReturn(CustomResponse.onSuccess("채팅방을 나갔습니다."));
     }
 }

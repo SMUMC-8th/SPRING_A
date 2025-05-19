@@ -146,4 +146,34 @@ public class ChatCommandService {
                 })
                 .subscribeOn(Schedulers.boundedElastic());
     }
+
+    /**
+     * 채팅방 나가기
+     */
+    @Transactional
+    public Mono<Void> leaveChatRoom(String chatRoomId, Long memberId) {
+        log.info("채팅방 나가기 - 채팅방 ID: {}, 사용자 ID: {}", chatRoomId, memberId);
+
+        return Mono.fromCallable(() -> {
+                    // 채팅방 ID에서 숫자 부분만 추출
+                    Long roomId = null;
+                    try {
+                        roomId = Long.parseLong(chatRoomId.replace("location_", ""));
+                    } catch (NumberFormatException e) {
+                        throw new ChatException(ChatErrorCode.CHAT_ROOM_NOT_FOUND);
+                    }
+
+                    // 참여 정보 조회
+                    ChatParticipant participant = chatParticipantRepository
+                            .findByChatRoomIdAndMemberId(roomId, memberId)
+                            .orElseThrow(() -> new ChatException(ChatErrorCode.PARTICIPANT_NOT_FOUND));
+
+                    // 참여 정보 삭제
+                    chatParticipantRepository.delete(participant);
+
+                    return null;
+                })
+                .subscribeOn(Schedulers.boundedElastic())
+                .then();
+    }
 }
