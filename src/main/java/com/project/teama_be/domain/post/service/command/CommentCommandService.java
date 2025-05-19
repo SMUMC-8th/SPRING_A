@@ -112,6 +112,8 @@ public class CommentCommandService {
         Comment comment = commentRepository.findById(commentId).orElseThrow(()->
                 new CommentException(CommentErrorCode.NOT_FOUND));
 
+        Post post = comment.getPost();  //알림에서 사용하겠습니다
+
         // 좋아요 여부 조회
         CommentReaction commentReaction= commentReactionRepository
                 .findByCommentId(commentId).orElse(null);
@@ -125,6 +127,13 @@ public class CommentCommandService {
                             comment, member, ReactionType.LIKE
                     )
             );
+            // 댓글 좋아요 알림
+            try {   //sender = member: 로그인된 사용자
+                    //receiver = comment에서 member: 알림을 받는 사람
+                notiService.sendMessage(member, comment.getMember(), post, NotiType.COMMENT_LIKE);
+            } catch (FirebaseMessagingException e) {
+                throw new NotiException(NotiErrorCode.FCM_SEND_FAIL);
+            }
 
             // 댓글 좋아요 수 ++
             comment.updateLikeCount(comment.getLikeCount() + 1);
@@ -138,6 +147,14 @@ public class CommentCommandService {
             commentReaction.updateReactionType(ReactionType.LIKE);
             // 댓글 좋아요 수 ++
             comment.updateLikeCount(comment.getLikeCount() + 1);
+
+            //댓글 좋아요 알림
+            try {   //sender = member: 로그인된 사용자
+                    //receiver = comment에서 member: 알림을 받는 사람
+                notiService.sendMessage(member, comment.getMember(), post, NotiType.COMMENT_LIKE);
+            } catch (FirebaseMessagingException e) {
+                throw new NotiException(NotiErrorCode.FCM_SEND_FAIL);
+            }
         }
 
         return CommentConverter.toCommentLike(commentReaction);

@@ -142,6 +142,13 @@ public class PostCommandService {
             PostReaction result = postReactionRepository.save(
                     PostConverter.toPostReaction(member, post, ReactionType.LIKE));
             post.updateLikeCount(post.getLikeCount() + 1);
+
+            try {   //member:로그인된 사용자, post에서 member:알림을 받는 사람
+                notiService.sendMessage(member, post.getMember(), post, NotiType.LIKE);
+            } catch (FirebaseMessagingException e) {
+                throw new NotiException(NotiErrorCode.FCM_SEND_FAIL);
+            }
+
             return PostConverter.toPostLike(result);
         }
         String reactionType = reaction.getReactionType().name();
@@ -154,14 +161,15 @@ public class PostCommandService {
         } else {
             reaction.updateReactionType(ReactionType.LIKE);
             post.updateLikeCount(post.getLikeCount() + 1);
+
+            // 좋아요 반영의 경우에만 알림 전송
+            try {   //member:로그인된 사용자, post에서 member:알림을 받는 사람
+                notiService.sendMessage(member, post.getMember(), post, NotiType.LIKE);
+            } catch (FirebaseMessagingException e) {
+                throw new NotiException(NotiErrorCode.FCM_SEND_FAIL);
+            }
         }
         log.info("[ 게시글 좋아요 ] reaction:{}", reaction);
-
-        try {   //member:로그인된 사용자, post에서 member:알림을 받는 사람
-            notiService.sendMessage(member, post.getMember(), post, NotiType.LIKE);
-        } catch (FirebaseMessagingException e) {
-            throw new NotiException(NotiErrorCode.FCM_SEND_FAIL);
-        }
 
         return PostConverter.toPostLike(reaction);
     }
