@@ -38,9 +38,9 @@ public class NotiController {
     //fcm토큰 저장
     @PostMapping("/token")
     @Operation(summary = "FCM API by 신윤진", description = "FCM 토큰을 받아와 저장합니다.")
-    public CustomResponse<NotiResDTO> saveToken(@CurrentUser AuthUser user, @RequestBody NotiReqDTO.FcmToken reqDTO) {
-        notiService.saveFcmToken(user.getUserId(), reqDTO);
-        return CustomResponse.onSuccess(null);
+    public CustomResponse<NotiResDTO.SaveFcmToken> saveToken(@CurrentUser AuthUser user, @RequestBody NotiReqDTO.FcmToken reqDTO) {
+        NotiResDTO.SaveFcmToken resDTO = notiService.saveFcmToken(user.getUserId(), reqDTO);
+        return CustomResponse.onSuccess(resDTO);
     }
 
 //    //fcm 푸시 알림 전송

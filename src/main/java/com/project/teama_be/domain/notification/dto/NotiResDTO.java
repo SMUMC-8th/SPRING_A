@@ -1,9 +1,18 @@
 package com.project.teama_be.domain.notification.dto;
 
+import lombok.Builder;
+
 import java.time.LocalDateTime;
 import java.util.List;
 
 public class NotiResDTO {
+
+    @Builder
+    public record SaveFcmToken(
+            Long memberId,
+            String fcmToken
+    ) {
+    }
 
     public record FcmMessage(String title, String body) {}
 

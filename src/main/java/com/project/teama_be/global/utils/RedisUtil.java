@@ -18,11 +18,11 @@ public class RedisUtil {
     }
 
     public void saveFcmToken(String key, NotiReqDTO.FcmToken token){
-        redisTemplate.opsForValue().set(key, token);
+        redisTemplate.opsForValue().set(key, token.fcmToken());
     }
 
-    public NotiReqDTO.FcmToken getFcmToken(String key) {
-        return (NotiReqDTO.FcmToken) redisTemplate.opsForValue().get(key);
+    public String getFcmToken(String key) {
+        return (String) redisTemplate.opsForValue().get(key);
     }
 
     public boolean hasKey(String key) {
