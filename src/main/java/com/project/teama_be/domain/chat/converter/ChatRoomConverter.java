@@ -23,7 +23,7 @@ public class ChatRoomConverter {
         String locationName = getLocationName(location);
 
         return ChatResDTO.ChatRoom.builder()
-                .chatRoomId("location_" + location.getId())
+                .chatRoomId(location.getId())
                 .chatRoomName(chatRoom.getName())
                 .placeName(locationName)
                 .participantCount(chatRoom.getParticipants().size())
@@ -42,13 +42,13 @@ public class ChatRoomConverter {
         return location.getAddressName();
     }
 
-    public static ChatResDTO.RegionChatRoomItem toRegionChatRoomItem(ChatRoom chatRoom) {
+    public static ChatResDTO.ChatRoomItem toRegionChatRoomItem(ChatRoom chatRoom) {
         Location location = chatRoom.getLocation();
         String locationName = location.getPlaceName() != null ?
                 location.getPlaceName() : location.getAddressName();
 
-        return ChatResDTO.RegionChatRoomItem.builder()
-                .chatRoomId("location_" + location.getId())
+        return ChatResDTO.ChatRoomItem.builder()
+                .chatRoomId(location.getId())
                 .chatRoomName(chatRoom.getName())
                 .locationName(locationName)
                 .participantCount(chatRoom.getParticipants().size())
@@ -59,7 +59,7 @@ public class ChatRoomConverter {
     }
 
     public static ChatResDTO.ChatRoomNotificationInfo toChatRoomNotificationInfo(
-            String chatRoomId, boolean notificationEnabled) {
+            Long chatRoomId, boolean notificationEnabled) {
         return ChatResDTO.ChatRoomNotificationInfo.builder()
                 .chatRoomId(chatRoomId)
                 .notificationEnabled(notificationEnabled)

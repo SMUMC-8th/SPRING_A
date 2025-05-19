@@ -119,23 +119,15 @@ public class ChatCommandService {
      */
     @Transactional
     public Mono<ChatResDTO.ChatRoomNotificationInfo> updateNotificationSetting(
-            String chatRoomId, Long memberId, boolean notificationEnabled) {
+            Long chatRoomId, Long memberId, boolean notificationEnabled) {
 
         log.info("채팅방 알림 설정 변경 - 채팅방 ID: {}, 사용자 ID: {}, 활성화: {}",
                 chatRoomId, memberId, notificationEnabled);
 
         return Mono.fromCallable(() -> {
-                    // 채팅방 ID에서 숫자 부분만 추출
-                    Long roomId = null;
-                    try {
-                        roomId = Long.parseLong(chatRoomId.replace("location_", ""));
-                    } catch (NumberFormatException e) {
-                        throw new ChatException(ChatErrorCode.CHAT_ROOM_NOT_FOUND);
-                    }
-
-                    // 참여 정보 조회
+                    // 참여 정보 조회 - 직접 chatRoomId 사용
                     ChatParticipant participant = chatParticipantRepository
-                            .findByChatRoomIdAndMemberId(roomId, memberId)
+                            .findByChatRoomIdAndMemberId(chatRoomId, memberId)
                             .orElseThrow(() -> new ChatException(ChatErrorCode.PARTICIPANT_NOT_FOUND));
 
                     // 알림 설정 변경
@@ -151,21 +143,12 @@ public class ChatCommandService {
      * 채팅방 나가기
      */
     @Transactional
-    public Mono<Void> leaveChatRoom(String chatRoomId, Long memberId) {
+    public Mono<Void> leaveChatRoom(Long chatRoomId, Long memberId) {
         log.info("채팅방 나가기 - 채팅방 ID: {}, 사용자 ID: {}", chatRoomId, memberId);
 
         return Mono.fromCallable(() -> {
-                    // 채팅방 ID에서 숫자 부분만 추출
-                    Long roomId = null;
-                    try {
-                        roomId = Long.parseLong(chatRoomId.replace("location_", ""));
-                    } catch (NumberFormatException e) {
-                        throw new ChatException(ChatErrorCode.CHAT_ROOM_NOT_FOUND);
-                    }
-
-                    // 참여 정보 조회
                     ChatParticipant participant = chatParticipantRepository
-                            .findByChatRoomIdAndMemberId(roomId, memberId)
+                            .findByChatRoomIdAndMemberId(chatRoomId, memberId)
                             .orElseThrow(() -> new ChatException(ChatErrorCode.PARTICIPANT_NOT_FOUND));
 
                     // 참여 정보 삭제

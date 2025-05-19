@@ -44,7 +44,7 @@ public class ChatQueryService {
     /**
      * 지역별 미참여 채팅방 목록 조회
      */
-    public Mono<ChatResDTO.RegionChatRoomList> getNonParticipatingRegionChatRooms(
+    public Mono<ChatResDTO.ChatRoomList> getNonParticipatingRegionChatRooms(
             String region, Long memberId, Long cursor, Integer limit) {
 
         log.info("지역별 미참여 채팅방 목록 조회 - 지역: {}, 사용자 ID: {}, 커서: {}, 제한: {}",
@@ -56,7 +56,7 @@ public class ChatQueryService {
                     Pageable pageable = PageRequest.of(0, pageSize);
 
                     // 참여하지 않은 채팅방만 조회
-                    List<ChatResDTO.RegionChatRoomItem> chatRooms = chatRoomRepository
+                    List<ChatResDTO.ChatRoomItem> chatRooms = chatRoomRepository
                             .findNonParticipatingRoomsByRegion(region, memberId, pageable)
                             .stream()
                             .map(ChatRoomConverter::toRegionChatRoomItem)
@@ -71,7 +71,7 @@ public class ChatQueryService {
     /**
      * 내 참여 채팅방 목록 조회
      */
-    public Mono<ChatResDTO.RegionChatRoomList> getMyChatRooms(
+    public Mono<ChatResDTO.ChatRoomList> getMyChatRooms(
             Long memberId, Long cursor, Integer limit) {
 
         log.info("내 참여 채팅방 목록 조회 - 사용자 ID: {}, 커서: {}, 제한: {}", memberId, cursor, limit);
@@ -81,7 +81,7 @@ public class ChatQueryService {
         return Mono.fromCallable(() -> {
                     Pageable pageable = PageRequest.of(0, pageSize);
 
-                    List<ChatResDTO.RegionChatRoomItem> chatRooms = chatRoomRepository
+                    List<ChatResDTO.ChatRoomItem> chatRooms = chatRoomRepository
                             .findParticipatingRoomsByMemberId(memberId, pageable)
                             .stream()
                             .map(ChatRoomConverter::toRegionChatRoomItem)
@@ -92,12 +92,12 @@ public class ChatQueryService {
                 .subscribeOn(Schedulers.boundedElastic());
     }
 
-    private ChatResDTO.RegionChatRoomList getRegionChatRoomList(int pageSize, List<ChatResDTO.RegionChatRoomItem> chatRooms) {
-        String nextCursor = chatRooms.size() >= pageSize && !chatRooms.isEmpty() ?
+    private ChatResDTO.ChatRoomList getRegionChatRoomList(int pageSize, List<ChatResDTO.ChatRoomItem> chatRooms) {
+        Long nextCursor = chatRooms.size() >= pageSize && !chatRooms.isEmpty() ?
                 chatRooms.get(chatRooms.size() - 1).chatRoomId() : null;
         boolean hasNext = nextCursor != null;
 
-        return ChatResDTO.RegionChatRoomList.builder()
+        return ChatResDTO.ChatRoomList.builder()
                 .RegionChatRoomListDTO(chatRooms)
                 .nextCursor(nextCursor)
                 .hasNext(hasNext)

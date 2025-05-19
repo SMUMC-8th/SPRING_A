@@ -24,8 +24,19 @@ public class ChatController {
     private final ChatQueryService chatQueryService;
     private final ChatCommandService chatCommandService;
 
+    @PostMapping("/rooms")
+    @Operation(summary = "채팅방 생성/입장 API by 김지명", description = "위치 기반 채팅방을 생성하거나 입장합니다.")
+    public Mono<CustomResponse<ChatResDTO.ChatRoom>> createChatRoom(
+            @RequestBody ChatReqDTO.CreateChatRoom reqDTO,
+            @CurrentUser AuthUser authUser) {
+
+        log.info("채팅방 생성/입장 요청 - 위치 ID: {}, 사용자: {}", reqDTO.placeId(), authUser.getLoginId());
+        return chatCommandService.createOrJoinChatRoom(reqDTO.placeId(), authUser.getUserId())
+                .map(CustomResponse::onSuccess);
+    }
+
     @GetMapping("/sendbird-token")
-    @Operation(summary = "SendBird 토큰 발급 API", description = "현재 로그인한 사용자의 SendBird 토큰을 발급합니다.")
+    @Operation(summary = "SendBird 토큰 발급 API by 김지명", description = "현재 로그인한 사용자의 SendBird 토큰을 발급합니다.")
     public Mono<CustomResponse<ChatResDTO.SendBirdTokenInfo>> getSendBirdToken(@CurrentUser AuthUser authUser) {
         log.info("SendBird 토큰 발급 요청 - 사용자: {}", authUser.getLoginId());
         Mono<ChatResDTO.SendBirdTokenInfo> tokenMono = chatQueryService.getSendBirdToken(authUser.getUserId());
@@ -33,8 +44,8 @@ public class ChatController {
     }
 
     @GetMapping("/rooms/region/non-participating")
-    @Operation(summary = "지역별 미참여 채팅방 목록 조회 API", description = "내가 참여하지 않은 지역별 채팅방 목록을 조회합니다.")
-    public Mono<CustomResponse<ChatResDTO.RegionChatRoomList>> getNonParticipatingRegionChatRooms(
+    @Operation(summary = "지역별 미참여 채팅방 목록 조회 API by 김지명", description = "내가 참여하지 않은 지역별 채팅방 목록을 조회합니다.")
+    public Mono<CustomResponse<ChatResDTO.ChatRoomList>> getNonParticipatingRegionChatRooms(
             @RequestParam String region,
             @RequestParam(required = false) Long cursor,
             @RequestParam(required = false, defaultValue = "10") Integer limit,
@@ -46,8 +57,8 @@ public class ChatController {
     }
 
     @GetMapping("/rooms/my")
-    @Operation(summary = "내 참여 채팅방 목록 조회 API", description = "내가 참여한 채팅방 목록을 조회합니다.")
-    public Mono<CustomResponse<ChatResDTO.RegionChatRoomList>> getMyChatRooms(
+    @Operation(summary = "내 참여 채팅방 목록 조회 API by 김지명", description = "내가 참여한 채팅방 목록을 조회합니다.")
+    public Mono<CustomResponse<ChatResDTO.ChatRoomList>> getMyChatRooms(
             @RequestParam(required = false) Long cursor,
             @RequestParam(required = false, defaultValue = "10") Integer limit,
             @CurrentUser AuthUser authUser) {
@@ -58,9 +69,9 @@ public class ChatController {
     }
 
     @PatchMapping("/rooms/{chatRoomId}/notification")
-    @Operation(summary = "채팅방 알림 설정 API", description = "채팅방의 알림 설정을 변경합니다.")
+    @Operation(summary = "채팅방 알림 설정 API by 김지명", description = "채팅방의 알림 설정을 변경합니다.")
     public Mono<CustomResponse<ChatResDTO.ChatRoomNotificationInfo>> updateNotification(
-            @PathVariable String chatRoomId,
+            @PathVariable Long chatRoomId,
             @RequestBody ChatReqDTO.UpdateChatRoomNotification reqDTO,
             @CurrentUser AuthUser authUser) {
 
@@ -70,8 +81,8 @@ public class ChatController {
     }
 
     @DeleteMapping("/rooms/{chatRoomId}")
-    @Operation(summary = "채팅방 나가기 API", description = "채팅방에서 나갑니다.")
-    public Mono<CustomResponse<String>> leaveChatRoom(@PathVariable String chatRoomId,
+    @Operation(summary = "채팅방 나가기 API by 김지명", description = "채팅방에서 나갑니다.")
+    public Mono<CustomResponse<String>> leaveChatRoom(@PathVariable Long chatRoomId,
                                                       @CurrentUser AuthUser authUser) {
         log.info("채팅방 나가기 - 채팅방: {}", chatRoomId);
         return chatCommandService.leaveChatRoom(chatRoomId, authUser.getUserId())
