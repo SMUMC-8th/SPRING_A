@@ -30,6 +30,7 @@ public class ChatResDTO {
     }
 
     // 지역별 미참여 채팅방 목록 조회 결과
+    @Builder
     public record RegionChatRoomList(
             List<RegionChatRoomItem> RegionChatRoomListDTO,
             String nextCursor,

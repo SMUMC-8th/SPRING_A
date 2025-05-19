@@ -41,4 +41,20 @@ public class ChatRoomConverter {
         }
         return location.getAddressName();
     }
+
+    public static ChatResDTO.RegionChatRoomItem toRegionChatRoomItem(ChatRoom chatRoom) {
+        Location location = chatRoom.getLocation();
+        String locationName = location.getPlaceName() != null ?
+                location.getPlaceName() : location.getAddressName();
+
+        return ChatResDTO.RegionChatRoomItem.builder()
+                .chatRoomId("location_" + location.getId())
+                .chatRoomName(chatRoom.getName())
+                .locationName(locationName)
+                .participantCount(chatRoom.getParticipants().size())
+                .lastMessageAt(chatRoom.getLastMessageAt() != null ?
+                        chatRoom.getLastMessageAt().toString() : chatRoom.getCreatedAt().toString())
+                .representativePostImageUrl(chatRoom.getChatRoomImageUrl())
+                .build();
+    }
 }

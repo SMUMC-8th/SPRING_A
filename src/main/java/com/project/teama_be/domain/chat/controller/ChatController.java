@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Mono;
 
@@ -29,5 +30,19 @@ public class ChatController {
         log.info("SendBird 토큰 발급 요청 - 사용자: {}", authUser.getLoginId());
         Mono<ChatResDTO.SendBirdTokenInfo> tokenMono = chatQueryService.getSendBirdToken(authUser.getUserId());
         return tokenMono.map(CustomResponse::onSuccess);
+    }
+
+    @GetMapping("/rooms/region/non-participating")
+    @Operation(summary = "지역별 미참여 채팅방 목록 조회 API",
+            description = "내가 참여하지 않은 지역별 채팅방 목록을 조회합니다.")
+    public Mono<CustomResponse<ChatResDTO.RegionChatRoomList>> getNonParticipatingRegionChatRooms(
+            @RequestParam String region,
+            @RequestParam(required = false) Long cursor,
+            @RequestParam(required = false, defaultValue = "10") Integer limit,
+            @CurrentUser AuthUser authUser) {
+
+        log.info("지역별 미참여 채팅방 목록 조회 - 지역: {}, 사용자: {}", region, authUser.getLoginId());
+        return chatQueryService.getNonParticipatingRegionChatRooms(region, authUser.getUserId(), cursor, limit)
+                .map(CustomResponse::onSuccess);
     }
 }
