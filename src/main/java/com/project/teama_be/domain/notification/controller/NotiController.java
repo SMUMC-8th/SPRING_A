@@ -37,10 +37,17 @@ public class NotiController {
 
     //fcm토큰 저장
     @PostMapping("/token")
-    @Operation(summary = "FCM API by 신윤진", description = "FCM 토큰을 받아와 저장합니다.")
+    @Operation(summary = "FCM 토큰 발급 API by 신윤진", description = "FCM 토큰을 받아와 저장합니다.")
     public CustomResponse<NotiResDTO.SaveFcmToken> saveToken(@CurrentUser AuthUser user, @RequestBody NotiReqDTO.FcmToken reqDTO) {
         NotiResDTO.SaveFcmToken resDTO = notiService.saveFcmToken(user.getUserId(), reqDTO);
         return CustomResponse.onSuccess(resDTO);
+    }
+
+    @PostMapping("/delete-token")
+    @Operation(summary = "FCM 토큰 삭제 API by 신윤진", description = "FCM 토큰을 삭제합니다.")
+    public CustomResponse<String> deleteToken(@CurrentUser AuthUser user) {
+        notiService.deleteFcmToken(user.getUserId());
+        return CustomResponse.onSuccess("FcmToken 삭제 완료");
     }
 
 //    //fcm 푸시 알림 전송
@@ -68,7 +75,7 @@ public class NotiController {
 
     //알림 조회 목록
     @GetMapping("/get-list")
-    @Operation(summary = "FCM API by 신윤진", description = "FCM 알림 조회 목록")
+    @Operation(summary = "FCM 알림 조회 목록 API by 신윤진", description = "FCM 알림 조회 목록")
     public CustomResponse<NotiResDTO.NotificationPageResponseDTO> getNotifications(
             @CurrentUser AuthUser user,
             @RequestParam(required = false) Long cursor,
@@ -80,6 +87,7 @@ public class NotiController {
 
     //알림 읽음 처리
     @PatchMapping("/{notificationId}/read")
+    @Operation(summary = "FCM 알림 읽음 처리 API by 신윤진", description = "FCM 알림 읽음 처리")
     public CustomResponse<String> markNotificationAsRead(
             @CurrentUser AuthUser user,
             @PathVariable Long notificationId

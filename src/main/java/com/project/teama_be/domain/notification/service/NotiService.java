@@ -35,8 +35,6 @@ public class NotiService {
 
     private final RedisUtil redisUtil;
     private final NotiRepository notiRepository;
-    private final MemberRepository memberRepository;
-
 
     @Transactional
     public NotiResDTO.SaveFcmToken saveFcmToken(Long memberId, NotiReqDTO.FcmToken fcmToken) {
@@ -44,6 +42,12 @@ public class NotiService {
         redisUtil.saveFcmToken(key, fcmToken);
         String savedFcmToken = redisUtil.getFcmToken(key);
         return NotiConverter.toSaveFcmTokenResDTO(memberId, savedFcmToken);
+    }
+
+    public void deleteFcmToken(Long userId) {
+        String key = "fcm:" + userId;
+        log.info("userId에 대한 토큰을 삭제합니다: {}", userId);
+        redisUtil.delete(key);
     }
 
     public String getFcmToken(Long memberId) {
@@ -101,7 +105,7 @@ public class NotiService {
             return response;
         } catch (FirebaseMessagingException e) {
             log.error("[ FCM 전송 실패 ]", e);
-            throw new NotiException(NotiErrorCode.FCM_SEND_FAIL2);
+            throw new NotiException(NotiErrorCode.FCM_SEND_FAIL);
         }
     }
 
@@ -187,7 +191,7 @@ public class NotiService {
             return FirebaseMessaging.getInstance().sendAll(messages);
         } catch (FirebaseMessagingException e) {
             log.error("[ FCM 멀티캐스트 전송 실패 ]", e);
-            throw new NotiException(NotiErrorCode.FCM_SEND_FAIL3);
+            throw new NotiException(NotiErrorCode.CHAT_FCM_SEND_FAIL);
         }
     }
 
