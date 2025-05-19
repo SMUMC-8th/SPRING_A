@@ -1,5 +1,7 @@
 package com.project.teama_be.domain.chat.dto.response;
 
+import lombok.Builder;
+
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -90,4 +92,11 @@ public class ChatResDTO {
     ) {
     }
 
+    @Builder
+    public record SendBirdTokenInfo(
+            String sendBirdUserId,
+            String sendBirdToken,
+            long expiredAt
+    ) {
+    }
 }
