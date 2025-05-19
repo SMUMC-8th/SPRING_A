@@ -27,4 +27,7 @@ public interface ChatRoomRepository extends JpaRepository<ChatRoom, Long> {
             @Param("region") String region,
             @Param("memberId") Long memberId,
             Pageable pageable);
+
+    @Query("SELECT cr FROM ChatRoom cr JOIN cr.participants p WHERE p.member.id = :memberId ORDER BY cr.lastMessageAt DESC")
+    List<ChatRoom> findParticipatingRoomsByMemberId(Long memberId, Pageable pageable);
 }

@@ -63,16 +63,44 @@ public class ChatQueryService {
                             .collect(Collectors.toList());
 
                     // 커서 기반 페이징 처리
-                    String nextCursor = chatRooms.size() >= pageSize && !chatRooms.isEmpty() ?
-                            chatRooms.get(chatRooms.size() - 1).chatRoomId() : null;
-                    boolean hasNext = nextCursor != null;
-
-                    return ChatResDTO.RegionChatRoomList.builder()
-                            .RegionChatRoomListDTO(chatRooms)
-                            .nextCursor(nextCursor)
-                            .hasNext(hasNext)
-                            .build();
+                    return getRegionChatRoomList(pageSize, chatRooms);
                 })
                 .subscribeOn(Schedulers.boundedElastic());
+    }
+
+    /**
+     * 내 참여 채팅방 목록 조회
+     */
+    public Mono<ChatResDTO.RegionChatRoomList> getMyChatRooms(
+            Long memberId, Long cursor, Integer limit) {
+
+        log.info("내 참여 채팅방 목록 조회 - 사용자 ID: {}, 커서: {}, 제한: {}", memberId, cursor, limit);
+
+        int pageSize = limit != null ? limit : 10;
+
+        return Mono.fromCallable(() -> {
+                    Pageable pageable = PageRequest.of(0, pageSize);
+
+                    List<ChatResDTO.RegionChatRoomItem> chatRooms = chatRoomRepository
+                            .findParticipatingRoomsByMemberId(memberId, pageable)
+                            .stream()
+                            .map(ChatRoomConverter::toRegionChatRoomItem)
+                            .collect(Collectors.toList());
+
+                    return getRegionChatRoomList(pageSize, chatRooms);
+                })
+                .subscribeOn(Schedulers.boundedElastic());
+    }
+
+    private ChatResDTO.RegionChatRoomList getRegionChatRoomList(int pageSize, List<ChatResDTO.RegionChatRoomItem> chatRooms) {
+        String nextCursor = chatRooms.size() >= pageSize && !chatRooms.isEmpty() ?
+                chatRooms.get(chatRooms.size() - 1).chatRoomId() : null;
+        boolean hasNext = nextCursor != null;
+
+        return ChatResDTO.RegionChatRoomList.builder()
+                .RegionChatRoomListDTO(chatRooms)
+                .nextCursor(nextCursor)
+                .hasNext(hasNext)
+                .build();
     }
 }

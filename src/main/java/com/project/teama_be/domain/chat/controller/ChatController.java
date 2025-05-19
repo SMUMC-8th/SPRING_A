@@ -33,8 +33,7 @@ public class ChatController {
     }
 
     @GetMapping("/rooms/region/non-participating")
-    @Operation(summary = "지역별 미참여 채팅방 목록 조회 API",
-            description = "내가 참여하지 않은 지역별 채팅방 목록을 조회합니다.")
+    @Operation(summary = "지역별 미참여 채팅방 목록 조회 API", description = "내가 참여하지 않은 지역별 채팅방 목록을 조회합니다.")
     public Mono<CustomResponse<ChatResDTO.RegionChatRoomList>> getNonParticipatingRegionChatRooms(
             @RequestParam String region,
             @RequestParam(required = false) Long cursor,
@@ -43,6 +42,18 @@ public class ChatController {
 
         log.info("지역별 미참여 채팅방 목록 조회 - 지역: {}, 사용자: {}", region, authUser.getLoginId());
         return chatQueryService.getNonParticipatingRegionChatRooms(region, authUser.getUserId(), cursor, limit)
+                .map(CustomResponse::onSuccess);
+    }
+
+    @GetMapping("/rooms/my")
+    @Operation(summary = "내 참여 채팅방 목록 조회 API", description = "내가 참여한 채팅방 목록을 조회합니다.")
+    public Mono<CustomResponse<ChatResDTO.RegionChatRoomList>> getMyChatRooms(
+            @RequestParam(required = false) Long cursor,
+            @RequestParam(required = false, defaultValue = "10") Integer limit,
+            @CurrentUser AuthUser authUser) {
+
+        log.info("내 참여 채팅방 목록 조회 - 사용자: {}", authUser.getLoginId());
+        return chatQueryService.getMyChatRooms(authUser.getUserId(), cursor, limit)
                 .map(CustomResponse::onSuccess);
     }
 }
