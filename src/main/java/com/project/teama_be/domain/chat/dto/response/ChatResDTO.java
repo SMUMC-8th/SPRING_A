@@ -7,8 +7,9 @@ import java.util.List;
 
 public class ChatResDTO {
 
+    @Builder
     public record ChatRoom(
-            Long chatRoomId,
+            String chatRoomId,
             String chatRoomName,
             String placeName,
             int participantCount,
@@ -17,6 +18,7 @@ public class ChatResDTO {
     }
 
     // 지역별 미참여 채팅방 목록의 개별 채팅방 정보
+    @Builder
     public record RegionChatRoomItem(
             String chatRoomId,
             String chatRoomName,

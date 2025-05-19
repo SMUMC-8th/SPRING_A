@@ -16,6 +16,7 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
+import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -124,5 +125,39 @@ public class SendBirdService {
                 .retrieve()
                 .bodyToMono(Map.class)
                 .map(response -> (String) response.get("token"));
+    }
+
+    /**
+     * SendBird 오픈 채널 생성
+     */
+    public Mono<String> createOpenChannel(Long locationId, String channelName,
+                                          BigDecimal latitude, BigDecimal longitude, String address) {
+        log.info("SendBird 오픈 채널 생성 - 위치 ID: {}", locationId);
+
+        String channelUrl = "location_" + locationId;
+
+        Map<String, Object> metadata = new HashMap<>();
+        metadata.put("latitude", latitude != null ? latitude.toString() : null);
+        metadata.put("longitude", longitude != null ? longitude.toString() : null);
+        metadata.put("address", address);
+
+        Map<String, Object> body = new HashMap<>();
+        body.put("channel_url", channelUrl);
+        body.put("name", channelName);
+        body.put("metadata", metadata);
+
+        return sendBirdWebClient.post()
+                .uri("/open_channels")
+                .bodyValue(body)
+                .retrieve()
+                .bodyToMono(Map.class)
+                .map(response -> {
+                    log.info("SendBird 오픈 채널 생성 성공 - 채널 URL: {}", channelUrl);
+                    return channelUrl;
+                })
+                .doOnError(e -> {
+                    log.error("SendBird 오픈 채널 생성 실패 - 위치 ID: {}, 오류: {}", locationId, e.getMessage());
+                    throw new ChatException(ChatErrorCode.SENDBIRD_CHANNEL_ERROR);
+                });
     }
 }
