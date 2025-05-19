@@ -57,4 +57,13 @@ public class ChatRoomConverter {
                 .representativePostImageUrl(chatRoom.getChatRoomImageUrl())
                 .build();
     }
+
+    public static ChatResDTO.ChatRoomNotificationInfo toChatRoomNotificationInfo(
+            String chatRoomId, boolean notificationEnabled) {
+        return ChatResDTO.ChatRoomNotificationInfo.builder()
+                .chatRoomId(chatRoomId)
+                .notificationEnabled(notificationEnabled)
+                .updatedAt(LocalDateTime.now().toString())
+                .build();
+    }
 }

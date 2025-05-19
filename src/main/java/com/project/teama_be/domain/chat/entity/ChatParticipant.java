@@ -35,4 +35,8 @@ public class ChatParticipant extends BaseEntity {
 
     @Column(name = "notification_enabled", nullable = false)
     private boolean notificationEnabled;
+
+    public void updateNotificationEnabled(boolean notificationEnabled) {
+        this.notificationEnabled = notificationEnabled;
+    }
 }

@@ -88,6 +88,7 @@ public class ChatResDTO {
     }
 
     // 채팅방 알림 설정 정보
+    @Builder
     public record ChatRoomNotificationInfo(
             String chatRoomId,
             boolean notificationEnabled,

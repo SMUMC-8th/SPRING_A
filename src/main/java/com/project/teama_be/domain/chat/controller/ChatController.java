@@ -1,6 +1,8 @@
 package com.project.teama_be.domain.chat.controller;
 
+import com.project.teama_be.domain.chat.dto.request.ChatReqDTO;
 import com.project.teama_be.domain.chat.dto.response.ChatResDTO;
+import com.project.teama_be.domain.chat.service.command.ChatCommandService;
 import com.project.teama_be.domain.chat.service.query.ChatQueryService;
 import com.project.teama_be.global.apiPayload.CustomResponse;
 import com.project.teama_be.global.security.annotation.CurrentUser;
@@ -9,10 +11,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 
 @Slf4j
@@ -23,6 +22,7 @@ import reactor.core.publisher.Mono;
 public class ChatController {
 
     private final ChatQueryService chatQueryService;
+    private final ChatCommandService chatCommandService;
 
     @GetMapping("/sendbird-token")
     @Operation(summary = "SendBird 토큰 발급 API", description = "현재 로그인한 사용자의 SendBird 토큰을 발급합니다.")
@@ -54,6 +54,18 @@ public class ChatController {
 
         log.info("내 참여 채팅방 목록 조회 - 사용자: {}", authUser.getLoginId());
         return chatQueryService.getMyChatRooms(authUser.getUserId(), cursor, limit)
+                .map(CustomResponse::onSuccess);
+    }
+
+    @PutMapping("/rooms/{chatRoomId}/notification")
+    @Operation(summary = "채팅방 알림 설정 API", description = "채팅방의 알림 설정을 변경합니다.")
+    public Mono<CustomResponse<ChatResDTO.ChatRoomNotificationInfo>> updateNotification(
+            @PathVariable String chatRoomId,
+            @RequestBody ChatReqDTO.UpdateChatRoomNotification reqDTO,
+            @CurrentUser AuthUser authUser) {
+
+        log.info("채팅방 알림 설정 변경 - 채팅방: {}, 설정: {}", chatRoomId, reqDTO.notificationEnabled());
+        return chatCommandService.updateNotificationSetting(chatRoomId, authUser.getUserId(), reqDTO.notificationEnabled())
                 .map(CustomResponse::onSuccess);
     }
 }
