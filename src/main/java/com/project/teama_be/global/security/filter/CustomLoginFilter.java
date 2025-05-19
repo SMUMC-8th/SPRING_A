@@ -114,9 +114,18 @@ public class CustomLoginFilter extends UsernamePasswordAuthenticationFilter {
             member = memberRepository.findByLoginId(jwtUtil.getLoginId(accessToken))
                     .orElseThrow(() -> new UsernameNotFoundException("사용자 정보를 찾을 수 없습니다."));
 
-            // SendBird 토큰 발급 (최대 3초 대기)
+            // SendBird 토큰 발급 (재시도 로직 추가)
             sendBirdToken = sendBirdService.getUserToken(member)
-                    .block(Duration.ofSeconds(3));
+                    .retry(3)  // 최대 3번 재시도
+                    .timeout(Duration.ofSeconds(5))  // 5초 타임아웃
+                    .block();
+
+//            if (sendBirdToken == null) {
+//                // 로그인 실패 처리
+//                response.setStatus(HttpStatus.SERVICE_UNAVAILABLE.value());
+//                response.getWriter().write("채팅 서비스 연결에 실패했습니다. 잠시 후 다시 시도해주세요.");
+//                return;
+//            }
 
             log.info("[ Login Filter ] SendBird 토큰 발급 성공: {}", member.getId());
         } catch (Exception e) {
