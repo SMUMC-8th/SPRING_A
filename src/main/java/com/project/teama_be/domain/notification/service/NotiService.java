@@ -34,20 +34,21 @@ import java.util.List;
 public class NotiService {
 
     private final RedisUtil redisUtil;
-    private final NotiConverter notiConverter;
     private final NotiRepository notiRepository;
     private final MemberRepository memberRepository;
 
 
     @Transactional
-    public void saveFcmToken(Long memberId, NotiReqDTO.FcmToken fcmToken) {
+    public NotiResDTO.SaveFcmToken saveFcmToken(Long memberId, NotiReqDTO.FcmToken fcmToken) {
         String key = "fcm:" + memberId;
         redisUtil.saveFcmToken(key, fcmToken);
+        String savedFcmToken = redisUtil.getFcmToken(key);
+        return NotiConverter.toSaveFcmTokenResDTO(memberId, savedFcmToken);
     }
 
-    public NotiReqDTO.FcmToken getFcmToken(Long memberId) {
+    public String getFcmToken(Long memberId) {
         String key = "fcm:" + memberId;
-        NotiReqDTO.FcmToken value = redisUtil.getFcmToken(key);
+        String value = redisUtil.getFcmToken(key);
         if (value == null) {
             throw new NotiException(NotiErrorCode.TOKEN_NOT_FOUND);
         }
@@ -63,7 +64,7 @@ public class NotiService {
         NotiResDTO.FcmMessage message = notiMessageConverter(type, senderName);
 
         // 1. FCM 토큰 조회
-        String fcmToken = getFcmToken(receiver.getId()).fcmToken(); //record라서 .fctToken()
+        String fcmToken = getFcmToken(receiver.getId()); //record라서 .fctToken()
 
         // 2. FCM 메시지 전송
         String fcmMessageId = makeMessage(fcmToken, message.title(), message.body());
@@ -71,7 +72,7 @@ public class NotiService {
         // title에 보내는 사람, body에 님이 댓글/좋아요를 달았습니다. 가 들어가는중
 
         // 3. 알림 저장(알림을 받는 사람 기준)
-        Noti noti = notiConverter.toNoty(receiver, post, type, message.title(), message.body());
+        Noti noti = NotiConverter.toNoty(receiver, post, type, message.title(), message.body());
         try {
             notiRepository.save(noti);
         } catch (Exception e) {
@@ -79,7 +80,7 @@ public class NotiService {
         }
         log.info("[ fcm 알림 저장 ]: {}", noti);
 
-        return notiConverter.toSendResDTO(noti, fcmMessageId);
+        return NotiConverter.toSendResDTO(noti, fcmMessageId);
     }
 
     private String makeMessage(String fcmToken, String title, String body) {
@@ -143,15 +144,15 @@ public class NotiService {
 
             // 아래에서 fcm토큰을 하나씩 받아서 list에 add
             String key = "fcm:" + receiver.getId();
-            NotiReqDTO.FcmToken fcmToken = redisUtil.getFcmToken(key);
+            String  fcmToken = redisUtil.getFcmToken(key);
             if (fcmToken != null) {
-                tokens.add(fcmToken.fcmToken());
+                tokens.add(fcmToken);
             } else {    //fcm토큰 null인 경우 여기에 담아서 로그에 출력
                 noTokenUserIds.add(receiver.getId());
             }
 
             // 알림 저장  - 채팅방번호라던지 같이 저장해야할거같은데 Noti 엔티티도 수정해야됨 ....
-            Noti noti = notiConverter.toChatNoti(receiver, NotiType.CHAT, message.title(), message.body());
+            Noti noti = NotiConverter.toChatNoti(receiver, NotiType.CHAT, message.title(), message.body());
             try {
                 notiRepository.save(noti);
             } catch (Exception e) {
@@ -219,7 +220,7 @@ public class NotiService {
         List<Noti> content = hasNext ? fetched.subList(0, size.intValue()) : fetched;
 
         List<NotiResDTO.NotificationListResDTO> notiDtos = content.stream()
-                .map(notiConverter::toNotiResDto)
+                .map(NotiConverter::toNotiResDto)
                 .toList();
 
         Long lastId = content.isEmpty() ? null : content.get(content.size() - 1).getId();
