@@ -1,5 +1,6 @@
 package com.project.teama_be.global.security.config;
 
+import com.project.teama_be.domain.chat.service.command.SendBirdService;
 import com.project.teama_be.domain.member.repository.MemberRepository;
 import com.project.teama_be.domain.member.service.command.JwtTokenService;
 import com.project.teama_be.global.config.CorsConfig;
@@ -40,6 +41,7 @@ public class SecurityConfig {
     private final JwtAccessDeniedHandler jwtAccessDeniedHandler;
     private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
     private final JwtTokenService jwtTokenService;
+    private final SendBirdService sendBirdService;
 
     //인증이 필요하지 않은 url
     private final String[] allowedUrls = {
@@ -117,7 +119,7 @@ public class SecurityConfig {
 
         // CustomLoginFilter 인스턴스를 생성하고 필요한 의존성을 주입
         CustomLoginFilter customLoginFilter = new CustomLoginFilter(
-                authenticationManager(authenticationConfiguration), jwtUtil);
+                authenticationManager(authenticationConfiguration), jwtUtil, sendBirdService, memberRepository);
         // Login Filter URL 지정
         customLoginFilter.setFilterProcessesUrl("/api/auth/login");
         // 필터 체인에 CustomLoginFilter를 UsernamePasswordAuthenticationFilter 자리에서 동작하도록 추가
