@@ -2,6 +2,8 @@ package com.project.teama_be.domain.chat.service.query;
 
 import com.project.teama_be.domain.chat.converter.ChatRoomConverter;
 import com.project.teama_be.domain.chat.dto.response.ChatResDTO;
+import com.project.teama_be.domain.chat.exception.ChatErrorCode;
+import com.project.teama_be.domain.chat.exception.ChatException;
 import com.project.teama_be.domain.chat.repository.ChatRoomRepository;
 import com.project.teama_be.domain.chat.service.command.SendBirdService;
 import com.project.teama_be.domain.member.exceptioin.MemberErrorCode;
@@ -35,10 +37,13 @@ public class ChatQueryService {
         return Mono.fromCallable(() ->
                         memberRepository.findById(memberId)
                                 .orElseThrow(() -> new MemberException(MemberErrorCode.MEMBER_NOT_FOUND)))
-                // fromCallable 내부 로직을 Spring WebFlux의 boundedElastic 스레드 풀에서 실행하도록 설정
-                // DB 접근처럼 블로킹 작업에 적합한 스케줄러
                 .subscribeOn(Schedulers.boundedElastic())
-                .flatMap(sendBirdService::getUserToken);
+                .flatMap(sendBirdService::getUserToken)
+                .onErrorResume(e -> {
+                    log.error("SendBird 토큰 발급 처리 중 오류: {}", e.getMessage());
+                    // 중요: 서비스 실패해도 인증 오류가 아닌 SendBird 오류 반환
+                    throw new ChatException(ChatErrorCode.SENDBIRD_TOKEN_ERROR);
+                });
     }
 
     /**

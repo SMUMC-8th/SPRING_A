@@ -1,11 +1,14 @@
 package com.project.teama_be.global.apiPayload.exception.handler;
 
+import com.project.teama_be.domain.chat.exception.ChatErrorCode;
+import com.project.teama_be.domain.chat.exception.ChatException;
 import com.project.teama_be.global.apiPayload.CustomResponse;
 import com.project.teama_be.global.apiPayload.code.BaseErrorCode;
 import com.project.teama_be.global.apiPayload.code.GeneralErrorCode;
 import com.project.teama_be.global.apiPayload.exception.CustomException;
 import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
@@ -112,6 +115,17 @@ public class GlobalExceptionHandler {
         //커스텀 예외에 정의된 에러 코드와 메시지를 포함한 응답 제공
         return ResponseEntity.status(ex.getCode().getHttpStatus())
                 .body(ex.getCode().getErrorResponse());
+    }
+
+    // ChatException 핸들러
+    @ExceptionHandler(ChatException.class)
+    public ResponseEntity<CustomResponse<Object>> handleChatException(ChatException exception) {
+        ChatErrorCode errorCode = exception.getErrorCode();
+        log.error("채팅 오류 발생: {}", errorCode.getMessage());
+
+        // 서비스 상태 코드 유지하면서 클라이언트에게 적절한 에러 메시지 전달
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(CustomResponse.onFailure(errorCode.getCode(), errorCode.getMessage()));
     }
 
     // 그 외의 정의되지 않은 모든 예외 처리

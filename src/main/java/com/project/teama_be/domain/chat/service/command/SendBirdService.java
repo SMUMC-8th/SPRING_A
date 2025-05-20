@@ -53,9 +53,9 @@ public class SendBirdService {
                 .map(token -> ChatResDTO.SendBirdTokenInfo.builder()
                         .sendBirdUserId(member.getId().toString())
                         .sendBirdToken(token)
-                        .expiredAt(System.currentTimeMillis() + (30L * 24 * 60 * 60 * 1000)) // 30일
+                        .expiredAt(System.currentTimeMillis() + (30L * 24 * 60 * 60 * 1000))
                         .build())
-                .doOnError(e -> {
+                .onErrorResume(e -> {
                     log.error("SendBird 토큰 발급 실패 - 사용자 ID: {}, 오류: {}", member.getId(), e.getMessage());
                     if (e instanceof WebClientResponseException) {
                         WebClientResponseException webClientEx = (WebClientResponseException) e;
@@ -63,7 +63,12 @@ public class SendBirdService {
                                 webClientEx.getResponseBodyAsString(),
                                 webClientEx.getStatusCode());
                     }
-                    throw new ChatException(ChatErrorCode.SENDBIRD_TOKEN_ERROR);
+                    // 중요: 에러 대신 빈 토큰 객체 반환
+                    return Mono.just(ChatResDTO.SendBirdTokenInfo.builder()
+                            .sendBirdUserId(member.getId().toString())
+                            .sendBirdToken("error")
+                            .expiredAt(0L)
+                            .build());
                 });
     }
 
@@ -110,8 +115,14 @@ public class SendBirdService {
                 .uri("/users/" + member.getId())
                 .bodyValue(body)
                 .retrieve()
-                .bodyToMono(Map.class);
+                .bodyToMono(Map.class)
+                .onErrorResume(e -> {
+                    log.error("사용자 업데이트 실패: {}", e.getMessage());
+                    // 중요: 실패해도 빈 맵 반환하여 토큰 발급 계속 진행
+                    return Mono.just(new HashMap<String, Object>());
+                });
     }
+
 
     /**
      * SendBird 사용자 토큰 발급

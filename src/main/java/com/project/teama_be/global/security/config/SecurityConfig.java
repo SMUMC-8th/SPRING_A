@@ -53,6 +53,7 @@ public class SecurityConfig {
             "/api/auth/refresh",
             "/api/members/check-id",
             "/api/members/check-nickname",
+            "/api/webhooks/sendbird/**",
             "/ws-stomp/**",  // WebSocket 관련 모든 경로 추가
             "/ws-stomp/info", // SockJS의 정보 엔드포인트 추가
             "/oauth2/callback/kakao",
