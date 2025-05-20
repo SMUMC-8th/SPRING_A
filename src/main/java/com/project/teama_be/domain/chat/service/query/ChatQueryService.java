@@ -6,6 +6,7 @@ import com.project.teama_be.domain.chat.exception.ChatErrorCode;
 import com.project.teama_be.domain.chat.exception.ChatException;
 import com.project.teama_be.domain.chat.repository.ChatRoomRepository;
 import com.project.teama_be.domain.chat.service.command.SendBirdService;
+import com.project.teama_be.domain.member.entity.Member;
 import com.project.teama_be.domain.member.exceptioin.MemberErrorCode;
 import com.project.teama_be.domain.member.exceptioin.MemberException;
 import com.project.teama_be.domain.member.repository.MemberRepository;
@@ -15,9 +16,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import reactor.core.publisher.Mono;
-import reactor.core.scheduler.Schedulers;
 
+import java.time.Duration;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -31,70 +31,67 @@ public class ChatQueryService {
     private final SendBirdService sendBirdService;
     private final ChatRoomRepository chatRoomRepository;
 
-    public Mono<ChatResDTO.SendBirdTokenInfo> getSendBirdToken(Long memberId) {
+    /**
+     * SendBird 토큰 발급
+     */
+    public ChatResDTO.SendBirdTokenInfo getSendBirdToken(Long memberId) {
         log.info("SendBird 토큰 발급 요청 - 사용자 ID: {}", memberId);
 
-        return Mono.fromCallable(() ->
-                        memberRepository.findById(memberId)
-                                .orElseThrow(() -> new MemberException(MemberErrorCode.MEMBER_NOT_FOUND)))
-                .subscribeOn(Schedulers.boundedElastic())
-                .flatMap(sendBirdService::getUserToken)
-                .onErrorResume(e -> {
-                    log.error("SendBird 토큰 발급 처리 중 오류: {}", e.getMessage());
-                    // 중요: 서비스 실패해도 인증 오류가 아닌 SendBird 오류 반환
-                    throw new ChatException(ChatErrorCode.SENDBIRD_TOKEN_ERROR);
-                });
+        try {
+            // 회원 정보 조회
+            Member member = memberRepository.findById(memberId)
+                    .orElseThrow(() -> new MemberException(MemberErrorCode.MEMBER_NOT_FOUND));
+
+            // SendBird 토큰 발급 (WebFlux의 block 메서드 사용)
+            return sendBirdService.getUserToken(member)
+                    .block(Duration.ofSeconds(5)); // 최대 5초 대기
+        } catch (Exception e) {
+            log.error("SendBird 토큰 발급 처리 중 오류: {}", e.getMessage());
+            throw new ChatException(ChatErrorCode.SENDBIRD_TOKEN_ERROR);
+        }
     }
 
     /**
      * 지역별 미참여 채팅방 목록 조회
      */
-    public Mono<ChatResDTO.ChatRoomList> getNonParticipatingRegionChatRooms(
+    public ChatResDTO.ChatRoomList getNonParticipatingRegionChatRooms(
             String region, Long memberId, Long cursor, Integer limit) {
 
         log.info("지역별 미참여 채팅방 목록 조회 - 지역: {}, 사용자 ID: {}, 커서: {}, 제한: {}",
                 region, memberId, cursor, limit);
 
         int pageSize = limit != null ? limit : 10;
+        Pageable pageable = PageRequest.of(0, pageSize);
 
-        return Mono.fromCallable(() -> {
-                    Pageable pageable = PageRequest.of(0, pageSize);
+        // 참여하지 않은 채팅방만 조회
+        List<ChatResDTO.ChatRoomItem> chatRooms = chatRoomRepository
+                .findNonParticipatingRoomsByRegion(region, memberId, pageable)
+                .stream()
+                .map(ChatRoomConverter::toRegionChatRoomItem)
+                .collect(Collectors.toList());
 
-                    // 참여하지 않은 채팅방만 조회
-                    List<ChatResDTO.ChatRoomItem> chatRooms = chatRoomRepository
-                            .findNonParticipatingRoomsByRegion(region, memberId, pageable)
-                            .stream()
-                            .map(ChatRoomConverter::toRegionChatRoomItem)
-                            .collect(Collectors.toList());
-
-                    // 커서 기반 페이징 처리
-                    return getRegionChatRoomList(pageSize, chatRooms);
-                })
-                .subscribeOn(Schedulers.boundedElastic());
+        // 커서 기반 페이징 처리
+        return getRegionChatRoomList(pageSize, chatRooms);
     }
 
     /**
      * 내 참여 채팅방 목록 조회
      */
-    public Mono<ChatResDTO.ChatRoomList> getMyChatRooms(
+    public ChatResDTO.ChatRoomList getMyChatRooms(
             Long memberId, Long cursor, Integer limit) {
 
         log.info("내 참여 채팅방 목록 조회 - 사용자 ID: {}, 커서: {}, 제한: {}", memberId, cursor, limit);
 
         int pageSize = limit != null ? limit : 10;
+        Pageable pageable = PageRequest.of(0, pageSize);
 
-        return Mono.fromCallable(() -> {
-                    Pageable pageable = PageRequest.of(0, pageSize);
+        List<ChatResDTO.ChatRoomItem> chatRooms = chatRoomRepository
+                .findParticipatingRoomsByMemberId(memberId, pageable)
+                .stream()
+                .map(ChatRoomConverter::toRegionChatRoomItem)
+                .collect(Collectors.toList());
 
-                    List<ChatResDTO.ChatRoomItem> chatRooms = chatRoomRepository
-                            .findParticipatingRoomsByMemberId(memberId, pageable)
-                            .stream()
-                            .map(ChatRoomConverter::toRegionChatRoomItem)
-                            .collect(Collectors.toList());
-
-                    return getRegionChatRoomList(pageSize, chatRooms);
-                })
-                .subscribeOn(Schedulers.boundedElastic());
+        return getRegionChatRoomList(pageSize, chatRooms);
     }
 
     private ChatResDTO.ChatRoomList getRegionChatRoomList(int pageSize, List<ChatResDTO.ChatRoomItem> chatRooms) {
