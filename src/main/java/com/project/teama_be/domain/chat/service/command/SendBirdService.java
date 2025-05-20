@@ -86,7 +86,8 @@ public class SendBirdService {
                 .bodyToMono(Map.class)
                 .onErrorResume(WebClientResponseException.class, ex -> {
                     if (ex.getStatusCode().value() == 400 &&
-                            ex.getResponseBodyAsString().contains("user_id already exists")) {
+                            (ex.getResponseBodyAsString().contains("user_id already exists") ||
+                                    ex.getResponseBodyAsString().contains("violates unique constraint"))) {
                         log.info("이미 존재하는 사용자, 업데이트 시도 - 사용자 ID: {}", member.getId());
                         return updateUser(member);
                     }
