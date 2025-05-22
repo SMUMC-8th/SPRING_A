@@ -28,8 +28,6 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Optional;
-
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -112,8 +110,6 @@ public class CommentCommandService {
         Comment comment = commentRepository.findById(commentId).orElseThrow(()->
                 new CommentException(CommentErrorCode.NOT_FOUND));
 
-        Post post = comment.getPost();  //알림에서 사용하겠습니다
-
         // 좋아요 여부 조회
         CommentReaction commentReaction= commentReactionRepository
                 .findByCommentId(commentId).orElse(null);
@@ -122,35 +118,30 @@ public class CommentCommandService {
         if (commentReaction == null) {
 
             log.info("[ 댓글 좋아요 ] comment:{}, member:{}", comment, member);
-            CommentReaction result = commentReactionRepository.save(
+            // 댓글 좋아요 생성
+            commentReaction = commentReactionRepository.save(
                     CommentConverter.toCommentReaction(
                             comment, member, ReactionType.LIKE
                     )
             );
-            // 댓글 좋아요 알림
-            try {   //sender = member: 로그인된 사용자
-                    //receiver = comment에서 member: 알림을 받는 사람
-                notiService.sendMessage(member, comment.getMember(), post, NotiType.COMMENT_LIKE);
-            } catch (FirebaseMessagingException e) {
-                throw new NotiException(NotiErrorCode.FCM_SEND_FAIL);
-            }
+        } else if (commentReaction.getReactionType().equals(ReactionType.LIKE)) {
 
-            // 댓글 좋아요 수 ++
-            comment.updateLikeCount(comment.getLikeCount() + 1);
-            return CommentConverter.toCommentLike(result);
-        }
-        if (commentReaction.getReactionType().equals(ReactionType.LIKE)) {
             commentReaction.updateReactionType(ReactionType.UNLIKE);
-            // 댓글 좋아요 수 --
             comment.updateLikeCount(comment.getLikeCount() - 1);
         } else {
+
             commentReaction.updateReactionType(ReactionType.LIKE);
+        }
+
+        // 댓글 좋아요 알림: member: 로그인된 사용자, comment.getMember: 알림을 받는 사람
+        if (commentReaction.getReactionType().equals(ReactionType.LIKE)) {
+
             // 댓글 좋아요 수 ++
             comment.updateLikeCount(comment.getLikeCount() + 1);
+            // 알람 보낼 post
+            Post post = comment.getPost();
 
-            //댓글 좋아요 알림
-            try {   //sender = member: 로그인된 사용자
-                    //receiver = comment에서 member: 알림을 받는 사람
+            try {
                 notiService.sendMessage(member, comment.getMember(), post, NotiType.COMMENT_LIKE);
             } catch (FirebaseMessagingException e) {
                 throw new NotiException(NotiErrorCode.FCM_SEND_FAIL);

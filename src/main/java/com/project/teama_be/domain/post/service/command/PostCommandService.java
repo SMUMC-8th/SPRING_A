@@ -137,38 +137,31 @@ public class PostCommandService {
         PostReaction reaction = postReactionRepository.findByMemberIdAndPostId(member.getId(), postId);
 
         log.info("[ 게시글 좋아요 ] post:{}, member:{}, reaction:{}", post, member, reaction);
-        // 좋아요 누른 적이 없으면 좋아요 반영
+        // 좋아요 누른 적이 없으면 생성
         if (reaction == null) {
-            PostReaction result = postReactionRepository.save(
+
+            reaction = postReactionRepository.save(
                     PostConverter.toPostReaction(member, post, ReactionType.LIKE));
-            post.updateLikeCount(post.getLikeCount() + 1);
+        } else if (reaction.getReactionType().equals(ReactionType.LIKE)) {
 
-            try {   //member:로그인된 사용자, post에서 member:알림을 받는 사람
-                notiService.sendMessage(member, post.getMember(), post, NotiType.LIKE);
-            } catch (FirebaseMessagingException e) {
-                throw new NotiException(NotiErrorCode.FCM_SEND_FAIL);
-            }
-
-            return PostConverter.toPostLike(result);
-        }
-        String reactionType = reaction.getReactionType().name();
-
-        log.info("[ 게시글 좋아요 ] reactionType:{}", reactionType);
-        // 현재 좋아요 상태면 취소, 아니면 좋아요 반영
-        if (reactionType.equals(ReactionType.LIKE.name())) {
             reaction.updateReactionType(ReactionType.UNLIKE);
             post.updateLikeCount(post.getLikeCount() - 1);
         } else {
-            reaction.updateReactionType(ReactionType.LIKE);
-            post.updateLikeCount(post.getLikeCount() + 1);
 
-            // 좋아요 반영의 경우에만 알림 전송
-            try {   //member:로그인된 사용자, post에서 member:알림을 받는 사람
+            reaction.updateReactionType(ReactionType.LIKE);
+        }
+
+        // 좋아요만 알람: member: 로그인된 사용자, post.getMember(): 알림을 받는 사람
+        if (reaction.getReactionType().equals(ReactionType.LIKE)) {
+
+            post.updateLikeCount(post.getLikeCount() + 1);
+            try {
                 notiService.sendMessage(member, post.getMember(), post, NotiType.LIKE);
             } catch (FirebaseMessagingException e) {
                 throw new NotiException(NotiErrorCode.FCM_SEND_FAIL);
             }
         }
+
         log.info("[ 게시글 좋아요 ] reaction:{}", reaction);
 
         return PostConverter.toPostLike(reaction);
