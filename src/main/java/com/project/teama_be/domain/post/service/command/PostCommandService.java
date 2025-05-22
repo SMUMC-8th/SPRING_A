@@ -73,10 +73,10 @@ public class PostCommandService {
                     .placeName(postUpload.placeName())
                     .build();
 
-            log.info("[ 위치 정보 생성 ] location:{}",location);
+            log.info("[ 위치 정보 생성 ] locationID:{}", location.getId());
             locationRepository.save(location);
         }
-        log.info("[ 위치 정보 생성 ] location:{}",location);
+        log.info("[ 위치 정보 생성 ] locationID:{}",location.getId());
 
         // 태그 생성 : 기존 태그 불러오기 + 없는 태그 저장하기
         List<Tag> foundTags = tagRepository.findByTagNameIn(postUpload.tags());
@@ -91,11 +91,11 @@ public class PostCommandService {
             }
             tags.add(tag);
         }
-        log.info("[ 태그 생성 ] tags:{}", tags);
+        log.info("[ 태그 생성 ] tagCnt:{}", tags.size());
 
         // 게시글 생성
         Post post = PostConverter.toPost(location, member, postUpload);
-        log.info("[ 게시글 생성 ] post:{}", post);
+        log.info("[ 게시글 생성 ] postID:{}", post.getId());
         postRepository.save(post);
 
         // 태그 <-> 게시글 연동
@@ -104,8 +104,8 @@ public class PostCommandService {
                     .post(post)
                     .tag(tag)
                     .build();
-            log.info("[ 태그 <-> 게시글 연동 저장 ] postTag:{}", postTag);
-            postTagRepository.save(postTag);
+            postTag = postTagRepository.save(postTag);
+            log.info("[ 태그 <-> 게시글 연동 저장 ] postTagID:{}", postTag.getId());
         }
 
         // 사진 업로드, 게시글 <-> 이미지 연동
@@ -115,7 +115,7 @@ public class PostCommandService {
             postImageRepository.save(PostConverter.toPostImage(post, s));
         }
 
-        log.info("[ 게시글 업로드 ] post:{}", post);
+        log.info("[ 게시글 업로드 ] postID:{}", post.getId());
         return PostConverter.toPostUpload(post);
     }
 
@@ -136,7 +136,7 @@ public class PostCommandService {
         // 현재 반응 조회
         PostReaction reaction = postReactionRepository.findByMemberIdAndPostId(member.getId(), postId);
 
-        log.info("[ 게시글 좋아요 ] post:{}, member:{}, reaction:{}", post, member, reaction);
+        log.info("[ 게시글 좋아요 ] postID:{}, member:{}, reaction:{}", post.getId(), member.getLoginId(), reaction);
         // 좋아요 누른 적이 없으면 생성
         if (reaction == null) {
 
@@ -162,7 +162,7 @@ public class PostCommandService {
             }
         }
 
-        log.info("[ 게시글 좋아요 ] reaction:{}", reaction);
+        log.info("[ 게시글 좋아요 ] reactionID:{}", reaction.getId());
 
         return PostConverter.toPostLike(reaction);
     }
@@ -172,7 +172,7 @@ public class PostCommandService {
 
         Member member = memberRepository.findByLoginId(user.getLoginId()).orElseThrow(()->
                 new PostException(PostErrorCode.USER_NOT_FOUND));
-        log.info("[ 유저 정보 생성 ] member:{}", member);
+        log.info("[ 유저 정보 생성 ] member:{}", member.getLoginId());
         return member;
     }
 }

@@ -80,7 +80,7 @@ public class CommentController {
             @RequestParam(defaultValue = "1") @Min(value = 1, message = "댓글은 최소 하나 이상 조회해야 합니다.")
             int size
     ) {
-        log.info("[ 내가 작성한 댓글 조회 ] memberID:{}, user:{}, cursor:{}, size:{}", memberId, user, cursor, size);
+        log.info("[ 내가 작성한 댓글 조회 ] memberID:{}, user:{}, cursor:{}, size:{}", memberId, user.getLoginId(), cursor, size);
         return CustomResponse.onSuccess(commentQueryService.findMyComments(memberId, user, cursor, size));
     }
 
@@ -97,7 +97,7 @@ public class CommentController {
             @CurrentUser AuthUser user,
             @RequestBody CommentReqDTO.Commenting content
     ) {
-        log.info("[ 댓글 작성 ] postID:{}, user:{}, content:{}", postId, user, content);
+        log.info("[ 댓글 작성 ] postID:{}, user:{}, content:{}", postId, user.getLoginId(), content);
         return CustomResponse.onSuccess(
                 commentCommandService.createComment(
                         postId,
@@ -118,7 +118,7 @@ public class CommentController {
             @CurrentUser AuthUser user,
             @RequestBody CommentReqDTO.Commenting commentContent
     ) {
-        log.info("[ 대댓글 작성 ] commentID:{}, user:{}, content:{}", commentId, user, commentContent);
+        log.info("[ 대댓글 작성 ] commentID:{}, user:{}, content:{}", commentId, user.getLoginId(), commentContent);
         return CustomResponse.onSuccess(
                 commentCommandService.createReply(
                         commentId,
@@ -138,7 +138,7 @@ public class CommentController {
             @PathVariable Long commentId,
             @CurrentUser AuthUser user
     ) {
-        log.info("[ 댓글 좋아요 ] commentID:{}, user:{}", commentId, user);
+        log.info("[ 댓글 좋아요 ] commentID:{}, user:{}", commentId, user.getLoginId());
         return CustomResponse.onSuccess(commentCommandService.likeComment(commentId, user));
     }
 

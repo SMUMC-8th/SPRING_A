@@ -75,7 +75,7 @@ public class PostQueryDslImpl implements PostQueryDsl{
             }
         }
 
-        log.info("[ 게시글 조회 ] posts:{}", result);
+        log.info("[ 게시글 조회 ] postCnt:{}", result.size());
         return PostConverter.toHomePost(result);
     }
 
@@ -221,8 +221,8 @@ public class PostQueryDslImpl implements PostQueryDsl{
                 )
                 .toList();
 
-        log.info("[ 게시글 페이지네이션 ] result:{}, hasNext:{}, pageSize:{}, nextCursor:{}",
-                result, hasNext, pageSize, nextCursor);
+        log.info("[ 게시글 페이지네이션 ] resultCnt:{}, hasNext:{}, pageSize:{}, nextCursor:{}",
+                result.size(), hasNext, pageSize, nextCursor);
         return PostConverter.toPageablePost(result, hasNext, pageSize, nextCursor);
     }
 
@@ -291,8 +291,8 @@ public class PostQueryDslImpl implements PostQueryDsl{
                 )
                 .toList();
 
-        log.info("[ 게시글 페이지네이션 ] result:{}, hasNext:{}, pageSize:{}, nextCursor:{}",
-                result, hasNext, pageSize, nextCursor);
+        log.info("[ 게시글 페이지네이션 ] resultCnt:{}, hasNext:{}, pageSize:{}, nextCursor:{}",
+                result.size(), hasNext, pageSize, nextCursor);
         return PostConverter.toPageablePost(result, hasNext, pageSize, nextCursor);
     }
 }

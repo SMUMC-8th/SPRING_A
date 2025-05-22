@@ -54,7 +54,7 @@ public class CommentCommandService {
         Member member = getMember(user);
 
         // 댓글 저장
-        log.info("[ 댓글 작성 ] post:{}, member:{}, content:{}", post, member, content);
+        log.info("[ 댓글 작성 ] postID:{}, member:{}, content:{}", post.getId(), member.getLoginId(), content);
         Comment comment = commentRepository.save(
                 CommentConverter.toComment(post, member, content)
         );
@@ -83,7 +83,8 @@ public class CommentCommandService {
                 .getPost();
 
         // 대댓글 저장
-        log.info("[ 대댓글 작성 ] post:{}, member:{}, content:{}, commentID:{}", post, member, content, commentId);
+        log.info("[ 대댓글 작성 ] postID:{}, member:{}, content:{}, commentID:{}",
+                post.getId(), member.getLoginId(), content, commentId);
         Comment comment = commentRepository.save(
                 CommentConverter.toReply(post, member, content, commentId)
         );
@@ -117,7 +118,7 @@ public class CommentCommandService {
         // 좋아요 누른 적이 없으면 좋아요 반영
         if (commentReaction == null) {
 
-            log.info("[ 댓글 좋아요 ] comment:{}, member:{}", comment, member);
+            log.info("[ 댓글 좋아요 ] commentID:{}, member:{}", comment.getId(), member.getLoginId());
             // 댓글 좋아요 생성
             commentReaction = commentReactionRepository.save(
                     CommentConverter.toCommentReaction(
