@@ -49,7 +49,7 @@ public class PostController {
             List<String> query
     ) {
 
-        log.info("[ 각 가게 최신 게시글 조회 ] query:{}", query);
+        log.info("[ 각 가게 최신 게시글 조회 ] queryCnt:{}", query.size());
         return CustomResponse.onSuccess(postQueryService.getPost(query));
     }
 
@@ -111,7 +111,7 @@ public class PostController {
             int size
     ) {
         log.info("[ 내가 작성한 게시글 조회 ] memberID:{}, user:{}, cursor:{}, size:{}",
-                memberId, user, cursor, size);
+                memberId, user.getLoginId(), cursor, size);
         return CustomResponse.onSuccess(postQueryService.getMyPosts(memberId, user, cursor, size));
     }
 
@@ -149,7 +149,7 @@ public class PostController {
             int size
     ) {
         log.info("[ 내가 좋아요 누른 게시글 조회 ] memberID:{}, user:{}, cursor:{}, size:{}",
-                memberId, user, cursor, size);
+                memberId, user.getLoginId(), cursor, size);
         return CustomResponse.onSuccess(postQueryService.getMyLikePost(memberId, user, cursor, size));
     }
 
@@ -172,7 +172,7 @@ public class PostController {
             @RequestPart @Valid PostReqDTO.PostUpload postContent
     ) {
 
-        log.info("[ 게시글 업로드 ] user:{}, image:{}, postContent:{}", user, image, postContent);
+        log.info("[ 게시글 업로드 ] user:{}, image:{}, postContent:{}", user.getLoginId(), image.size(), postContent.content());
         return CustomResponse.onSuccess(
                 postCommandService.PostUpload(
                         user,
@@ -192,7 +192,7 @@ public class PostController {
             @AuthenticationPrincipal AuthUser user,
             @PathVariable Long postId
     ) {
-        log.info("[ 게시글 좋아요 ] user:{}, postId:{}", user, postId);
+        log.info("[ 게시글 좋아요 ] user:{}, postId:{}", user.getLoginId(), postId);
         return CustomResponse.onSuccess(postCommandService.PostLike(user, postId));
     }
 

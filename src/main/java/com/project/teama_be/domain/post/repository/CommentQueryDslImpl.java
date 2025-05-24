@@ -68,8 +68,8 @@ public class CommentQueryDslImpl implements CommentQueryDsl{
         // 데이터 정제
         comments = comments.subList(0, pageSize);
 
-        log.info("[ 댓글 목록 조회 ] result:{}, hasNext:{}, pageSize:{}, cursor:{}",
-                comments, hasNext, pageSize, cursor);
+        log.info("[ 댓글 목록 조회 ] resultCnt:{}, hasNext:{}, pageSize:{}, cursor:{}",
+                comments.size(), hasNext, pageSize, cursor);
         return CommentConverter.toPageableComment(
                 comments, hasNext, pageSize, cursor
         );
@@ -113,8 +113,8 @@ public class CommentQueryDslImpl implements CommentQueryDsl{
         // 데이터 정제
         comments = comments.subList(0, pageSize);
 
-        log.info("[ 대댓글 목록 조회 ] result:{}, hasNext:{}, pageSize:{}, cursor:{}",
-                comments, hasNext, pageSize, cursor);
+        log.info("[ 대댓글 목록 조회 ] resultCnt:{}, hasNext:{}, pageSize:{}, cursor:{}",
+                comments.size(), hasNext, pageSize, cursor);
         return CommentConverter.toPageableComment(
                 comments, hasNext, pageSize, cursor
         );
@@ -157,8 +157,8 @@ public class CommentQueryDslImpl implements CommentQueryDsl{
         // 데이터 정제
         comments = comments.subList(0, pageSize);
 
-        log.info("[ 내가 작성한 댓글 조회 ] result:{}, hasNext:{}, pageSize:{}, cursor:{}",
-                comments, hasNext, pageSize, cursor);
+        log.info("[ 내가 작성한 댓글 조회 ] resultCnt:{}, hasNext:{}, pageSize:{}, cursor:{}",
+                comments.size(), hasNext, pageSize, cursor);
         return CommentConverter.toPageableComment(
                 comments, hasNext, pageSize, cursor
         );

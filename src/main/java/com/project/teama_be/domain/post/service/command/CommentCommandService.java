@@ -28,8 +28,6 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Optional;
-
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -56,7 +54,7 @@ public class CommentCommandService {
         Member member = getMember(user);
 
         // 댓글 저장
-        log.info("[ 댓글 작성 ] post:{}, member:{}, content:{}", post, member, content);
+        log.info("[ 댓글 작성 ] postID:{}, member:{}, content:{}", post.getId(), member.getLoginId(), content);
         Comment comment = commentRepository.save(
                 CommentConverter.toComment(post, member, content)
         );
@@ -85,7 +83,8 @@ public class CommentCommandService {
                 .getPost();
 
         // 대댓글 저장
-        log.info("[ 대댓글 작성 ] post:{}, member:{}, content:{}, commentID:{}", post, member, content, commentId);
+        log.info("[ 대댓글 작성 ] postID:{}, member:{}, content:{}, commentID:{}",
+                post.getId(), member.getLoginId(), content, commentId);
         Comment comment = commentRepository.save(
                 CommentConverter.toReply(post, member, content, commentId)
         );
@@ -112,8 +111,6 @@ public class CommentCommandService {
         Comment comment = commentRepository.findById(commentId).orElseThrow(()->
                 new CommentException(CommentErrorCode.NOT_FOUND));
 
-        Post post = comment.getPost();  //알림에서 사용하겠습니다
-
         // 좋아요 여부 조회
         CommentReaction commentReaction= commentReactionRepository
                 .findByCommentId(commentId).orElse(null);
@@ -121,36 +118,31 @@ public class CommentCommandService {
         // 좋아요 누른 적이 없으면 좋아요 반영
         if (commentReaction == null) {
 
-            log.info("[ 댓글 좋아요 ] comment:{}, member:{}", comment, member);
-            CommentReaction result = commentReactionRepository.save(
+            log.info("[ 댓글 좋아요 ] commentID:{}, member:{}", comment.getId(), member.getLoginId());
+            // 댓글 좋아요 생성
+            commentReaction = commentReactionRepository.save(
                     CommentConverter.toCommentReaction(
                             comment, member, ReactionType.LIKE
                     )
             );
-            // 댓글 좋아요 알림
-            try {   //sender = member: 로그인된 사용자
-                    //receiver = comment에서 member: 알림을 받는 사람
-                notiService.sendMessage(member, comment.getMember(), post, NotiType.COMMENT_LIKE);
-            } catch (FirebaseMessagingException e) {
-                throw new NotiException(NotiErrorCode.FCM_SEND_FAIL);
-            }
+        } else if (commentReaction.getReactionType().equals(ReactionType.LIKE)) {
 
-            // 댓글 좋아요 수 ++
-            comment.updateLikeCount(comment.getLikeCount() + 1);
-            return CommentConverter.toCommentLike(result);
-        }
-        if (commentReaction.getReactionType().equals(ReactionType.LIKE)) {
             commentReaction.updateReactionType(ReactionType.UNLIKE);
-            // 댓글 좋아요 수 --
             comment.updateLikeCount(comment.getLikeCount() - 1);
         } else {
+
             commentReaction.updateReactionType(ReactionType.LIKE);
+        }
+
+        // 댓글 좋아요 알림: member: 로그인된 사용자, comment.getMember: 알림을 받는 사람
+        if (commentReaction.getReactionType().equals(ReactionType.LIKE)) {
+
             // 댓글 좋아요 수 ++
             comment.updateLikeCount(comment.getLikeCount() + 1);
+            // 알람 보낼 post
+            Post post = comment.getPost();
 
-            //댓글 좋아요 알림
-            try {   //sender = member: 로그인된 사용자
-                    //receiver = comment에서 member: 알림을 받는 사람
+            try {
                 notiService.sendMessage(member, comment.getMember(), post, NotiType.COMMENT_LIKE);
             } catch (FirebaseMessagingException e) {
                 throw new NotiException(NotiErrorCode.FCM_SEND_FAIL);
