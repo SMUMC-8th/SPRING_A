@@ -3,6 +3,7 @@ package com.project.teama_be.domain.member.entity;
 import com.project.teama_be.domain.post.entity.Post;
 import jakarta.persistence.*;
 import lombok.*;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
 
@@ -12,6 +13,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Builder
 @Getter
+@EntityListeners(AuditingEntityListener.class)
 public class RecentlyViewed {
 
     @Id
@@ -28,4 +30,9 @@ public class RecentlyViewed {
 
     @Column(name = "viewed_at", nullable = false)
     private LocalDateTime viewedAt;
+
+    // Update
+    public void updateViewedAt(LocalDateTime now) {
+        this.viewedAt = now;
+    }
 }

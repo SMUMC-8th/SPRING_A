@@ -4,7 +4,9 @@ import com.google.firebase.messaging.FirebaseMessagingException;
 import com.project.teama_be.domain.location.entity.Location;
 import com.project.teama_be.domain.location.repository.LocationRepository;
 import com.project.teama_be.domain.member.entity.Member;
+import com.project.teama_be.domain.member.entity.RecentlyViewed;
 import com.project.teama_be.domain.member.repository.MemberRepository;
+import com.project.teama_be.domain.member.repository.RecentlyViewedRepository;
 import com.project.teama_be.domain.notification.enums.NotiType;
 import com.project.teama_be.domain.notification.exception.NotiException;
 import com.project.teama_be.domain.notification.exception.code.NotiErrorCode;
@@ -29,6 +31,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -46,8 +49,9 @@ public class PostCommandService {
     private final PostReactionRepository postReactionRepository;
     private final PostImageRepository postImageRepository;
     private final MemberRepository memberRepository;
-    private final S3Util s3Util;
     private final LocationRepository locationRepository;
+    private final RecentlyViewedRepository recentlyViewedRepository;
+    private final S3Util s3Util;
     private final NotiService notiService;
 
     // 게시글 업로드 ✅
@@ -130,8 +134,7 @@ public class PostCommandService {
         Member member = getMember(user);
 
         // 게시글 존재 여부 확인
-        Post post = postRepository.findById(postId).orElseThrow(()->
-                new PostException(PostErrorCode.NOT_FOUND));
+        Post post = getPost(postId);
 
         // 현재 반응 조회
         PostReaction reaction = postReactionRepository.findByMemberIdAndPostId(member.getId(), postId);
@@ -167,6 +170,37 @@ public class PostCommandService {
         return PostConverter.toPostLike(reaction);
     }
 
+    // 최근 본 게시글 추가
+    @Transactional
+    public void addRecentPost(
+            Long memberId,
+            Long postId,
+            AuthUser user
+    ) {
+        Member member = getMember(user);
+
+        // 유저 비교: 틀리면 유저 매칭 실패
+        if (!member.getId().equals(memberId)) {
+            throw new PostException(PostErrorCode.USER_NOT_MATCH);
+        }
+
+        // 게시글 정보 생성
+        Post post = getPost(postId);
+
+        // 이미 본적이 있는 경우: 시청 시각 업데이트
+        if (recentlyViewedRepository.existsByMemberIdAndPostId(memberId, postId)) {
+            RecentlyViewed recentlyViewed = recentlyViewedRepository.findByMemberIdAndPostId(memberId, postId);
+            recentlyViewed.updateViewedAt(LocalDateTime.now());
+            log.info("[ 최근 본 게시글 업데이트 ] recentlyViewedID:{}", recentlyViewed.getId());
+            return;
+        }
+
+        log.info("[ 최근 본 게시글 추가 ] memberID:{}, postID:{}", member.getId(), post.getId());
+        // 최근 본 게시글 저장
+        RecentlyViewed recentlyViewed = PostConverter.toRecentlyViewed(post, member);
+        recentlyViewedRepository.save(recentlyViewed);
+    }
+
     // 유저 정보 생성 ✅
     private Member getMember(AuthUser user) {
 
@@ -174,5 +208,11 @@ public class PostCommandService {
                 new PostException(PostErrorCode.USER_NOT_FOUND));
         log.info("[ 유저 정보 생성 ] member:{}", member.getLoginId());
         return member;
+    }
+
+    // 게시글 정보 생성
+    private Post getPost(Long postId) {
+        return postRepository.findById(postId).orElseThrow(() ->
+                new PostException(PostErrorCode.NOT_FOUND));
     }
 }

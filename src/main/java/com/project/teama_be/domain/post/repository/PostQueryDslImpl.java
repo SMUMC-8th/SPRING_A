@@ -273,6 +273,7 @@ public class PostQueryDslImpl implements PostQueryDsl{
         Map<Long, Long> commentList = jpaQueryFactory
                 .from(comment)
                 .where(comment.post.id.in(postIdList))
+                .groupBy(comment.post.id)
                 .transform(
                         GroupBy.groupBy(comment.post.id).as(
                                 comment.count()

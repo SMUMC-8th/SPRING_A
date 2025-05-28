@@ -58,7 +58,7 @@ public class PostController {
     @Operation(
             summary = "키워드 검색 API by 김주헌",
             description = "키워드를 통해 게시글을 조회합니다. " +
-                    "키워드 종류를 선택해야 합니다. (태그, 장소명) " +
+                    "키워드 종류를 선택해야 합니다. (tag, place, address)" +
                     "커서 기반 페이지네이션, 최신 순으로 정렬합니다."
     )
     public CustomResponse<PostResDTO.PageablePost<PostResDTO.FullPost>> getPostsByKeyword(
@@ -118,7 +118,7 @@ public class PostController {
     // 최근 본 게시글 조회
     @GetMapping("/members/{memberId}/posts/recent")
     @Operation(
-            summary = "최근 본 게시글 조회 API by 김주헌 (보류)",
+            summary = "최근 본 게시글 조회 API by 김주헌",
             description = "마이페이지에서 최근 본 게시글을 조회합니다. " +
                     "커서 기반 페이지네이션, 최신 순으로 정렬합니다."
     )
@@ -194,6 +194,23 @@ public class PostController {
     ) {
         log.info("[ 게시글 좋아요 ] user:{}, postId:{}", user.getLoginId(), postId);
         return CustomResponse.onSuccess(postCommandService.PostLike(user, postId));
+    }
+
+    // 최근 본 게시글 추가
+    @Operation(
+            summary = "최근 본 게시글 추가 API by 김주헌",
+            description = "최근 본 게시글을 추가합니다." +
+                    "게시글을 조회할때마다 이 API를 호출해 주세요."
+    )
+    @PostMapping("/members/{memberId}/posts/{postId}/view")
+    public CustomResponse<Void> addRecentViewPost(
+            @PathVariable Long memberId,
+            @PathVariable Long postId,
+            @CurrentUser AuthUser user
+    ) {
+        log.info("[ 최근 본 게시글 추가 ] userID:{}, memberID:{}, postId:{}", user.getUserId(), memberId, postId);
+        postCommandService.addRecentPost(memberId, postId, user);
+        return CustomResponse.onSuccess(null);
     }
 
     // PATCH 요청

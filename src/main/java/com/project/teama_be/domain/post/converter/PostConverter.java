@@ -2,6 +2,7 @@ package com.project.teama_be.domain.post.converter;
 
 import com.project.teama_be.domain.location.entity.Location;
 import com.project.teama_be.domain.member.entity.Member;
+import com.project.teama_be.domain.member.entity.RecentlyViewed;
 import com.project.teama_be.domain.post.dto.request.PostReqDTO;
 import com.project.teama_be.domain.post.dto.response.PostResDTO;
 import com.project.teama_be.domain.post.entity.Post;
@@ -9,6 +10,7 @@ import com.project.teama_be.domain.post.entity.PostImage;
 import com.project.teama_be.domain.post.entity.PostReaction;
 import com.project.teama_be.domain.post.enums.ReactionType;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 public class PostConverter {
@@ -53,6 +55,18 @@ public class PostConverter {
                 .member(member)
                 .post(post)
                 .reactionType(reactionType)
+                .build();
+    }
+
+    // 최근 본 게시글 추가: Post, Member -> RecentlyViewed
+    public static RecentlyViewed toRecentlyViewed(
+            Post post,
+            Member member
+    ){
+        return RecentlyViewed.builder()
+                .post(post)
+                .member(member)
+                .viewedAt(LocalDateTime.now())
                 .build();
     }
 
