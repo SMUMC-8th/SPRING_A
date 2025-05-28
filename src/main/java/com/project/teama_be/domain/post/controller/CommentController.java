@@ -13,6 +13,7 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 @Slf4j
@@ -142,28 +143,38 @@ public class CommentController {
         return CustomResponse.onSuccess(commentCommandService.likeComment(commentId, user));
     }
 
-    // 댓글 수정 (미정 기능)
+    // 댓글 수정
     @PatchMapping("/comments/{commentId}")
     @Operation(
-            summary = "댓글 수정 (미정 기능)",
+            summary = "댓글 수정 API by 김주헌",
             description = "댓글을 수정합니다."
     )
     public CustomResponse<CommentResDTO.CommentUpdate> commentUpdate(
-            @PathVariable Long commentId,
+            @PathVariable @NotNull(message = "댓글ID는 필수 입력입니다.")
+            Long commentId,
+            @CurrentUser AuthUser user,
             @RequestBody CommentReqDTO.CommentUpdate commentContent
     ) {
-        return CustomResponse.onSuccess(null);
+        // 변경할 내용이 존재하는 지 확인
+        if (commentContent.content().isBlank()) {
+            return CustomResponse.onSuccess(HttpStatus.NO_CONTENT, null);
+        }
+        return CustomResponse.onSuccess(commentCommandService.updateComment(
+                commentId, user, commentContent.content())
+        );
     }
 
-    // 댓글 삭제 (미정 기능)
+    // 댓글 삭제
     @DeleteMapping("/comments/{commentId}")
     @Operation(
-            summary = "댓글 삭제 (미정 기능)",
+            summary = "댓글 삭제 API by 김주헌",
             description = "댓글을 삭제합니다. (Soft Delete)"
     )
     public CustomResponse<CommentResDTO.CommentDelete> deleteComment(
-            @PathVariable Long commentId
+            @PathVariable @NotNull(message = "댓글ID는 필수 입력입니다.")
+            Long commentId,
+            @CurrentUser AuthUser user
     ) {
-        return CustomResponse.onSuccess(null);
+        return CustomResponse.onSuccess(commentCommandService.deleteComment(commentId, user));
     }
 }

@@ -154,6 +154,41 @@ public class CommentCommandService {
         return CommentConverter.toCommentLike(commentReaction);
     }
 
+    // 댓글 수정
+    @Transactional
+    public CommentResDTO.CommentUpdate updateComment(
+            Long commentId,
+            AuthUser user,
+            String content
+    ){
+        // 댓글 작성자인지 확인
+        Comment comment = commentRepository.findById(commentId).orElseThrow(()->
+                new CommentException(CommentErrorCode.NOT_FOUND));
+        if (!comment.getMember().getId().equals(user.getUserId())){
+            throw new CommentException(CommentErrorCode.ACCESS_DENIED);
+        }
+
+        comment.updateContent(content);
+        return CommentConverter.toCommentUpdate(comment);
+    }
+
+    // 댓글 삭제
+    @Transactional
+    public CommentResDTO.CommentDelete deleteComment(
+            Long commentId,
+            AuthUser user
+    ){
+        // 댓글 작성자인지 확인
+        Comment comment = commentRepository.findById(commentId).orElseThrow(()->
+                new CommentException(CommentErrorCode.NOT_FOUND));
+        if (!comment.getMember().getId().equals(user.getUserId())){
+            throw new CommentException(CommentErrorCode.ACCESS_DENIED);
+        }
+
+        commentRepository.deleteById(commentId);
+        return CommentConverter.toCommentDelete(comment);
+    }
+
     // 멤버 조회 ✅
     private Member getMember(AuthUser user) {
 

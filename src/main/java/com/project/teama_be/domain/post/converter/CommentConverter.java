@@ -85,4 +85,24 @@ public class CommentConverter {
                 .cursor(cursor)
                 .build();
     }
+
+    // 댓글 수정
+    public static CommentResDTO.CommentUpdate toCommentUpdate(
+            Comment comment
+    ){
+        return CommentResDTO.CommentUpdate.builder()
+                .commentId(comment.getId())
+                .updatedAt(comment.getUpdatedAt())
+                .build();
+    }
+
+    // 댓글 삭제
+    public static CommentResDTO.CommentDelete toCommentDelete(
+            Comment comment
+    ){
+        return CommentResDTO.CommentDelete.builder()
+                .commentId(comment.getId())
+                .deletedAt(comment.getDeletedAt())
+                .build();
+    }
 }
