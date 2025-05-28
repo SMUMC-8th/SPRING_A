@@ -37,7 +37,7 @@ public class CommentController {
             @PathVariable @NotNull(message = "게시글ID는 필수 입력입니다.")
             Long postId,
             @RequestParam(defaultValue = "-1") @Min(value = -1, message = "커서는 -1 이상이어야 합니다.")
-            Long cursor,
+            String cursor,
             @RequestParam(defaultValue = "1") @Min(value = 1, message = "댓글은 최소 하나 이상 조회해야 합니다.")
             int size
     ) {
@@ -56,7 +56,7 @@ public class CommentController {
             @PathVariable @NotNull(message = "댓글ID는 필수 입력입니다.")
             Long commentId,
             @RequestParam(defaultValue = "-1") @Min(value = -1, message = "커서는 -1 이상이어야 합니다.")
-            Long cursor,
+            String cursor,
             @RequestParam(defaultValue = "1") @Min(value = 1, message = "대댓글은 최소 하나 이상 조회해야 합니다.")
             int size
     ) {
@@ -76,7 +76,7 @@ public class CommentController {
             @CurrentUser
             AuthUser user,
             @RequestParam(defaultValue = "-1") @Min(value = -1, message = "커서는 -1 이상이어야 합니다.")
-            Long cursor,
+            String cursor,
             @RequestParam(defaultValue = "1") @Min(value = 1, message = "댓글은 최소 하나 이상 조회해야 합니다.")
             int size
     ) {

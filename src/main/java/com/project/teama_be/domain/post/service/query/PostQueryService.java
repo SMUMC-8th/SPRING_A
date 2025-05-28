@@ -17,6 +17,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeParseException;
 import java.util.List;
 
 @Slf4j
@@ -45,7 +46,7 @@ public class PostQueryService {
     public PostResDTO.PageablePost<PostResDTO.FullPost> getPostsByKeyword(
             String query,
             String type,
-            Long cursor,
+            String cursor,
             int size
     ) {
 
@@ -55,8 +56,12 @@ public class PostQueryService {
         QPost post = QPost.post;
 
         // 커서가 존재하면 이전에 조회한 게시글부터 조회
-        if (cursor != -1){
-            builder.and(post.id.loe(cursor));
+        if (!cursor.equals("-1")){
+            try {
+                builder.and(post.id.loe(Long.parseLong(cursor)));
+            } catch (NumberFormatException e){
+                throw new PostException(PostErrorCode.NOT_VALID_CURSOR);
+            }
         }
 
         switch (type.toLowerCase()) {
@@ -82,15 +87,19 @@ public class PostQueryService {
     // 가게 게시글 모두 조회 ✅
     public PostResDTO.PageablePost<PostResDTO.FullPost> getPostsByPlaceId(
             Long placeId,
-            Long cursor,
+            String cursor,
             int size
     ) {
         BooleanBuilder builder = new BooleanBuilder();
         QPost post = QPost.post;
 
         builder.and(post.location.id.eq(placeId));
-        if (cursor != -1) {
-            builder.and(post.id.loe(cursor));
+        if (!cursor.equals("-1")) {
+            try {
+                builder.and(post.id.loe(Long.parseLong(cursor)));
+            } catch (NumberFormatException e){
+                throw new PostException(PostErrorCode.NOT_VALID_CURSOR);
+            }
         }
 
         log.info("[ 가게 게시글 모두 조회 ] subQuery:{}", builder);
@@ -101,7 +110,7 @@ public class PostQueryService {
     public PostResDTO.PageablePost<PostResDTO.SimplePost> getMyPosts(
             Long memberId,
             AuthUser user,
-            Long cursor,
+            String cursor,
             int size
     ) {
 
@@ -112,8 +121,12 @@ public class PostQueryService {
         QPost post = QPost.post;
 
         builder.and(post.member.id.eq(memberId));
-        if (cursor != -1) {
-            builder.and(post.id.loe(cursor));
+        if (!cursor.equals("-1")) {
+            try {
+                builder.and(post.id.loe(Long.parseLong(cursor)));
+            } catch (NumberFormatException e){
+                throw new PostException(PostErrorCode.NOT_VALID_CURSOR);
+            }
         }
 
         log.info("[ 내가 작성한 게시글 조회 ] subQuery:{}", builder);
@@ -124,7 +137,7 @@ public class PostQueryService {
     public PostResDTO.PageablePost<PostResDTO.SimplePost> getMyLikePost(
             Long memberId,
             AuthUser user,
-            Long cursor,
+            String cursor,
             int size
     ){
         // 로그인 유저와 memberID가 같은지 검증
@@ -136,8 +149,12 @@ public class PostQueryService {
 
         builder.and(postReaction.member.id.eq(memberId))
                 .and(postReaction.reactionType.eq(ReactionType.LIKE));
-        if (cursor != -1) {
-            builder.and(post.id.loe(cursor));
+        if (!cursor.equals("-1")) {
+            try {
+                builder.and(post.id.loe(Long.parseLong(cursor)));
+            } catch (NumberFormatException e){
+                throw new PostException(PostErrorCode.NOT_VALID_CURSOR);
+            }
         }
 
         log.info("[ 내가 좋아요 누른 게시글 조회 ] subQuery:{}", builder);
@@ -157,8 +174,13 @@ public class PostQueryService {
         BooleanBuilder builder = new BooleanBuilder();
         QRecentlyViewed recentlyViewed = QRecentlyViewed.recentlyViewed;
 
-        if (!cursor.equals("-1")){
-            builder.and(recentlyViewed.viewedAt.loe(LocalDateTime.parse(cursor)));
+        if (!cursor.equals("-1")) {
+            try {
+                LocalDateTime newCursor = LocalDateTime.parse(cursor);
+                builder.and(recentlyViewed.viewedAt.loe(newCursor));
+            } catch (DateTimeParseException e) {
+                throw new PostException(PostErrorCode.NOT_VALID_CURSOR);
+            }
         }
 
         return postRepository.getRecentlyViewedPost(builder, size);

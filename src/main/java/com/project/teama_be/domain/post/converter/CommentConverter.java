@@ -76,7 +76,7 @@ public class CommentConverter {
             List<T> comments,
             Boolean hasNext,
             int pageSize,
-            Long cursor
+            String cursor
     ){
         return CommentResDTO.PageableComment.<T>builder()
                 .comment(comments)

@@ -40,6 +40,7 @@ public class CommentCommandService {
     private final NotiService notiService;
 
     // 댓글 작성 ✅
+    @Transactional
     public CommentResDTO.CommentUpload createComment(
             Long postId,
             AuthUser user,
@@ -69,6 +70,7 @@ public class CommentCommandService {
     }
 
     // 대댓글 작성 ✅
+    @Transactional
     public CommentResDTO.CommentUpload createReply(
             Long commentId,
             AuthUser user,

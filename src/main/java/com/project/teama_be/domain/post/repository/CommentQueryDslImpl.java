@@ -63,7 +63,7 @@ public class CommentQueryDslImpl implements CommentQueryDsl{
         // 페이징 정보 설정
         boolean hasNext = comments.size() > size;
         int pageSize = Math.min(comments.size(), size);
-        Long cursor = comments.get(comments.size()-1).commentId();
+        String cursor = comments.get(comments.size()-1).commentId().toString();
 
         // 데이터 정제
         comments = comments.subList(0, pageSize);
@@ -108,7 +108,7 @@ public class CommentQueryDslImpl implements CommentQueryDsl{
         // 페이징 정보 설정
         boolean hasNext = comments.size() > size;
         int pageSize = Math.min(comments.size(), size);
-        Long cursor = comments.get(comments.size()-1).commentId();
+        String cursor = comments.get(comments.size()-1).commentId().toString();
 
         // 데이터 정제
         comments = comments.subList(0, pageSize);
@@ -152,7 +152,7 @@ public class CommentQueryDslImpl implements CommentQueryDsl{
         // 페이징 정보 설정
         boolean hasNext = comments.size() > size;
         int pageSize = Math.min(comments.size(), size);
-        Long cursor = comments.get(comments.size()-1).commentId();
+        String cursor = comments.get(comments.size()-1).commentId().toString();
 
         // 데이터 정제
         comments = comments.subList(0, pageSize);

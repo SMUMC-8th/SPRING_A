@@ -11,10 +11,7 @@ import com.project.teama_be.global.security.userdetails.AuthUser;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
@@ -67,7 +64,7 @@ public class PostController {
             @RequestParam @NotBlank(message = "키워드 종류가 비어있으면 안됩니다.")
             String type,
             @RequestParam(defaultValue = "-1") @NotNull @Min(value = -1, message = "커서는 -1 이상이어야 합니다.")
-            Long cursor,
+            String cursor,
             @RequestParam(defaultValue = "1") @NotNull @Min(value = 1, message = "게시글은 최소 하나 이상 조회해야 합니다.")
             int size
     ) {
@@ -86,7 +83,7 @@ public class PostController {
             @PathVariable @NotNull @Min(value = 0, message = "장소ID는 최소 1부터 시작합니다.")
             Long placeId,
             @RequestParam(defaultValue = "-1") @NotNull @Min(value = -1, message = "커서는 -1 이상이어야 합니다.")
-            Long cursor,
+            String cursor,
             @RequestParam(defaultValue = "1") @NotNull @Min(value = 1, message = "게시글은 최소 하나 이상 조회해야 합니다.")
             int size
     ) {
@@ -106,7 +103,7 @@ public class PostController {
             Long memberId,
             @CurrentUser AuthUser user,
             @RequestParam(defaultValue = "-1") @NotNull @Min(value = -1, message = "커서는 -1 이상이어야 합니다.")
-            Long cursor,
+            String cursor,
             @RequestParam(defaultValue = "1") @NotNull @Min(value = 1, message = "게시글은 최소 하나 이상 조회해야 합니다.")
             int size
     ) {
@@ -123,7 +120,8 @@ public class PostController {
                     "커서 기반 페이지네이션, 최신 순으로 정렬합니다."
     )
     public CustomResponse<PostResDTO.PageablePost<PostResDTO.RecentPost>> getRecentViewPosts(
-            @PathVariable Long memberId,
+            @PathVariable @NotNull(message = "회원 아이디가 비어있으면 안됩니다.")
+            Long memberId,
             @CurrentUser AuthUser user,
             @RequestParam(defaultValue = "-1")
             String cursor,
@@ -142,10 +140,11 @@ public class PostController {
                     "커서 기반 페이지네이션, 최신 순으로 정렬합니다."
     )
     public CustomResponse<PostResDTO.PageablePost<PostResDTO.SimplePost>> getLikedPosts(
-            @PathVariable Long memberId,
+            @PathVariable @NotNull(message = "회원 아이디가 비어있으면 안됩니다.")
+            Long memberId,
             @CurrentUser AuthUser user,
             @RequestParam(defaultValue = "-1") @NotNull @Min(value = -1, message = "커서는 -1 이상이어야 합니다.")
-            Long cursor,
+            String cursor,
             @RequestParam(defaultValue = "1") @NotNull @Min(value = 1, message = "게시글은 최소 하나 이상 조회해야 합니다.")
             int size
     ) {
