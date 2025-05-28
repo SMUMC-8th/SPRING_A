@@ -38,4 +38,10 @@ public interface PostQueryDsl {
             Predicate subQuery,
             int size
     );
+
+    // 최근 본 게시글 조회
+    PostResDTO.PageablePost<PostResDTO.RecentPost> getRecentlyViewedPost(
+            Predicate subQuery,
+            int size
+    );
 }

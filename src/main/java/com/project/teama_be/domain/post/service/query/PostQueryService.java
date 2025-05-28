@@ -1,5 +1,6 @@
 package com.project.teama_be.domain.post.service.query;
 
+import com.project.teama_be.domain.member.entity.QRecentlyViewed;
 import com.project.teama_be.domain.post.dto.response.PostResDTO;
 import com.project.teama_be.domain.post.entity.QPost;
 import com.project.teama_be.domain.post.entity.QPostReaction;
@@ -15,6 +16,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Slf4j
@@ -140,6 +142,26 @@ public class PostQueryService {
 
         log.info("[ 내가 좋아요 누른 게시글 조회 ] subQuery:{}", builder);
         return postRepository.getMyLikePost(builder, size);
+    }
+
+    // 최근 본 게시글 조회
+    public PostResDTO.PageablePost<PostResDTO.RecentPost> getRecentlyViewedPost(
+            Long memberId,
+            AuthUser user,
+            String cursor,
+            int size
+    ){
+        // 로그인 유저와 memberID가 같은지 검증
+        validateMember(user, memberId);
+
+        BooleanBuilder builder = new BooleanBuilder();
+        QRecentlyViewed recentlyViewed = QRecentlyViewed.recentlyViewed;
+
+        if (!cursor.equals("-1")){
+            builder.and(recentlyViewed.viewedAt.loe(LocalDateTime.parse(cursor)));
+        }
+
+        return postRepository.getRecentlyViewedPost(builder, size);
     }
 
      // 로그인 유저 <-> memberID 대조

@@ -7,4 +7,6 @@ public interface RecentlyViewedRepository extends JpaRepository<RecentlyViewed, 
     boolean existsByMemberIdAndPostId(Long memberId, Long postId);
 
     RecentlyViewed findByMemberIdAndPostId(Long memberId, Long postId);
+
+    RecentlyViewed findByPostId(Long postId);
 }

@@ -115,7 +115,7 @@ public class PostController {
         return CustomResponse.onSuccess(postQueryService.getMyPosts(memberId, user, cursor, size));
     }
 
-    // 최근 본 게시글 조회
+    // 최근 본 게시글 조회 ✅
     @GetMapping("/members/{memberId}/posts/recent")
     @Operation(
             summary = "최근 본 게시글 조회 API by 김주헌",
@@ -124,13 +124,14 @@ public class PostController {
     )
     public CustomResponse<PostResDTO.PageablePost<PostResDTO.RecentPost>> getRecentViewPosts(
             @PathVariable Long memberId,
-            @RequestParam(defaultValue = "-1") @NotNull @Min(value = -1, message = "커서는 -1 이상이어야 합니다.")
-            Long cursor,
+            @CurrentUser AuthUser user,
+            @RequestParam(defaultValue = "-1")
+            String cursor,
             @RequestParam(defaultValue = "1") @NotNull @Min(value = 1, message = "게시글은 최소 하나 이상 조회해야 합니다.")
             int size
     ) {
         log.info("[ 최근 본 게시글 조회 ] memberID:{}, cursor:{}, size:{}", memberId, cursor, size);
-        return CustomResponse.onSuccess(null);
+        return CustomResponse.onSuccess(postQueryService.getRecentlyViewedPost(memberId, user, cursor, size));
     }
 
     // 내가 좋아요 누른 게시글 조회 ✅
@@ -196,7 +197,7 @@ public class PostController {
         return CustomResponse.onSuccess(postCommandService.PostLike(user, postId));
     }
 
-    // 최근 본 게시글 추가
+    // 최근 본 게시글 추가 ✅
     @Operation(
             summary = "최근 본 게시글 추가 API by 김주헌",
             description = "최근 본 게시글을 추가합니다." +

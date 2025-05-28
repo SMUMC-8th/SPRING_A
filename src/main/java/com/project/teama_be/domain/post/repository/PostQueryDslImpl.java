@@ -1,6 +1,8 @@
 package com.project.teama_be.domain.post.repository;
 
 
+import com.project.teama_be.domain.member.entity.QRecentlyViewed;
+import com.project.teama_be.domain.member.repository.RecentlyViewedRepository;
 import com.project.teama_be.domain.post.converter.PostConverter;
 import com.project.teama_be.domain.post.dto.response.PostResDTO;
 import com.project.teama_be.domain.post.entity.*;
@@ -25,6 +27,7 @@ import java.util.Map;
 public class PostQueryDslImpl implements PostQueryDsl{
 
     private final JPAQueryFactory jpaQueryFactory;
+    private final RecentlyViewedRepository recentlyViewedRepository;
 
     // 각 가게 최신 게시글 조회
     @Override
@@ -103,7 +106,12 @@ public class PostQueryDslImpl implements PostQueryDsl{
             throw new PostException(PostErrorCode.NOT_FOUND_KEYWORD);
         }
 
-        return findFullPostAttribute(postList, size);
+        // 메타데이터 생성
+        PostResDTO.Cursor cursor = createIdCursor(postList, size);
+
+        // 데이터 생성
+        List<PostResDTO.FullPost> result = findFullPostAttribute(postList, cursor);
+        return PostConverter.toPageablePost(result, cursor);
     }
 
     // 내가 작성한 게시글 조회 ✅
@@ -127,7 +135,13 @@ public class PostQueryDslImpl implements PostQueryDsl{
             throw new PostException(PostErrorCode.NOT_FOUND);
         }
 
-        return findSimplePostAttribute(postList, size);
+        // 메타데이터 생성
+        PostResDTO.Cursor cursor = createIdCursor(postList, size);
+
+        // 데이터 생성
+        List<PostResDTO.SimplePost> result = findSimplePostAttribute(postList, cursor);
+
+        return PostConverter.toPageablePost(result, cursor);
     }
 
     // 내가 좋아요 누른 게시글 조회 ✅
@@ -152,7 +166,13 @@ public class PostQueryDslImpl implements PostQueryDsl{
             throw new PostException(PostErrorCode.NOT_FOUND);
         }
 
-        return findSimplePostAttribute(postList, size);
+        // 메타데이터 생성
+        PostResDTO.Cursor cursor = createIdCursor(postList, size);
+
+        // 데이터 생성
+        List<PostResDTO.SimplePost> result = findSimplePostAttribute(postList, cursor);
+
+        return PostConverter.toPageablePost(result, cursor);
     }
 
     // 가게 게시글 모두 조회 ✅
@@ -176,25 +196,85 @@ public class PostQueryDslImpl implements PostQueryDsl{
         if (postList.isEmpty()) {
             throw new PostException(PostErrorCode.NOT_FOUND);
         }
-        return findFullPostAttribute(postList, size);
+
+        // 메타데이터 생성
+        PostResDTO.Cursor cursor = createIdCursor(postList, size);
+
+        // 데이터 생성
+        List<PostResDTO.FullPost> result = findFullPostAttribute(postList, cursor);
+
+        return PostConverter.toPageablePost(result, cursor);
     }
 
-    // SimplePost 부가 속성들 조회✅
-    private PostResDTO.PageablePost<PostResDTO.SimplePost> findSimplePostAttribute(
+    // 최근 본 게시글 조회
+    @Override
+    public PostResDTO.PageablePost<PostResDTO.RecentPost> getRecentlyViewedPost(
+            Predicate subQuery,
+            int size
+    ) {
+        // 조회할 객체 선언
+        QRecentlyViewed recentlyViewed = QRecentlyViewed.recentlyViewed;
+
+        // 조건에 맞는 게시글 모두 조회
+        List<Post> postList = jpaQueryFactory
+                .select(recentlyViewed.post)
+                .from(recentlyViewed)
+                .where(subQuery)
+                .orderBy(recentlyViewed.viewedAt.desc())
+                .limit(size+1)
+                .fetch();
+
+        // 결과가 존재하지 않을때
+        if (postList.isEmpty()) {
+            throw new PostException(PostErrorCode.NOT_FOUND);
+        }
+
+        // 메타데이터 생성
+        Boolean hasNext = postList.size() > size;
+        int pageSize = Math.min(postList.size(), size);
+        Long LastPostId = postList.size() > size ?
+                postList.get(pageSize).getId() : postList.get(pageSize-1).getId();
+        String nextCursor = recentlyViewedRepository
+                .findByPostId(LastPostId).getViewedAt().toString();
+
+        PostResDTO.Cursor cursor = PostConverter.toCursor(nextCursor, hasNext, pageSize);
+
+        // 데이터 생성
+        List<PostResDTO.RecentPost> result = findSimplePostAttribute(postList, cursor).stream()
+                .map(eachPost ->
+                        PostConverter.toRecentlyViewedPost(
+                                eachPost,
+                                recentlyViewedRepository
+                                        .findByPostId(eachPost.postId()).getViewedAt())
+                ).toList();
+
+        return PostConverter.toPageablePost(result, cursor);
+    }
+
+    // ID 커서 생성
+    private PostResDTO.Cursor createIdCursor(
             List<Post> postList,
             int size
     ){
-        // 조회할 객체 선언
-        QPostImage postImage = QPostImage.postImage;
-
         // 커서 지정
         Boolean hasNext = postList.size() > size;
         int pageSize = Math.min(postList.size(), size);
         Long nextCursor = postList.size() > size ?
                 postList.get(pageSize).getId() : postList.get(pageSize-1).getId();
 
+        return PostConverter.toCursor(nextCursor.toString(), hasNext, pageSize);
+    }
+
+    // SimplePost 부가 속성들 조회✅
+    private List<PostResDTO.SimplePost> findSimplePostAttribute(
+            List<Post> postList,
+            PostResDTO.Cursor cursor
+    ){
+        // 조회할 객체 선언
+        QPostImage postImage = QPostImage.postImage;
+
         // 게시글 size 조절
-        postList = postList.subList(0, pageSize);
+        postList = postList.subList(0, cursor.pageSize());
 
         // 게시글 ID 목록
         List<Long> postIdList = postList.stream()
@@ -222,14 +302,14 @@ public class PostQueryDslImpl implements PostQueryDsl{
                 .toList();
 
         log.info("[ 게시글 페이지네이션 ] resultCnt:{}, hasNext:{}, pageSize:{}, nextCursor:{}",
-                result.size(), hasNext, pageSize, nextCursor);
-        return PostConverter.toPageablePost(result, hasNext, pageSize, nextCursor);
+                result.size(), cursor.hasNext(), cursor.pageSize(), cursor.nextCursor());
+        return result;
     }
 
     // FullPost 부가 속성들 조회 ✅
-    private PostResDTO.PageablePost<PostResDTO.FullPost> findFullPostAttribute(
+    private List<PostResDTO.FullPost> findFullPostAttribute(
             List<Post> postList,
-            int size
+            PostResDTO.Cursor cursor
     ){
 
         // 조회할 객체 선언
@@ -237,14 +317,8 @@ public class PostQueryDslImpl implements PostQueryDsl{
         QComment comment = QComment.comment;
         QPostTag postTag = QPostTag.postTag;
 
-        // 커서 지정
-        Boolean hasNext = postList.size() > size;
-        int pageSize = Math.min(postList.size(), size);
-        Long nextCursor = postList.size() > size ?
-                postList.get(pageSize).getId() : postList.get(pageSize-1).getId();
-
         // 게시글 size 조절
-        postList = postList.subList(0, pageSize);
+        postList = postList.subList(0, cursor.pageSize());
 
         // 게시글 ID 목록
         List<Long> postIdList = postList.stream()
@@ -293,7 +367,7 @@ public class PostQueryDslImpl implements PostQueryDsl{
                 .toList();
 
         log.info("[ 게시글 페이지네이션 ] resultCnt:{}, hasNext:{}, pageSize:{}, nextCursor:{}",
-                result.size(), hasNext, pageSize, nextCursor);
-        return PostConverter.toPageablePost(result, hasNext, pageSize, nextCursor);
+                result.size(), cursor.hasNext(), cursor.pageSize(), cursor.nextCursor());
+        return result;
     }
 }

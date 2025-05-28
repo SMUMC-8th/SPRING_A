@@ -24,6 +24,9 @@ public enum PostErrorCode implements BaseErrorCode {
     USER_NOT_MATCH(HttpStatus.BAD_REQUEST,
             "USER400_2",
             "유저가 일치하지 않습니다."),
+    VIEWED_POST_NOT_FOUND(HttpStatus.NOT_FOUND,
+            "POST404_2",
+            "해당 유저의 최근에 본 게시글이 존재하지 않습니다."),
     ;
 
     private final HttpStatus httpStatus;

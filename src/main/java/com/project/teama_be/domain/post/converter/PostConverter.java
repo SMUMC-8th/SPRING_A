@@ -131,13 +131,38 @@ public class PostConverter {
     // 커서 기반 게시글 조회 : List<T> -> PageablePost
     public static <T> PostResDTO.PageablePost<T> toPageablePost(
             List<T> posts,
-            Boolean hasNext,
-            int pageSize,
-            Long cursor
+            PostResDTO.Cursor cursor
     ){
         return PostResDTO.PageablePost.<T>builder()
                 .post(posts)
-                .cursor(cursor)
+                .cursor(cursor.nextCursor())
+                .hasNext(cursor.hasNext())
+                .pageSize(cursor.pageSize())
+                .build();
+    }
+
+    // 최근 본 게시글 조회
+    public static PostResDTO.RecentPost toRecentlyViewedPost(
+            PostResDTO.SimplePost simplePost,
+            LocalDateTime viewedAt
+    ){
+        return PostResDTO.RecentPost.builder()
+                .PostId(simplePost.postId())
+                .PostImageUrl(simplePost.postImageUrl())
+                .placeName(simplePost.placeName())
+                .placeId(simplePost.placeId())
+                .viewedAt(viewedAt)
+                .build();
+    }
+
+    // 커서 포장
+    public static PostResDTO.Cursor toCursor(
+            String cursor,
+            Boolean hasNext,
+            int pageSize
+    ){
+        return PostResDTO.Cursor.builder()
+                .nextCursor(cursor)
                 .hasNext(hasNext)
                 .pageSize(pageSize)
                 .build();

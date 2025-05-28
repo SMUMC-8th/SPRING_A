@@ -55,7 +55,7 @@ public class PostResDTO {
             List<T> post,
             Boolean hasNext,
             int pageSize,
-            Long cursor
+            String cursor
     ) {}
 
     // 게시글 업로드 완료
@@ -88,4 +88,12 @@ public class PostResDTO {
             Long postId,
             LocalDateTime deletedAt
     ) {}
+
+    // 커서 생성
+    @Builder
+    public record Cursor(
+            String nextCursor,
+            Boolean hasNext,
+            int pageSize
+    ){}
 }
