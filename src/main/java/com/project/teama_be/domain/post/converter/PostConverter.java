@@ -155,6 +155,28 @@ public class PostConverter {
                 .build();
     }
 
+    // 게시글 수정
+    public static PostResDTO.PostUpdate toPostUpdate(
+            Post post
+    ){
+        return PostResDTO.PostUpdate.builder()
+                .postId(post.getId())
+                .placeId(post.getLocation().getId())
+                .updatedAt(post.getUpdatedAt())
+                .build();
+    }
+
+    // 게시글 삭제
+    public static PostResDTO.PostDelete toPostDelete(
+            Post post,
+            LocalDateTime deletedAt
+    ){
+        return PostResDTO.PostDelete.builder()
+                .postId(post.getId())
+                .deletedAt(deletedAt)
+                .build();
+    }
+
     // 커서 포장
     public static PostResDTO.Cursor toCursor(
             String cursor,

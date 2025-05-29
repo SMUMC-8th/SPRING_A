@@ -14,12 +14,14 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Optional;
 
 
 @Slf4j
@@ -214,10 +216,16 @@ public class PostController {
             description = "게시글을 수정합니다."
     )
     public CustomResponse<PostResDTO.PostUpdate> updatePost(
-            @PathVariable Long postId,
-            @RequestBody(required = false) PostReqDTO.PostUpdate postContent
+            @PathVariable
+            Long postId,
+            @CurrentUser
+            AuthUser user,
+            @RequestBody(required = false) @Valid
+            PostReqDTO.PostUpdate dto
     ) {
-        return CustomResponse.onSuccess(null);
+        Optional<PostResDTO.PostUpdate> result = postCommandService.PostUpdate(postId, user, dto);
+        return result.map(CustomResponse::onSuccess).orElseGet(() ->
+                CustomResponse.onSuccess(HttpStatus.NO_CONTENT, null));
     }
 
     // DELETE 요청 (SoftDelete 적용해야 함)
@@ -228,8 +236,9 @@ public class PostController {
             description = "게시글을 삭제합니다 (SoftDelete)"
     )
     public CustomResponse<PostResDTO.PostDelete> deletePost(
-            @PathVariable Long postId
+            @PathVariable Long postId,
+            @CurrentUser AuthUser user
     ) {
-        return CustomResponse.onSuccess(null);
+        return CustomResponse.onSuccess(postCommandService.deletePost(postId, user));
     }
 }
