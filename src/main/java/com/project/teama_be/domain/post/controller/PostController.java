@@ -166,7 +166,7 @@ public class PostController {
     @PostMapping(
             value = "/posts",
             consumes = {
-                MediaType.MULTIPART_FORM_DATA_VALUE
+                    MediaType.MULTIPART_FORM_DATA_VALUE
             }
     )
     @Operation(
