@@ -1,7 +1,5 @@
 package com.project.teama_be.domain.post.service.query;
 
-import com.project.teama_be.domain.member.exceptioin.MemberErrorCode;
-import com.project.teama_be.domain.member.exceptioin.MemberException;
 import com.project.teama_be.domain.post.dto.response.CommentResDTO;
 import com.project.teama_be.domain.post.entity.QComment;
 import com.project.teama_be.domain.post.exception.CommentException;
@@ -70,20 +68,17 @@ public class CommentQueryService {
 
     // 내가 작성한 댓글 조회 ✅
     public CommentResDTO.PageableComment<CommentResDTO.SimpleComment> findMyComments(
-            Long memberId,
             AuthUser user,
             String cursor,
             int size
     ){
-        // 로그인 유저와 memberID가 같은지 검증
-        validateMember(user, memberId);
 
         // 조회할 객체 선언
         QComment comment = QComment.comment;
 
         // 조건 설정
         BooleanBuilder builder = new BooleanBuilder();
-        builder.and(comment.member.id.eq(memberId));
+        builder.and(comment.member.id.eq(user.getUserId()));
 
         if (!cursor.equals("-1")) {
             try {
@@ -96,12 +91,5 @@ public class CommentQueryService {
         log.info("[ 내가 작성한 댓글 조회 ] subQuery:{}", builder);
         return commentRepository.getMyComments(builder, size);
 
-    }
-
-    private void validateMember(AuthUser user, Long memberId) {
-
-        if (!user.getUserId().equals(memberId)) {
-            throw new MemberException(MemberErrorCode.MEMBER_NOT_FOUND);
-        }
     }
 }

@@ -28,6 +28,8 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -186,7 +188,8 @@ public class CommentCommandService {
         }
 
         commentRepository.deleteById(commentId);
-        return CommentConverter.toCommentDelete(comment);
+        LocalDateTime now = LocalDateTime.now();
+        return CommentConverter.toCommentDelete(comment, now);
     }
 
     // 멤버 조회 ✅

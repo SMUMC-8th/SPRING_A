@@ -14,12 +14,13 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Optional;
 
 
 @Slf4j
@@ -63,9 +64,11 @@ public class PostController {
             String query,
             @RequestParam @NotBlank(message = "키워드 종류가 비어있으면 안됩니다.")
             String type,
-            @RequestParam(defaultValue = "-1") @NotNull @Min(value = -1, message = "커서는 -1 이상이어야 합니다.")
+            @RequestParam(defaultValue = "-1") @NotNull(message = "커서의 기본값은 -1입니다.")
+            @Min(value = -1, message = "커서는 -1 이상이어야 합니다.")
             String cursor,
-            @RequestParam(defaultValue = "1") @NotNull @Min(value = 1, message = "게시글은 최소 하나 이상 조회해야 합니다.")
+            @RequestParam(defaultValue = "1") @NotNull(message = "조회할 데이터 사이즈를 요청해야 합니다.")
+            @Min(value = 1, message = "게시글은 최소 하나 이상 조회해야 합니다.")
             int size
     ) {
         log.info("[ 키워드 검색 ] query:{}, type:{}, cursor:{}, size:{}", query, type, cursor, size);
@@ -80,11 +83,14 @@ public class PostController {
                     "커서 기반 페이지네이션, 최신 순으로 정렬합니다."
     )
     public CustomResponse<PostResDTO.PageablePost<PostResDTO.FullPost>> getAllPostsAboutPlace(
-            @PathVariable @NotNull @Min(value = 0, message = "장소ID는 최소 1부터 시작합니다.")
+            @PathVariable @NotNull(message = "장소ID는 필수로 적어야합니다.")
+            @Min(value = 0, message = "장소ID는 최소 1부터 시작합니다.")
             Long placeId,
-            @RequestParam(defaultValue = "-1") @NotNull @Min(value = -1, message = "커서는 -1 이상이어야 합니다.")
+            @RequestParam(defaultValue = "-1") @NotNull(message = "커서의 기본값은 -1입니다.")
+            @Min(value = -1, message = "커서는 -1 이상이어야 합니다.")
             String cursor,
-            @RequestParam(defaultValue = "1") @NotNull @Min(value = 1, message = "게시글은 최소 하나 이상 조회해야 합니다.")
+            @RequestParam(defaultValue = "1") @NotNull(message = "조회할 데이터 사이즈를 요청해야 합니다.")
+            @Min(value = 1, message = "게시글은 최소 하나 이상 조회해야 합니다.")
             int size
     ) {
         log.info("[ 가게 게시글 모두 조회 ] placeId:{}, cursor:{}, size:{}", placeId, cursor, size);
@@ -99,10 +105,13 @@ public class PostController {
                     "커서 기반 페이지네이션, 최신 순으로 정렬합니다."
     )
     public CustomResponse<PostResDTO.PageablePost<PostResDTO.SimplePost>> getMyPosts(
-            @CurrentUser AuthUser user,
-            @RequestParam(defaultValue = "-1") @NotNull @Min(value = -1, message = "커서는 -1 이상이어야 합니다.")
+            @CurrentUser
+            AuthUser user,
+            @RequestParam(defaultValue = "-1") @NotNull(message = "커서의 기본값은 -1입니다.")
+            @Min(value = -1, message = "커서는 -1 이상이어야 합니다.")
             String cursor,
-            @RequestParam(defaultValue = "1") @NotNull @Min(value = 1, message = "게시글은 최소 하나 이상 조회해야 합니다.")
+            @RequestParam(defaultValue = "1") @NotNull(message = "조회할 데이터 사이즈를 요청해야 합니다.")
+            @Min(value = 1, message = "게시글은 최소 하나 이상 조회해야 합니다.")
             int size
     ) {
         log.info("[ 내가 작성한 게시글 조회 ] user:{}, cursor:{}, size:{}",
@@ -118,10 +127,12 @@ public class PostController {
                     "커서 기반 페이지네이션, 최신 순으로 정렬합니다."
     )
     public CustomResponse<PostResDTO.PageablePost<PostResDTO.RecentPost>> getRecentViewPosts(
-            @CurrentUser AuthUser user,
-            @RequestParam(defaultValue = "-1")
+            @CurrentUser
+            AuthUser user,
+            @RequestParam(defaultValue = "-1") @NotNull(message = "커서의 기본값은 -1입니다.")
             String cursor,
-            @RequestParam(defaultValue = "1") @NotNull @Min(value = 1, message = "게시글은 최소 하나 이상 조회해야 합니다.")
+            @RequestParam(defaultValue = "1") @NotNull(message = "조회할 데이터 사이즈를 요청해야 합니다.")
+            @Min(value = 1, message = "게시글은 최소 하나 이상 조회해야 합니다.")
             int size
     ) {
         log.info("[ 최근 본 게시글 조회 ] cursor:{}, size:{}", cursor, size);
@@ -136,10 +147,13 @@ public class PostController {
                     "커서 기반 페이지네이션, 최신 순으로 정렬합니다."
     )
     public CustomResponse<PostResDTO.PageablePost<PostResDTO.SimplePost>> getLikedPosts(
-            @CurrentUser AuthUser user,
-            @RequestParam(defaultValue = "-1") @NotNull @Min(value = -1, message = "커서는 -1 이상이어야 합니다.")
+            @CurrentUser
+            AuthUser user,
+            @RequestParam(defaultValue = "-1") @NotNull(message = "커서의 기본값은 -1입니다.")
+            @Min(value = -1, message = "커서는 -1 이상이어야 합니다.")
             String cursor,
-            @RequestParam(defaultValue = "1") @NotNull @Min(value = 1, message = "게시글은 최소 하나 이상 조회해야 합니다.")
+            @RequestParam(defaultValue = "1") @NotNull(message = "조회할 데이터 사이즈를 요청해야 합니다.")
+            @Min(value = 1, message = "게시글은 최소 하나 이상 조회해야 합니다.")
             int size
     ) {
         log.info("[ 내가 좋아요 누른 게시글 조회 ] user:{}, cursor:{}, size:{}",
@@ -161,9 +175,12 @@ public class PostController {
                     "파일은 image/**, JSON은 application/json으로 요청해주세요."
     )
     public CustomResponse<PostResDTO.PostUpload> uploadPost(
-            @CurrentUser AuthUser user,
-            @RequestPart List<MultipartFile> image,
-            @RequestPart @Valid PostReqDTO.PostUpload postContent
+            @CurrentUser
+            AuthUser user,
+            @RequestPart @NotEmpty(message = "게시글 이미지는 필수 입력값입니다.")
+            List<MultipartFile> image,
+            @RequestPart @Valid @NotNull(message = "게시글 내용은 필수 입력값입니다.")
+            PostReqDTO.PostUpload postContent
     ) {
 
         log.info("[ 게시글 업로드 ] user:{}, image:{}, postContent:{}", user.getLoginId(), image.size(), postContent.content());
@@ -183,8 +200,10 @@ public class PostController {
             description = "게시글에 좋아요를 반영합니다."
     )
     public CustomResponse<PostResDTO.PostLike> likePost(
-            @AuthenticationPrincipal AuthUser user,
-            @PathVariable Long postId
+            @CurrentUser
+            AuthUser user,
+            @PathVariable @NotNull(message = "게시글ID는 필수 입력입니다.")
+            Long postId
     ) {
         log.info("[ 게시글 좋아요 ] user:{}, postId:{}", user.getLoginId(), postId);
         return CustomResponse.onSuccess(postCommandService.PostLike(user, postId));
@@ -198,8 +217,10 @@ public class PostController {
     )
     @PostMapping("/posts/{postId}/view")
     public CustomResponse<Void> addRecentViewPost(
-            @PathVariable Long postId,
-            @CurrentUser AuthUser user
+            @PathVariable @NotNull(message = "게시글ID는 필수 입력입니다.")
+            Long postId,
+            @CurrentUser
+            AuthUser user
     ) {
         log.info("[ 최근 본 게시글 추가 ] userID:{}, postId:{}", user.getUserId(), postId);
         postCommandService.addRecentPost(postId, user);
@@ -214,10 +235,16 @@ public class PostController {
             description = "게시글을 수정합니다."
     )
     public CustomResponse<PostResDTO.PostUpdate> updatePost(
-            @PathVariable Long postId,
-            @RequestBody(required = false) PostReqDTO.PostUpdate postContent
+            @PathVariable @NotNull(message = "게시글ID는 필수 입력입니다.")
+            Long postId,
+            @CurrentUser
+            AuthUser user,
+            @RequestBody(required = false) @Valid
+            PostReqDTO.PostUpdate dto
     ) {
-        return CustomResponse.onSuccess(null);
+        Optional<PostResDTO.PostUpdate> result = postCommandService.PostUpdate(postId, user, dto);
+        return result.map(CustomResponse::onSuccess).orElseGet(() ->
+                CustomResponse.onSuccess(HttpStatus.NO_CONTENT, null));
     }
 
     // DELETE 요청 (SoftDelete 적용해야 함)
@@ -225,11 +252,15 @@ public class PostController {
     @DeleteMapping("/posts/{postId}")
     @Operation(
             summary = "게시글 삭제 API by 김주헌",
-            description = "게시글을 삭제합니다 (SoftDelete)"
+            description = "게시글을 삭제합니다 (SoftDelete)" +
+                    "삭제한 게시글을 복구하는 API가 없습니다. 사용에 유의해주세요."
     )
     public CustomResponse<PostResDTO.PostDelete> deletePost(
-            @PathVariable Long postId
+            @PathVariable @NotNull(message = "게시글ID는 필수 입력입니다.")
+            Long postId,
+            @CurrentUser
+            AuthUser user
     ) {
-        return CustomResponse.onSuccess(null);
+        return CustomResponse.onSuccess(postCommandService.deletePost(postId, user));
     }
 }

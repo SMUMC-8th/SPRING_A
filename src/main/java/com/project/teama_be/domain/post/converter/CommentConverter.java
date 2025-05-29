@@ -7,6 +7,7 @@ import com.project.teama_be.domain.post.entity.CommentReaction;
 import com.project.teama_be.domain.post.entity.Post;
 import com.project.teama_be.domain.post.enums.ReactionType;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 public class CommentConverter {
@@ -98,11 +99,12 @@ public class CommentConverter {
 
     // 댓글 삭제
     public static CommentResDTO.CommentDelete toCommentDelete(
-            Comment comment
+            Comment comment,
+            LocalDateTime deletedAt
     ){
         return CommentResDTO.CommentDelete.builder()
                 .commentId(comment.getId())
-                .deletedAt(comment.getDeletedAt())
+                .deletedAt(deletedAt)
                 .build();
     }
 }

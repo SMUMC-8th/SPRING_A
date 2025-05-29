@@ -21,6 +21,12 @@ public class PostReqDTO {
             @NotNull(message = "장소명은 필수 입력값입니다.")
             String placeName,
 
+            @NotNull(message = "지번은 필수 입력값입니다.")
+            String addressName,
+
+            @NotNull(message = "도로명은 필수 입력값입니다.")
+            String roadAddressName,
+
             @Size(max = 5, message = "태그는 최대 5개까지 입력할 수 있습니다.")
             List<String> tags,
 
@@ -31,6 +37,7 @@ public class PostReqDTO {
     // 게시글 수정
     public record PostUpdate(
             String content,
+            @Size(max = 5, message = "태그는 최대 5개까지 입력할 수 있습니다.")
             List<String> tags,
             Long placeId
     ) {}

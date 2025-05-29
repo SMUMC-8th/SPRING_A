@@ -66,14 +66,13 @@ public class CommentController {
     }
 
     // 내가 작성한 댓글 조회 ✅
-    @GetMapping("/members/{memberId}/comments")
+    @GetMapping("/me/comments")
     @Operation(
             summary = "내가 작성한 댓글 조회 API by 김주헌",
             description = "내가 작성한 모든 댓글을 조회합니다. " +
                     "커서 기반 페이지네이션, 최신 순으로 정렬합니다."
     )
     public CustomResponse<CommentResDTO.PageableComment<CommentResDTO.SimpleComment>> getMyComments(
-            @PathVariable Long memberId,
             @CurrentUser
             AuthUser user,
             @RequestParam(defaultValue = "-1") @Min(value = -1, message = "커서는 -1 이상이어야 합니다.")
@@ -81,8 +80,8 @@ public class CommentController {
             @RequestParam(defaultValue = "1") @Min(value = 1, message = "댓글은 최소 하나 이상 조회해야 합니다.")
             int size
     ) {
-        log.info("[ 내가 작성한 댓글 조회 ] memberID:{}, user:{}, cursor:{}, size:{}", memberId, user.getLoginId(), cursor, size);
-        return CustomResponse.onSuccess(commentQueryService.findMyComments(memberId, user, cursor, size));
+        log.info("[ 내가 작성한 댓글 조회 ]  user:{}, cursor:{}, size:{}", user.getLoginId(), cursor, size);
+        return CustomResponse.onSuccess(commentQueryService.findMyComments(user, cursor, size));
     }
 
     // POST 요청
@@ -93,10 +92,12 @@ public class CommentController {
             description = "댓글을 작성합니다."
     )
     public CustomResponse<CommentResDTO.CommentUpload> uploadComment(
-            @PathVariable
+            @PathVariable @NotNull(message = "게시글ID는 필수 입력입니다.")
             Long postId,
-            @CurrentUser AuthUser user,
-            @RequestBody CommentReqDTO.Commenting content
+            @CurrentUser
+            AuthUser user,
+            @RequestBody @NotNull(message = "댓글 내용은 필수 입력값입니다.")
+            CommentReqDTO.Commenting content
     ) {
         log.info("[ 댓글 작성 ] postID:{}, user:{}, content:{}", postId, user.getLoginId(), content);
         return CustomResponse.onSuccess(
@@ -115,9 +116,12 @@ public class CommentController {
             description = "대댓글을 작성합니다."
     )
     public CustomResponse<CommentResDTO.CommentUpload> uploadReply(
-            @PathVariable Long commentId,
-            @CurrentUser AuthUser user,
-            @RequestBody CommentReqDTO.Commenting commentContent
+            @PathVariable @NotNull(message = "댓글ID는 필수 입력입니다.")
+            Long commentId,
+            @CurrentUser
+            AuthUser user,
+            @RequestBody @NotNull(message = "대댓글 내용은 필수 입력값입니다.")
+            CommentReqDTO.Commenting commentContent
     ) {
         log.info("[ 대댓글 작성 ] commentID:{}, user:{}, content:{}", commentId, user.getLoginId(), commentContent);
         return CustomResponse.onSuccess(
@@ -136,8 +140,10 @@ public class CommentController {
             description = "댓글에 좋아요를 표시합니다."
     )
     public CustomResponse<CommentResDTO.CommentLike> likeComment(
-            @PathVariable Long commentId,
-            @CurrentUser AuthUser user
+            @PathVariable @NotNull(message = "댓글ID는 필수 입력입니다.")
+            Long commentId,
+            @CurrentUser
+            AuthUser user
     ) {
         log.info("[ 댓글 좋아요 ] commentID:{}, user:{}", commentId, user.getLoginId());
         return CustomResponse.onSuccess(commentCommandService.likeComment(commentId, user));
@@ -152,8 +158,10 @@ public class CommentController {
     public CustomResponse<CommentResDTO.CommentUpdate> commentUpdate(
             @PathVariable @NotNull(message = "댓글ID는 필수 입력입니다.")
             Long commentId,
-            @CurrentUser AuthUser user,
-            @RequestBody CommentReqDTO.CommentUpdate commentContent
+            @CurrentUser
+            AuthUser user,
+            @RequestBody(required = false)
+            CommentReqDTO.CommentUpdate commentContent
     ) {
         // 변경할 내용이 존재하는 지 확인
         if (commentContent.content().isBlank()) {
@@ -168,12 +176,14 @@ public class CommentController {
     @DeleteMapping("/comments/{commentId}")
     @Operation(
             summary = "댓글 삭제 API by 김주헌",
-            description = "댓글을 삭제합니다. (Soft Delete)"
+            description = "댓글을 삭제합니다. (Soft Delete)" +
+                    "삭제한 댓글을 복구하는 API가 없습니다. 사용에 유의해주세요."
     )
     public CustomResponse<CommentResDTO.CommentDelete> deleteComment(
             @PathVariable @NotNull(message = "댓글ID는 필수 입력입니다.")
             Long commentId,
-            @CurrentUser AuthUser user
+            @CurrentUser
+            AuthUser user
     ) {
         return CustomResponse.onSuccess(commentCommandService.deleteComment(commentId, user));
     }
