@@ -9,7 +9,6 @@ import com.project.teama_be.domain.post.enums.ReactionType;
 import com.project.teama_be.domain.post.exception.PostException;
 import com.project.teama_be.domain.post.exception.code.PostErrorCode;
 import com.project.teama_be.domain.post.repository.PostRepository;
-import com.project.teama_be.global.security.exception.SecurityErrorCode;
 import com.project.teama_be.global.security.userdetails.AuthUser;
 import com.querydsl.core.BooleanBuilder;
 import lombok.RequiredArgsConstructor;
@@ -108,19 +107,15 @@ public class PostQueryService {
 
     // 내가 작성한 게시글 조회 (마이페이지) ✅
     public PostResDTO.PageablePost<PostResDTO.SimplePost> getMyPosts(
-            Long memberId,
             AuthUser user,
             String cursor,
             int size
     ) {
 
-        // 로그인 유저와 memberID가 같은지 검증
-        validateMember(user, memberId);
-
         BooleanBuilder builder = new BooleanBuilder();
         QPost post = QPost.post;
 
-        builder.and(post.member.id.eq(memberId));
+        builder.and(post.member.id.eq(user.getUserId()));
         if (!cursor.equals("-1")) {
             try {
                 builder.and(post.id.loe(Long.parseLong(cursor)));
@@ -135,19 +130,16 @@ public class PostQueryService {
 
     // 내가 좋아요 누른 게시글 조회 ✅
     public PostResDTO.PageablePost<PostResDTO.SimplePost> getMyLikePost(
-            Long memberId,
             AuthUser user,
             String cursor,
             int size
     ){
-        // 로그인 유저와 memberID가 같은지 검증
-        validateMember(user, memberId);
 
         BooleanBuilder builder = new BooleanBuilder();
         QPost post = QPost.post;
         QPostReaction postReaction = QPostReaction.postReaction;
 
-        builder.and(postReaction.member.id.eq(memberId))
+        builder.and(postReaction.member.id.eq(user.getUserId()))
                 .and(postReaction.reactionType.eq(ReactionType.LIKE));
         if (!cursor.equals("-1")) {
             try {
@@ -163,17 +155,15 @@ public class PostQueryService {
 
     // 최근 본 게시글 조회
     public PostResDTO.PageablePost<PostResDTO.RecentPost> getRecentlyViewedPost(
-            Long memberId,
             AuthUser user,
             String cursor,
             int size
     ){
-        // 로그인 유저와 memberID가 같은지 검증
-        validateMember(user, memberId);
 
         BooleanBuilder builder = new BooleanBuilder();
         QRecentlyViewed recentlyViewed = QRecentlyViewed.recentlyViewed;
 
+        builder.and(recentlyViewed.member.id.eq(user.getUserId()));
         if (!cursor.equals("-1")) {
             try {
                 LocalDateTime newCursor = LocalDateTime.parse(cursor);
@@ -184,14 +174,5 @@ public class PostQueryService {
         }
 
         return postRepository.getRecentlyViewedPost(builder, size);
-    }
-
-     // 로그인 유저 <-> memberID 대조
-    private void validateMember(AuthUser user, Long memberId) {
-
-        // 현재 유저와 맞는지 대조
-        if (!user.getUserId().equals(memberId)) {
-            throw new PostException(SecurityErrorCode.FORBIDDEN);
-        }
     }
 }

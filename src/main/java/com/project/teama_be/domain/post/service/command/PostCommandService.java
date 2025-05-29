@@ -173,23 +173,17 @@ public class PostCommandService {
     // 최근 본 게시글 추가
     @Transactional
     public void addRecentPost(
-            Long memberId,
             Long postId,
             AuthUser user
     ) {
         Member member = getMember(user);
 
-        // 유저 비교: 틀리면 유저 매칭 실패
-        if (!member.getId().equals(memberId)) {
-            throw new PostException(PostErrorCode.USER_NOT_MATCH);
-        }
-
         // 게시글 정보 생성
         Post post = getPost(postId);
 
         // 이미 본적이 있는 경우: 시청 시각 업데이트
-        if (recentlyViewedRepository.existsByMemberIdAndPostId(memberId, postId)) {
-            RecentlyViewed recentlyViewed = recentlyViewedRepository.findByMemberIdAndPostId(memberId, postId);
+        if (recentlyViewedRepository.existsByMemberIdAndPostId(member.getId(), postId)) {
+            RecentlyViewed recentlyViewed = recentlyViewedRepository.findByMemberIdAndPostId(member.getId(), postId);
             recentlyViewed.updateViewedAt(LocalDateTime.now());
             log.info("[ 최근 본 게시글 업데이트 ] recentlyViewedID:{}", recentlyViewed.getId());
             return;

@@ -92,65 +92,59 @@ public class PostController {
     }
 
     // 내가 작성한 게시글 조회 (마이페이지) ✅
-    @GetMapping("/members/{memberId}/posts")
+    @GetMapping("/me/posts")
     @Operation(
             summary = "내가 작성한 게시글 조회 (마이페이지) API by 김주헌",
             description = "마이페이지에서 내가 올렸던 게시글을 조회합니다. " +
                     "커서 기반 페이지네이션, 최신 순으로 정렬합니다."
     )
     public CustomResponse<PostResDTO.PageablePost<PostResDTO.SimplePost>> getMyPosts(
-            @PathVariable @NotNull(message = "회원 아이디가 비어있으면 안됩니다.")
-            Long memberId,
             @CurrentUser AuthUser user,
             @RequestParam(defaultValue = "-1") @NotNull @Min(value = -1, message = "커서는 -1 이상이어야 합니다.")
             String cursor,
             @RequestParam(defaultValue = "1") @NotNull @Min(value = 1, message = "게시글은 최소 하나 이상 조회해야 합니다.")
             int size
     ) {
-        log.info("[ 내가 작성한 게시글 조회 ] memberID:{}, user:{}, cursor:{}, size:{}",
-                memberId, user.getLoginId(), cursor, size);
-        return CustomResponse.onSuccess(postQueryService.getMyPosts(memberId, user, cursor, size));
+        log.info("[ 내가 작성한 게시글 조회 ] user:{}, cursor:{}, size:{}",
+                user.getLoginId(), cursor, size);
+        return CustomResponse.onSuccess(postQueryService.getMyPosts(user, cursor, size));
     }
 
     // 최근 본 게시글 조회 ✅
-    @GetMapping("/members/{memberId}/posts/recent")
+    @GetMapping("/me/recent-view-post")
     @Operation(
             summary = "최근 본 게시글 조회 API by 김주헌",
             description = "마이페이지에서 최근 본 게시글을 조회합니다. " +
                     "커서 기반 페이지네이션, 최신 순으로 정렬합니다."
     )
     public CustomResponse<PostResDTO.PageablePost<PostResDTO.RecentPost>> getRecentViewPosts(
-            @PathVariable @NotNull(message = "회원 아이디가 비어있으면 안됩니다.")
-            Long memberId,
             @CurrentUser AuthUser user,
             @RequestParam(defaultValue = "-1")
             String cursor,
             @RequestParam(defaultValue = "1") @NotNull @Min(value = 1, message = "게시글은 최소 하나 이상 조회해야 합니다.")
             int size
     ) {
-        log.info("[ 최근 본 게시글 조회 ] memberID:{}, cursor:{}, size:{}", memberId, cursor, size);
-        return CustomResponse.onSuccess(postQueryService.getRecentlyViewedPost(memberId, user, cursor, size));
+        log.info("[ 최근 본 게시글 조회 ] cursor:{}, size:{}", cursor, size);
+        return CustomResponse.onSuccess(postQueryService.getRecentlyViewedPost(user, cursor, size));
     }
 
     // 내가 좋아요 누른 게시글 조회 ✅
-    @GetMapping("/members/{memberId}/posts/like")
+    @GetMapping("/me/like-post")
     @Operation(
             summary = "내가 좋아요 누른 게시글 조회 API by 김주헌",
             description = "마이페이지에서 좋아요를 누른 게시글을 조회합니다. " +
                     "커서 기반 페이지네이션, 최신 순으로 정렬합니다."
     )
     public CustomResponse<PostResDTO.PageablePost<PostResDTO.SimplePost>> getLikedPosts(
-            @PathVariable @NotNull(message = "회원 아이디가 비어있으면 안됩니다.")
-            Long memberId,
             @CurrentUser AuthUser user,
             @RequestParam(defaultValue = "-1") @NotNull @Min(value = -1, message = "커서는 -1 이상이어야 합니다.")
             String cursor,
             @RequestParam(defaultValue = "1") @NotNull @Min(value = 1, message = "게시글은 최소 하나 이상 조회해야 합니다.")
             int size
     ) {
-        log.info("[ 내가 좋아요 누른 게시글 조회 ] memberID:{}, user:{}, cursor:{}, size:{}",
-                memberId, user.getLoginId(), cursor, size);
-        return CustomResponse.onSuccess(postQueryService.getMyLikePost(memberId, user, cursor, size));
+        log.info("[ 내가 좋아요 누른 게시글 조회 ] user:{}, cursor:{}, size:{}",
+                user.getLoginId(), cursor, size);
+        return CustomResponse.onSuccess(postQueryService.getMyLikePost(user, cursor, size));
     }
 
     // POST 요청
@@ -202,14 +196,13 @@ public class PostController {
             description = "최근 본 게시글을 추가합니다." +
                     "게시글을 조회할때마다 이 API를 호출해 주세요."
     )
-    @PostMapping("/members/{memberId}/posts/{postId}/view")
+    @PostMapping("/posts/{postId}/view")
     public CustomResponse<Void> addRecentViewPost(
-            @PathVariable Long memberId,
             @PathVariable Long postId,
             @CurrentUser AuthUser user
     ) {
-        log.info("[ 최근 본 게시글 추가 ] userID:{}, memberID:{}, postId:{}", user.getUserId(), memberId, postId);
-        postCommandService.addRecentPost(memberId, postId, user);
+        log.info("[ 최근 본 게시글 추가 ] userID:{}, postId:{}", user.getUserId(), postId);
+        postCommandService.addRecentPost(postId, user);
         return CustomResponse.onSuccess(null);
     }
 
