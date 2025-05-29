@@ -43,7 +43,7 @@ public class CommentResDTO {
             List<T> comment,
             Boolean hasNext,
             int pageSize,
-            Long cursor
+            String cursor
     ) {}
 
     // 댓글 작성

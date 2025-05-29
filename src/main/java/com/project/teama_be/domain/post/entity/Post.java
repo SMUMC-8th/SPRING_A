@@ -7,7 +7,10 @@ import com.project.teama_be.domain.notification.entity.Noti;
 import com.project.teama_be.global.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.SQLRestriction;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,6 +20,8 @@ import java.util.List;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Builder
 @Getter
+@SQLDelete(sql = "UPDATE post SET deleted_at = CURRENT_TIMESTAMP WHERE id = ?")
+@SQLRestriction("deleted_at IS NULL")
 public class Post extends BaseEntity {
 
     @Id
@@ -58,6 +63,9 @@ public class Post extends BaseEntity {
     @Builder.Default
     private Boolean hideShare = false;
 
+    @Column(name = "deleted_at")
+    private LocalDateTime deletedAt;
+
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     private List<PostImage> postImages = new ArrayList<>();
@@ -85,5 +93,13 @@ public class Post extends BaseEntity {
     // update
     public void updateLikeCount(Long likeCount) {
         this.likeCount = likeCount;
+    }
+
+    public void updateContent(String content) {
+        this.content = content;
+    }
+
+    public void updateLocation(Location location) {
+        this.location = location;
     }
 }

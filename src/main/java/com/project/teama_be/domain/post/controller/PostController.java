@@ -11,18 +11,16 @@ import com.project.teama_be.global.security.userdetails.AuthUser;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Optional;
 
 
 @Slf4j
@@ -58,7 +56,7 @@ public class PostController {
     @Operation(
             summary = "키워드 검색 API by 김주헌",
             description = "키워드를 통해 게시글을 조회합니다. " +
-                    "키워드 종류를 선택해야 합니다. (태그, 장소명) " +
+                    "키워드 종류를 선택해야 합니다. (tag, place, address)" +
                     "커서 기반 페이지네이션, 최신 순으로 정렬합니다."
     )
     public CustomResponse<PostResDTO.PageablePost<PostResDTO.FullPost>> getPostsByKeyword(
@@ -66,9 +64,11 @@ public class PostController {
             String query,
             @RequestParam @NotBlank(message = "키워드 종류가 비어있으면 안됩니다.")
             String type,
-            @RequestParam(defaultValue = "-1") @NotNull @Min(value = -1, message = "커서는 -1 이상이어야 합니다.")
-            Long cursor,
-            @RequestParam(defaultValue = "1") @NotNull @Min(value = 1, message = "게시글은 최소 하나 이상 조회해야 합니다.")
+            @RequestParam(defaultValue = "-1") @NotNull(message = "커서의 기본값은 -1입니다.")
+            @Min(value = -1, message = "커서는 -1 이상이어야 합니다.")
+            String cursor,
+            @RequestParam(defaultValue = "1") @NotNull(message = "조회할 데이터 사이즈를 요청해야 합니다.")
+            @Min(value = 1, message = "게시글은 최소 하나 이상 조회해야 합니다.")
             int size
     ) {
         log.info("[ 키워드 검색 ] query:{}, type:{}, cursor:{}, size:{}", query, type, cursor, size);
@@ -83,11 +83,14 @@ public class PostController {
                     "커서 기반 페이지네이션, 최신 순으로 정렬합니다."
     )
     public CustomResponse<PostResDTO.PageablePost<PostResDTO.FullPost>> getAllPostsAboutPlace(
-            @PathVariable @NotNull @Min(value = 0, message = "장소ID는 최소 1부터 시작합니다.")
+            @PathVariable @NotNull(message = "장소ID는 필수로 적어야합니다.")
+            @Min(value = 0, message = "장소ID는 최소 1부터 시작합니다.")
             Long placeId,
-            @RequestParam(defaultValue = "-1") @NotNull @Min(value = -1, message = "커서는 -1 이상이어야 합니다.")
-            Long cursor,
-            @RequestParam(defaultValue = "1") @NotNull @Min(value = 1, message = "게시글은 최소 하나 이상 조회해야 합니다.")
+            @RequestParam(defaultValue = "-1") @NotNull(message = "커서의 기본값은 -1입니다.")
+            @Min(value = -1, message = "커서는 -1 이상이어야 합니다.")
+            String cursor,
+            @RequestParam(defaultValue = "1") @NotNull(message = "조회할 데이터 사이즈를 요청해야 합니다.")
+            @Min(value = 1, message = "게시글은 최소 하나 이상 조회해야 합니다.")
             int size
     ) {
         log.info("[ 가게 게시글 모두 조회 ] placeId:{}, cursor:{}, size:{}", placeId, cursor, size);
@@ -95,62 +98,67 @@ public class PostController {
     }
 
     // 내가 작성한 게시글 조회 (마이페이지) ✅
-    @GetMapping("/members/{memberId}/posts")
+    @GetMapping("/me/posts")
     @Operation(
             summary = "내가 작성한 게시글 조회 (마이페이지) API by 김주헌",
             description = "마이페이지에서 내가 올렸던 게시글을 조회합니다. " +
                     "커서 기반 페이지네이션, 최신 순으로 정렬합니다."
     )
     public CustomResponse<PostResDTO.PageablePost<PostResDTO.SimplePost>> getMyPosts(
-            @PathVariable @NotNull(message = "회원 아이디가 비어있으면 안됩니다.")
-            Long memberId,
-            @CurrentUser AuthUser user,
-            @RequestParam(defaultValue = "-1") @NotNull @Min(value = -1, message = "커서는 -1 이상이어야 합니다.")
-            Long cursor,
-            @RequestParam(defaultValue = "1") @NotNull @Min(value = 1, message = "게시글은 최소 하나 이상 조회해야 합니다.")
+            @CurrentUser
+            AuthUser user,
+            @RequestParam(defaultValue = "-1") @NotNull(message = "커서의 기본값은 -1입니다.")
+            @Min(value = -1, message = "커서는 -1 이상이어야 합니다.")
+            String cursor,
+            @RequestParam(defaultValue = "1") @NotNull(message = "조회할 데이터 사이즈를 요청해야 합니다.")
+            @Min(value = 1, message = "게시글은 최소 하나 이상 조회해야 합니다.")
             int size
     ) {
-        log.info("[ 내가 작성한 게시글 조회 ] memberID:{}, user:{}, cursor:{}, size:{}",
-                memberId, user.getLoginId(), cursor, size);
-        return CustomResponse.onSuccess(postQueryService.getMyPosts(memberId, user, cursor, size));
+        log.info("[ 내가 작성한 게시글 조회 ] user:{}, cursor:{}, size:{}",
+                user.getLoginId(), cursor, size);
+        return CustomResponse.onSuccess(postQueryService.getMyPosts(user, cursor, size));
     }
 
-    // 최근 본 게시글 조회
-    @GetMapping("/members/{memberId}/posts/recent")
+    // 최근 본 게시글 조회 ✅
+    @GetMapping("/me/recent-view-post")
     @Operation(
-            summary = "최근 본 게시글 조회 API by 김주헌 (보류)",
+            summary = "최근 본 게시글 조회 API by 김주헌",
             description = "마이페이지에서 최근 본 게시글을 조회합니다. " +
                     "커서 기반 페이지네이션, 최신 순으로 정렬합니다."
     )
     public CustomResponse<PostResDTO.PageablePost<PostResDTO.RecentPost>> getRecentViewPosts(
-            @PathVariable Long memberId,
-            @RequestParam(defaultValue = "-1") @NotNull @Min(value = -1, message = "커서는 -1 이상이어야 합니다.")
-            Long cursor,
-            @RequestParam(defaultValue = "1") @NotNull @Min(value = 1, message = "게시글은 최소 하나 이상 조회해야 합니다.")
+            @CurrentUser
+            AuthUser user,
+            @RequestParam(defaultValue = "-1") @NotNull(message = "커서의 기본값은 -1입니다.")
+            String cursor,
+            @RequestParam(defaultValue = "1") @NotNull(message = "조회할 데이터 사이즈를 요청해야 합니다.")
+            @Min(value = 1, message = "게시글은 최소 하나 이상 조회해야 합니다.")
             int size
     ) {
-        log.info("[ 최근 본 게시글 조회 ] memberID:{}, cursor:{}, size:{}", memberId, cursor, size);
-        return CustomResponse.onSuccess(null);
+        log.info("[ 최근 본 게시글 조회 ] cursor:{}, size:{}", cursor, size);
+        return CustomResponse.onSuccess(postQueryService.getRecentlyViewedPost(user, cursor, size));
     }
 
     // 내가 좋아요 누른 게시글 조회 ✅
-    @GetMapping("/members/{memberId}/posts/like")
+    @GetMapping("/me/like-post")
     @Operation(
             summary = "내가 좋아요 누른 게시글 조회 API by 김주헌",
             description = "마이페이지에서 좋아요를 누른 게시글을 조회합니다. " +
                     "커서 기반 페이지네이션, 최신 순으로 정렬합니다."
     )
     public CustomResponse<PostResDTO.PageablePost<PostResDTO.SimplePost>> getLikedPosts(
-            @PathVariable Long memberId,
-            @CurrentUser AuthUser user,
-            @RequestParam(defaultValue = "-1") @NotNull @Min(value = -1, message = "커서는 -1 이상이어야 합니다.")
-            Long cursor,
-            @RequestParam(defaultValue = "1") @NotNull @Min(value = 1, message = "게시글은 최소 하나 이상 조회해야 합니다.")
+            @CurrentUser
+            AuthUser user,
+            @RequestParam(defaultValue = "-1") @NotNull(message = "커서의 기본값은 -1입니다.")
+            @Min(value = -1, message = "커서는 -1 이상이어야 합니다.")
+            String cursor,
+            @RequestParam(defaultValue = "1") @NotNull(message = "조회할 데이터 사이즈를 요청해야 합니다.")
+            @Min(value = 1, message = "게시글은 최소 하나 이상 조회해야 합니다.")
             int size
     ) {
-        log.info("[ 내가 좋아요 누른 게시글 조회 ] memberID:{}, user:{}, cursor:{}, size:{}",
-                memberId, user.getLoginId(), cursor, size);
-        return CustomResponse.onSuccess(postQueryService.getMyLikePost(memberId, user, cursor, size));
+        log.info("[ 내가 좋아요 누른 게시글 조회 ] user:{}, cursor:{}, size:{}",
+                user.getLoginId(), cursor, size);
+        return CustomResponse.onSuccess(postQueryService.getMyLikePost(user, cursor, size));
     }
 
     // POST 요청
@@ -158,7 +166,7 @@ public class PostController {
     @PostMapping(
             value = "/posts",
             consumes = {
-                MediaType.MULTIPART_FORM_DATA_VALUE
+                    MediaType.MULTIPART_FORM_DATA_VALUE
             }
     )
     @Operation(
@@ -167,9 +175,12 @@ public class PostController {
                     "파일은 image/**, JSON은 application/json으로 요청해주세요."
     )
     public CustomResponse<PostResDTO.PostUpload> uploadPost(
-            @CurrentUser AuthUser user,
-            @RequestPart List<MultipartFile> image,
-            @RequestPart @Valid PostReqDTO.PostUpload postContent
+            @CurrentUser
+            AuthUser user,
+            @RequestPart @NotEmpty(message = "게시글 이미지는 필수 입력값입니다.")
+            List<MultipartFile> image,
+            @RequestPart @Valid @NotNull(message = "게시글 내용은 필수 입력값입니다.")
+            PostReqDTO.PostUpload postContent
     ) {
 
         log.info("[ 게시글 업로드 ] user:{}, image:{}, postContent:{}", user.getLoginId(), image.size(), postContent.content());
@@ -189,37 +200,67 @@ public class PostController {
             description = "게시글에 좋아요를 반영합니다."
     )
     public CustomResponse<PostResDTO.PostLike> likePost(
-            @AuthenticationPrincipal AuthUser user,
-            @PathVariable Long postId
+            @CurrentUser
+            AuthUser user,
+            @PathVariable @NotNull(message = "게시글ID는 필수 입력입니다.")
+            Long postId
     ) {
         log.info("[ 게시글 좋아요 ] user:{}, postId:{}", user.getLoginId(), postId);
         return CustomResponse.onSuccess(postCommandService.PostLike(user, postId));
     }
 
-    // PATCH 요청
-    // 게시글 수정 (미정 기능)
-    @PatchMapping("/posts/{postId}")
+    // 최근 본 게시글 추가 ✅
     @Operation(
-            summary = "게시글 수정 (미정 기능)",
-            description = "게시글을 수정합니다."
+            summary = "최근 본 게시글 추가 API by 김주헌",
+            description = "최근 본 게시글을 추가합니다." +
+                    "게시글을 조회할때마다 이 API를 호출해 주세요."
     )
-    public CustomResponse<PostResDTO.PostUpdate> updatePost(
-            @PathVariable Long postId,
-            @RequestBody(required = false) PostReqDTO.PostUpdate postContent
+    @PostMapping("/posts/{postId}/view")
+    public CustomResponse<Void> addRecentViewPost(
+            @PathVariable @NotNull(message = "게시글ID는 필수 입력입니다.")
+            Long postId,
+            @CurrentUser
+            AuthUser user
     ) {
+        log.info("[ 최근 본 게시글 추가 ] userID:{}, postId:{}", user.getUserId(), postId);
+        postCommandService.addRecentPost(postId, user);
         return CustomResponse.onSuccess(null);
     }
 
+    // PATCH 요청
+    // 게시글 수정
+    @PatchMapping("/posts/{postId}")
+    @Operation(
+            summary = "게시글 수정 API by 김주헌",
+            description = "게시글을 수정합니다."
+    )
+    public CustomResponse<PostResDTO.PostUpdate> updatePost(
+            @PathVariable @NotNull(message = "게시글ID는 필수 입력입니다.")
+            Long postId,
+            @CurrentUser
+            AuthUser user,
+            @RequestBody(required = false) @Valid
+            PostReqDTO.PostUpdate dto
+    ) {
+        Optional<PostResDTO.PostUpdate> result = postCommandService.PostUpdate(postId, user, dto);
+        return result.map(CustomResponse::onSuccess).orElseGet(() ->
+                CustomResponse.onSuccess(HttpStatus.NO_CONTENT, null));
+    }
+
     // DELETE 요청 (SoftDelete 적용해야 함)
-    // 게시글 삭제 (미정 기능)
+    // 게시글 삭제
     @DeleteMapping("/posts/{postId}")
     @Operation(
-            summary = "게시글 삭제 (미정 기능)",
-            description = "게시글을 삭제합니다 (SoftDelete)"
+            summary = "게시글 삭제 API by 김주헌",
+            description = "게시글을 삭제합니다 (SoftDelete)" +
+                    "삭제한 게시글을 복구하는 API가 없습니다. 사용에 유의해주세요."
     )
     public CustomResponse<PostResDTO.PostDelete> deletePost(
-            @PathVariable Long postId
+            @PathVariable @NotNull(message = "게시글ID는 필수 입력입니다.")
+            Long postId,
+            @CurrentUser
+            AuthUser user
     ) {
-        return CustomResponse.onSuccess(null);
+        return CustomResponse.onSuccess(postCommandService.deletePost(postId, user));
     }
 }

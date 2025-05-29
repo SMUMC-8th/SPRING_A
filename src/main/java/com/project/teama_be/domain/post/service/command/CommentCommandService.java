@@ -28,6 +28,8 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -40,6 +42,7 @@ public class CommentCommandService {
     private final NotiService notiService;
 
     // 댓글 작성 ✅
+    @Transactional
     public CommentResDTO.CommentUpload createComment(
             Long postId,
             AuthUser user,
@@ -69,6 +72,7 @@ public class CommentCommandService {
     }
 
     // 대댓글 작성 ✅
+    @Transactional
     public CommentResDTO.CommentUpload createReply(
             Long commentId,
             AuthUser user,
@@ -150,6 +154,42 @@ public class CommentCommandService {
         }
 
         return CommentConverter.toCommentLike(commentReaction);
+    }
+
+    // 댓글 수정
+    @Transactional
+    public CommentResDTO.CommentUpdate updateComment(
+            Long commentId,
+            AuthUser user,
+            String content
+    ){
+        // 댓글 작성자인지 확인
+        Comment comment = commentRepository.findById(commentId).orElseThrow(()->
+                new CommentException(CommentErrorCode.NOT_FOUND));
+        if (!comment.getMember().getId().equals(user.getUserId())){
+            throw new CommentException(CommentErrorCode.ACCESS_DENIED);
+        }
+
+        comment.updateContent(content);
+        return CommentConverter.toCommentUpdate(comment);
+    }
+
+    // 댓글 삭제
+    @Transactional
+    public CommentResDTO.CommentDelete deleteComment(
+            Long commentId,
+            AuthUser user
+    ){
+        // 댓글 작성자인지 확인
+        Comment comment = commentRepository.findById(commentId).orElseThrow(()->
+                new CommentException(CommentErrorCode.NOT_FOUND));
+        if (!comment.getMember().getId().equals(user.getUserId())){
+            throw new CommentException(CommentErrorCode.ACCESS_DENIED);
+        }
+
+        commentRepository.deleteById(commentId);
+        LocalDateTime now = LocalDateTime.now();
+        return CommentConverter.toCommentDelete(comment, now);
     }
 
     // 멤버 조회 ✅

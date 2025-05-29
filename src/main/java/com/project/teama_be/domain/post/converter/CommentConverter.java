@@ -7,6 +7,7 @@ import com.project.teama_be.domain.post.entity.CommentReaction;
 import com.project.teama_be.domain.post.entity.Post;
 import com.project.teama_be.domain.post.enums.ReactionType;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 public class CommentConverter {
@@ -76,13 +77,34 @@ public class CommentConverter {
             List<T> comments,
             Boolean hasNext,
             int pageSize,
-            Long cursor
+            String cursor
     ){
         return CommentResDTO.PageableComment.<T>builder()
                 .comment(comments)
                 .hasNext(hasNext)
                 .pageSize(pageSize)
                 .cursor(cursor)
+                .build();
+    }
+
+    // 댓글 수정
+    public static CommentResDTO.CommentUpdate toCommentUpdate(
+            Comment comment
+    ){
+        return CommentResDTO.CommentUpdate.builder()
+                .commentId(comment.getId())
+                .updatedAt(comment.getUpdatedAt())
+                .build();
+    }
+
+    // 댓글 삭제
+    public static CommentResDTO.CommentDelete toCommentDelete(
+            Comment comment,
+            LocalDateTime deletedAt
+    ){
+        return CommentResDTO.CommentDelete.builder()
+                .commentId(comment.getId())
+                .deletedAt(deletedAt)
                 .build();
     }
 }

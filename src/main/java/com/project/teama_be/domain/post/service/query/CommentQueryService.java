@@ -1,9 +1,9 @@
 package com.project.teama_be.domain.post.service.query;
 
-import com.project.teama_be.domain.member.exceptioin.MemberErrorCode;
-import com.project.teama_be.domain.member.exceptioin.MemberException;
 import com.project.teama_be.domain.post.dto.response.CommentResDTO;
 import com.project.teama_be.domain.post.entity.QComment;
+import com.project.teama_be.domain.post.exception.CommentException;
+import com.project.teama_be.domain.post.exception.code.CommentErrorCode;
 import com.project.teama_be.domain.post.repository.CommentRepository;
 import com.project.teama_be.global.security.userdetails.AuthUser;
 import com.querydsl.core.BooleanBuilder;
@@ -21,7 +21,7 @@ public class CommentQueryService {
     // 댓글 목록 조회 ✅
     public CommentResDTO.PageableComment<CommentResDTO.Comment> findComments(
             Long postId,
-            Long cursor,
+            String cursor,
             int size
     ) {
         // 조회할 객체 선언
@@ -31,8 +31,12 @@ public class CommentQueryService {
                 // 대댓글 조회 방지
                 .and(comment.parentId.eq(0L));
 
-        if (cursor != -1) {
-            builder.and(comment.id.loe(cursor));
+        if (!cursor.equals("-1")) {
+            try {
+                builder.and(comment.id.loe(Long.parseLong(cursor)));
+            } catch (NumberFormatException e) {
+                throw new CommentException(CommentErrorCode.NOT_VALID_CURSOR);
+            }
         }
         log.info("[ 댓글 목록 조회 ] subQuery:{}", builder);
         return commentRepository.findCommentList(builder, size);
@@ -41,7 +45,7 @@ public class CommentQueryService {
     // 대댓글 목록 조회
     public CommentResDTO.PageableComment<CommentResDTO.Reply> findReplyComments(
             Long commentId,
-            Long cursor,
+            String cursor,
             int size
     ) {
 
@@ -50,8 +54,12 @@ public class CommentQueryService {
         BooleanBuilder builder = new BooleanBuilder();
         builder.and(comment.parentId.eq(commentId));
 
-        if (cursor != -1) {
-            builder.and(comment.id.goe(cursor));
+        if (!cursor.equals("-1")) {
+            try{
+                builder.and(comment.id.goe(Long.parseLong(cursor)));
+            } catch (NumberFormatException e) {
+                throw new CommentException(CommentErrorCode.NOT_VALID_CURSOR);
+            }
         }
 
         log.info("[ 대댓글 목록 조회 ] subQuery:{}", builder);
@@ -60,34 +68,28 @@ public class CommentQueryService {
 
     // 내가 작성한 댓글 조회 ✅
     public CommentResDTO.PageableComment<CommentResDTO.SimpleComment> findMyComments(
-            Long memberId,
             AuthUser user,
-            Long cursor,
+            String cursor,
             int size
     ){
-        // 로그인 유저와 memberID가 같은지 검증
-        validateMember(user, memberId);
 
         // 조회할 객체 선언
         QComment comment = QComment.comment;
 
         // 조건 설정
         BooleanBuilder builder = new BooleanBuilder();
-        builder.and(comment.member.id.eq(memberId));
+        builder.and(comment.member.id.eq(user.getUserId()));
 
-        if (cursor != -1) {
-            builder.and(comment.id.loe(cursor));
+        if (!cursor.equals("-1")) {
+            try {
+                builder.and(comment.id.loe(Long.parseLong(cursor)));
+            } catch (NumberFormatException e) {
+                throw new CommentException(CommentErrorCode.NOT_VALID_CURSOR);
+            }
         }
 
         log.info("[ 내가 작성한 댓글 조회 ] subQuery:{}", builder);
         return commentRepository.getMyComments(builder, size);
 
-    }
-
-    private void validateMember(AuthUser user, Long memberId) {
-
-        if (!user.getUserId().equals(memberId)) {
-            throw new MemberException(MemberErrorCode.MEMBER_NOT_FOUND);
-        }
     }
 }

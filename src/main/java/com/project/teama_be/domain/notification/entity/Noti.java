@@ -7,6 +7,10 @@ import com.project.teama_be.domain.post.entity.Post;
 import com.project.teama_be.global.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.SQLRestriction;
+
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "notification")
@@ -14,6 +18,8 @@ import lombok.*;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Builder
 @Getter
+@SQLDelete(sql = "UPDATE notification SET deleted_at = CURRENT_TIMESTAMP WHERE id = ?")
+@SQLRestriction("deleted_at IS NULL")
 public class Noti extends BaseEntity {
 //firebase에서 제공하는 Notification임포트 할 때 중복돼서 Noti로 변경
 
@@ -36,7 +42,7 @@ public class Noti extends BaseEntity {
     private String body;
     //content지우고 title, body, isRead 생성
 
-    @Column(name = "isRead", nullable = false)
+    @Column(name = "is_read", nullable = false)
     private Boolean isRead = false;
 
     @Enumerated(EnumType.STRING)
@@ -46,6 +52,9 @@ public class Noti extends BaseEntity {
     @Enumerated(EnumType.STRING)
     @Column(name = "type", nullable = false)
     private NotiType type;
+
+    @Column(name = "deleted_at")
+    private LocalDateTime deletedAt;
 
     public void setIsRead(Boolean isRead) {
         this.isRead = isRead;

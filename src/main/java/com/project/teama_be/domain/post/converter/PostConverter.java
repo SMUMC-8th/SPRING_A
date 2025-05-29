@@ -2,6 +2,7 @@ package com.project.teama_be.domain.post.converter;
 
 import com.project.teama_be.domain.location.entity.Location;
 import com.project.teama_be.domain.member.entity.Member;
+import com.project.teama_be.domain.member.entity.RecentlyViewed;
 import com.project.teama_be.domain.post.dto.request.PostReqDTO;
 import com.project.teama_be.domain.post.dto.response.PostResDTO;
 import com.project.teama_be.domain.post.entity.Post;
@@ -9,6 +10,7 @@ import com.project.teama_be.domain.post.entity.PostImage;
 import com.project.teama_be.domain.post.entity.PostReaction;
 import com.project.teama_be.domain.post.enums.ReactionType;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 public class PostConverter {
@@ -53,6 +55,18 @@ public class PostConverter {
                 .member(member)
                 .post(post)
                 .reactionType(reactionType)
+                .build();
+    }
+
+    // 최근 본 게시글 추가: Post, Member -> RecentlyViewed
+    public static RecentlyViewed toRecentlyViewed(
+            Post post,
+            Member member
+    ){
+        return RecentlyViewed.builder()
+                .post(post)
+                .member(member)
+                .viewedAt(LocalDateTime.now())
                 .build();
     }
 
@@ -117,13 +131,60 @@ public class PostConverter {
     // 커서 기반 게시글 조회 : List<T> -> PageablePost
     public static <T> PostResDTO.PageablePost<T> toPageablePost(
             List<T> posts,
-            Boolean hasNext,
-            int pageSize,
-            Long cursor
+            PostResDTO.Cursor cursor
     ){
         return PostResDTO.PageablePost.<T>builder()
                 .post(posts)
-                .cursor(cursor)
+                .cursor(cursor.nextCursor())
+                .hasNext(cursor.hasNext())
+                .pageSize(cursor.pageSize())
+                .build();
+    }
+
+    // 최근 본 게시글 조회
+    public static PostResDTO.RecentPost toRecentlyViewedPost(
+            PostResDTO.SimplePost simplePost,
+            LocalDateTime viewedAt
+    ){
+        return PostResDTO.RecentPost.builder()
+                .PostId(simplePost.postId())
+                .PostImageUrl(simplePost.postImageUrl())
+                .placeName(simplePost.placeName())
+                .placeId(simplePost.placeId())
+                .viewedAt(viewedAt)
+                .build();
+    }
+
+    // 게시글 수정
+    public static PostResDTO.PostUpdate toPostUpdate(
+            Post post
+    ){
+        return PostResDTO.PostUpdate.builder()
+                .postId(post.getId())
+                .placeId(post.getLocation().getId())
+                .updatedAt(post.getUpdatedAt())
+                .build();
+    }
+
+    // 게시글 삭제
+    public static PostResDTO.PostDelete toPostDelete(
+            Post post,
+            LocalDateTime deletedAt
+    ){
+        return PostResDTO.PostDelete.builder()
+                .postId(post.getId())
+                .deletedAt(deletedAt)
+                .build();
+    }
+
+    // 커서 포장
+    public static PostResDTO.Cursor toCursor(
+            String cursor,
+            Boolean hasNext,
+            int pageSize
+    ){
+        return PostResDTO.Cursor.builder()
+                .nextCursor(cursor)
                 .hasNext(hasNext)
                 .pageSize(pageSize)
                 .build();
