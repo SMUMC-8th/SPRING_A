@@ -207,10 +207,10 @@ public class PostController {
     }
 
     // PATCH 요청
-    // 게시글 수정 (미정 기능)
+    // 게시글 수정
     @PatchMapping("/posts/{postId}")
     @Operation(
-            summary = "게시글 수정 (미정 기능)",
+            summary = "게시글 수정 API by 김주헌",
             description = "게시글을 수정합니다."
     )
     public CustomResponse<PostResDTO.PostUpdate> updatePost(
@@ -221,10 +221,10 @@ public class PostController {
     }
 
     // DELETE 요청 (SoftDelete 적용해야 함)
-    // 게시글 삭제 (미정 기능)
+    // 게시글 삭제
     @DeleteMapping("/posts/{postId}")
     @Operation(
-            summary = "게시글 삭제 (미정 기능)",
+            summary = "게시글 삭제 API by 김주헌",
             description = "게시글을 삭제합니다 (SoftDelete)"
     )
     public CustomResponse<PostResDTO.PostDelete> deletePost(
