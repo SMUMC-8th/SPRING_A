@@ -9,7 +9,7 @@ import java.util.List;
 
 public class PostReqDTO {
 
-    // 게사글 업로드 (위치정보, 태그, 내용, 비공개 여부)
+    // 게사글 업로드 (위치정보, 태그, 내용)
     public record PostUpload(
 
             @NotNull(message = "위치정보는 필수 입력값입니다.")
@@ -30,7 +30,6 @@ public class PostReqDTO {
             @Size(max = 5, message = "태그는 최대 5개까지 입력할 수 있습니다.")
             List<String> tags,
 
-            @NotBlank(message = "내용은 필수 입력값입니다.")
             String content
     ) {}
 
@@ -40,5 +39,11 @@ public class PostReqDTO {
             @Size(max = 5, message = "태그는 최대 5개까지 입력할 수 있습니다.")
             List<String> tags,
             Long placeId
+    ) {}
+
+    // 각 가게 최신 게시글 조회
+    public record Query(
+            @NotBlank(message = "쿼리는 필수 입력값입니다.")
+            String query
     ) {}
 }

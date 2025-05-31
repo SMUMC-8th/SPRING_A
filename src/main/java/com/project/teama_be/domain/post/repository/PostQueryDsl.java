@@ -34,7 +34,6 @@ public interface PostQueryDsl {
 
     // 가게 게시글 모두 조회
     PostResDTO.PageablePost<PostResDTO.FullPost> getPostsByPlaceId(
-            Long placeId,
             Predicate subQuery,
             int size
     );
