@@ -15,6 +15,8 @@ import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.HandlerMethodValidationException;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.multipart.support.MissingServletRequestPartException;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -64,16 +66,53 @@ public class GlobalExceptionHandler {
 
     // 요청 파라미터가 없을 때 발생하는 예외 처리
     @ExceptionHandler(MissingServletRequestParameterException.class)
-    protected ResponseEntity<CustomResponse<String>> handleMissingServletRequestParameterException(
+    protected ResponseEntity<CustomResponse<Map<String,String>>> handleMissingServletRequestParameterException(
             MissingServletRequestParameterException ex
     ) {
 
         log.warn("[ MissingRequestParameterException ]: 필요한 파라미터가 요청에 없습니다.");
         BaseErrorCode validationErrorCode = GeneralErrorCode.VALIDATION_FAILED; // BaseErrorCode로 통일
+        Map<String, String> errors = new HashMap<>();
+        errors.put(ex.getParameterName(), "파라미터가 없습니다.");
+
+        CustomResponse<Map<String,String>> errorResponse = CustomResponse.onFailure(
+                validationErrorCode.getCode(),
+                validationErrorCode.getMessage(),
+                errors
+        );
+        // 에러 코드, 메시지와 함께 errors를 반환
+        return ResponseEntity.status(validationErrorCode.getHttpStatus()).body(errorResponse);
+    }
+
+    // 요청 파라미터 타입 변환 실패했을 경우
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    protected ResponseEntity<CustomResponse<Map<String,String>>> handleMethodArgumentTypeMismatchException(
+        MethodArgumentTypeMismatchException ex
+    ){
+        log.warn("[ MethodArgumentTypeMismatchException ]: 파라미터 타입이 맞지 않습니다.");
+        BaseErrorCode validationErrorCode = GeneralErrorCode.VALIDATION_FAILED; // BaseErrorCode로 통일
+        Map<String, String> errors = new HashMap<>();
+        errors.put(ex.getName(), "파라미터 타입이 맞지 않습니다.");
+        CustomResponse<Map<String, String>> errorResponse = CustomResponse.onFailure(
+            validationErrorCode.getCode(),
+            validationErrorCode.getMessage(),
+            errors
+        );
+        // 에러 코드, 메시지와 함께 errors를 반환
+        return ResponseEntity.status(validationErrorCode.getHttpStatus()).body(errorResponse);
+    }
+
+    // multipart 예외처리
+    @ExceptionHandler(MissingServletRequestPartException.class)
+    protected ResponseEntity<CustomResponse<String>> handleMissingServletRequestPartException(
+            MissingServletRequestPartException ex
+    ) {
+        log.warn("[ MissingRequestPartException ]: 필요한 파라미터가 요청에 없습니다.");
+        BaseErrorCode validationErrorCode = GeneralErrorCode.VALIDATION_FAILED; // BaseErrorCode로 통일
         CustomResponse<String> errorResponse = CustomResponse.onFailure(
                 validationErrorCode.getCode(),
                 validationErrorCode.getMessage(),
-                ex.getParameterName()+" 파라미터가 없습니다."
+                ex.getRequestPartName()+" 파라미터가 없습니다."
         );
         // 에러 코드, 메시지와 함께 errors를 반환
         return ResponseEntity.status(validationErrorCode.getHttpStatus()).body(errorResponse);

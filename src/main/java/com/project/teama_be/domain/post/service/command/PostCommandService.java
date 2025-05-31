@@ -75,6 +75,11 @@ public class PostCommandService {
         if (locationRepository.existsByPlaceName(postUpload.placeName())) {
             location = locationRepository.findByPlaceName(postUpload.placeName());
         } else {
+            // 의미있는 값인지 확인: 지번, 도로명, 장소명은 공백이면 안됨
+            if (postUpload.addressName().isBlank() || postUpload.placeName().isBlank()
+                    || postUpload.roadAddressName().isBlank()) {
+                throw new LocationException(LocationErrorCode.NOT_VALID);
+            }
             location = LocationConverter.toLocation(postUpload);
 
             log.info("[ 위치 정보 생성 ] locationID:{}", location.getId());
@@ -212,13 +217,14 @@ public class PostCommandService {
         boolean isChange = false;
 
         // 내용 변경
-        if (!dto.content().isEmpty()) {
+        if (!dto.content().isBlank()) {
 
             isChange = true;
             post.updateContent(dto.content());
         }
 
-        // 태그 변경
+        // 태그 변경: 태그 이름이 공백이면 제거
+        dto.tags().removeIf(String::isBlank);
         if (!dto.tags().isEmpty()){
 
             isChange = true;
@@ -242,7 +248,7 @@ public class PostCommandService {
         }
 
         // 지역 변경
-        if (dto.placeId() != null){
+        if (dto.placeId() > 0){
 
             isChange = true;
             // 지역 조회: 없으면 에러
@@ -266,7 +272,7 @@ public class PostCommandService {
 
         Post post = getPost(postId);
         if (!post.getMember().getId().equals(user.getUserId())) {
-            throw new PostException(PostErrorCode.USER_NOT_FOUND);
+            throw new PostException(PostErrorCode.USER_NOT_MATCH);
         }
 
         log.info("[ 게시글 삭제 ] postID:{}", postId);

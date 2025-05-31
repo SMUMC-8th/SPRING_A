@@ -26,7 +26,10 @@ public enum CommentErrorCode implements BaseErrorCode {
             "잘못된 커서값입니다."),
     ACCESS_DENIED(HttpStatus.BAD_REQUEST,
             "USER403_0",
-            "댓글 작성자만 접근할 수 있습니다.");
+            "댓글 작성자만 접근할 수 있습니다."),
+    NOT_BLANK(HttpStatus.BAD_REQUEST,
+            "COMMENT400_0",
+            "댓글 내용이 비어있습니다."),;
 
     private final HttpStatus httpStatus;
     private final String code;

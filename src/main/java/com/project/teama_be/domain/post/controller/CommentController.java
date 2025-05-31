@@ -47,7 +47,7 @@ public class CommentController {
     }
 
     // 대댓글 목록 조회 ✅
-    @GetMapping("/comments/{commentId}/reply")
+    @GetMapping("/comments/{commentId}/replies")
     @Operation(
             summary = "대댓글 목록 조회 API by 김주헌",
             description = "댓글의 댓글 (대댓글)을 조회합니다. " +

@@ -11,7 +11,10 @@ public enum LocationErrorCode implements BaseErrorCode {
 
     NOT_FOUND(HttpStatus.NOT_FOUND,
             "LOCATION404_0",
-            "위치를 찾을 수 없습니다."),;
+            "위치를 찾을 수 없습니다."),
+    NOT_VALID(HttpStatus.BAD_REQUEST,
+            "LOCATION400_0",
+            "요청한 위치 정보가 올바르지 않습니다."),;
 
     private final HttpStatus httpStatus;
     private final String code;

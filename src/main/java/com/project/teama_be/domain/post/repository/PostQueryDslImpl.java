@@ -178,7 +178,6 @@ public class PostQueryDslImpl implements PostQueryDsl{
     // 가게 게시글 모두 조회 ✅
     @Override
     public PostResDTO.PageablePost<PostResDTO.FullPost> getPostsByPlaceId(
-            Long placeId,
             Predicate subQuery,
             int size
     ) {
@@ -226,7 +225,7 @@ public class PostQueryDslImpl implements PostQueryDsl{
 
         // 결과가 존재하지 않을때
         if (postList.isEmpty()) {
-            throw new PostException(PostErrorCode.NOT_FOUND);
+            throw new PostException(PostErrorCode.VIEWED_POST_NOT_FOUND);
         }
 
         // 메타데이터 생성

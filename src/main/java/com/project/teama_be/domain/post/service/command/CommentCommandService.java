@@ -57,6 +57,9 @@ public class CommentCommandService {
         Member member = getMember(user);
 
         // 댓글 저장
+        if (content.isBlank()) {
+            throw new CommentException(CommentErrorCode.NOT_BLANK);
+        }
         log.info("[ 댓글 작성 ] postID:{}, member:{}, content:{}", post.getId(), member.getLoginId(), content);
         Comment comment = commentRepository.save(
                 CommentConverter.toComment(post, member, content)
@@ -87,6 +90,9 @@ public class CommentCommandService {
                 .getPost();
 
         // 대댓글 저장
+        if (content.isBlank()) {
+            throw new CommentException(CommentErrorCode.NOT_BLANK);
+        }
         log.info("[ 대댓글 작성 ] postID:{}, member:{}, content:{}, commentID:{}",
                 post.getId(), member.getLoginId(), content, commentId);
         Comment comment = commentRepository.save(

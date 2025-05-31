@@ -1,6 +1,7 @@
 package com.project.teama_be.domain.post.service.query;
 
 import com.project.teama_be.domain.member.entity.QRecentlyViewed;
+import com.project.teama_be.domain.post.dto.request.PostReqDTO;
 import com.project.teama_be.domain.post.dto.response.PostResDTO;
 import com.project.teama_be.domain.post.entity.QPost;
 import com.project.teama_be.domain.post.entity.QPostReaction;
@@ -28,8 +29,11 @@ public class PostQueryService {
 
     // 각 가게 최신 게시글 조회 ✅
     public PostResDTO.HomePost getPost(
-            List<String> query
+            List<PostReqDTO.Query> dto
     ) {
+
+        // 쿼리 변환
+        List<String> query = dto.stream().map(PostReqDTO.Query::query).toList();
 
         // 조회할 객체 선언
         QPost post = QPost.post;
@@ -102,7 +106,7 @@ public class PostQueryService {
         }
 
         log.info("[ 가게 게시글 모두 조회 ] subQuery:{}", builder);
-        return postRepository.getPostsByPlaceId(placeId, builder, size);
+        return postRepository.getPostsByPlaceId(builder, size);
     }
 
     // 내가 작성한 게시글 조회 (마이페이지) ✅
