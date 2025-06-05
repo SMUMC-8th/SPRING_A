@@ -40,6 +40,7 @@ public class CommentQueryDslImpl implements CommentQueryDsl{
                 .from(comment)
                 .where(subQuery)
                 .orderBy(comment.id.desc())
+                .groupBy(comment.id)
                 .limit(size+1)
                 .transform(GroupBy.groupBy(comment.id).list(
                         Projections.constructor(

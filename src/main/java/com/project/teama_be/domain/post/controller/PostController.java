@@ -40,11 +40,11 @@ public class PostController {
             summary = "각 가게 최신 게시글 조회 API by 김주헌",
             description = "해당 가게의 게시글 중 최근 게시된 게시글을 조회합니다." +
                     "Query Parameter를 중복하여 사용함으로써 홈화면(지도 화면)에 표시할 게시글을 조회할 수 있습니다." +
-                    "각 가게의 최신 게시글 하나만 조회합니다."
+                    "각 가게의 최신 게시글(생성일 기준) 하나만 조회합니다."
     )
     public CustomResponse<PostResDTO.HomePost> getPostsByPlaceName(
-            @RequestParam @Size(min = 1, message = "검색할 가게가 최소 하나 이상 있어야 합니다.")
-            List<String> query
+            @RequestParam @Valid @NotEmpty(message = "쿼리는 필수 입력값입니다.")
+            List<PostReqDTO.Query> query
     ) {
 
         log.info("[ 각 가게 최신 게시글 조회 ] queryCnt:{}", query.size());
@@ -56,7 +56,9 @@ public class PostController {
     @Operation(
             summary = "키워드 검색 API by 김주헌",
             description = "키워드를 통해 게시글을 조회합니다. " +
-                    "키워드 종류를 선택해야 합니다. (tag, place, address)" +
+                    "키워드 종류를 선택해야 합니다. (tag, place, address : 대소문자 구분 X) " +
+                    "지역은 도로명 주소 (서울 종로구 홍지문2길 20), " +
+                    "지번 주소 (서울 종로구 홍지동 7-1) 모두 검색 가능합니다. " +
                     "커서 기반 페이지네이션, 최신 순으로 정렬합니다."
     )
     public CustomResponse<PostResDTO.PageablePost<PostResDTO.FullPost>> getPostsByKeyword(
@@ -124,7 +126,8 @@ public class PostController {
     @Operation(
             summary = "최근 본 게시글 조회 API by 김주헌",
             description = "마이페이지에서 최근 본 게시글을 조회합니다. " +
-                    "커서 기반 페이지네이션, 최신 순으로 정렬합니다."
+                    "커서 기반 페이지네이션, 최신 순으로 정렬합니다." +
+                    "커서 기본값으로 현재 시각을 넣어주시면 됩니다. (Date().toISOString())"
     )
     public CustomResponse<PostResDTO.PageablePost<PostResDTO.RecentPost>> getRecentViewPosts(
             @CurrentUser
@@ -171,13 +174,14 @@ public class PostController {
     )
     @Operation(
             summary = "게시글 업로드 API by 김주헌",
-            description = "게시글을 업로드합니다." +
+            description = "게시글을 업로드합니다. " +
                     "파일은 image/**, JSON은 application/json으로 요청해주세요."
     )
     public CustomResponse<PostResDTO.PostUpload> uploadPost(
             @CurrentUser
             AuthUser user,
             @RequestPart @NotEmpty(message = "게시글 이미지는 필수 입력값입니다.")
+            @Size(max = 5, message = "게시글 이미지는 최대 5장까지 업로드 가능합니다.")
             List<MultipartFile> image,
             @RequestPart @Valid @NotNull(message = "게시글 내용은 필수 입력값입니다.")
             PostReqDTO.PostUpload postContent
@@ -212,8 +216,8 @@ public class PostController {
     // 최근 본 게시글 추가 ✅
     @Operation(
             summary = "최근 본 게시글 추가 API by 김주헌",
-            description = "최근 본 게시글을 추가합니다." +
-                    "게시글을 조회할때마다 이 API를 호출해 주세요."
+            description = "최근 본 게시글을 추가합니다.\n" +
+                    " 게시글을 조회할때마다 이 API를 호출해 주세요."
     )
     @PostMapping("/posts/{postId}/view")
     public CustomResponse<Void> addRecentViewPost(
