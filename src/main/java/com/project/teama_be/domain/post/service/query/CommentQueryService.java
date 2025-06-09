@@ -1,5 +1,6 @@
 package com.project.teama_be.domain.post.service.query;
 
+import com.project.teama_be.domain.member.entity.QNotRecommended;
 import com.project.teama_be.domain.post.dto.response.CommentResDTO;
 import com.project.teama_be.domain.post.entity.QComment;
 import com.project.teama_be.domain.post.exception.CommentException;
@@ -7,6 +8,7 @@ import com.project.teama_be.domain.post.exception.code.CommentErrorCode;
 import com.project.teama_be.domain.post.repository.CommentRepository;
 import com.project.teama_be.global.security.userdetails.AuthUser;
 import com.querydsl.core.BooleanBuilder;
+import com.querydsl.jpa.JPAExpressions;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -20,16 +22,25 @@ public class CommentQueryService {
 
     // 댓글 목록 조회 ✅
     public CommentResDTO.PageableComment<CommentResDTO.Comment> findComments(
+            AuthUser user,
             Long postId,
             String cursor,
             int size
     ) {
         // 조회할 객체 선언
         QComment comment = QComment.comment;
+        QNotRecommended notRecommended = QNotRecommended.notRecommended;
+
         BooleanBuilder builder = new BooleanBuilder();
         builder.and(comment.post.id.eq(postId))
                 // 대댓글 조회 방지
-                .and(comment.parentId.eq(0L));
+                .and(comment.parentId.eq(0L))
+                // 차단한 사용자의 댓글 제외
+                .and(comment.member.id.notIn(
+                        JPAExpressions.select(notRecommended.targetMemberId)
+                                .from(notRecommended)
+                                .where(notRecommended.member.id.in(user.getUserId()))
+                ));
 
         if (!cursor.equals("-1")) {
             try {
@@ -44,6 +55,7 @@ public class CommentQueryService {
 
     // 대댓글 목록 조회
     public CommentResDTO.PageableComment<CommentResDTO.Reply> findReplyComments(
+            AuthUser user,
             Long commentId,
             String cursor,
             int size
@@ -51,8 +63,16 @@ public class CommentQueryService {
 
         // 조회할 객체 선언
         QComment comment = QComment.comment;
+        QNotRecommended notRecommended = QNotRecommended.notRecommended;
+
         BooleanBuilder builder = new BooleanBuilder();
-        builder.and(comment.parentId.eq(commentId));
+        builder.and(comment.parentId.eq(commentId))
+                // 차단한 사용자의 댓글 제외
+                .and(comment.member.id.notIn(
+                JPAExpressions.select(notRecommended.targetMemberId)
+                        .from(notRecommended)
+                        .where(notRecommended.member.id.in(user.getUserId()))
+                ));
 
         if (!cursor.equals("-1")) {
             try{

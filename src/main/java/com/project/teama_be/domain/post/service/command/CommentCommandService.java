@@ -4,6 +4,7 @@ package com.project.teama_be.domain.post.service.command;
 import com.google.firebase.messaging.FirebaseMessagingException;
 import com.project.teama_be.domain.member.entity.Member;
 import com.project.teama_be.domain.member.repository.MemberRepository;
+import com.project.teama_be.domain.member.repository.NotRecommendedRepository;
 import com.project.teama_be.domain.notification.enums.NotiType;
 import com.project.teama_be.domain.notification.exception.NotiException;
 import com.project.teama_be.domain.notification.exception.code.NotiErrorCode;
@@ -29,6 +30,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -39,6 +41,7 @@ public class CommentCommandService {
     private final CommentReactionRepository commentReactionRepository;
     private final MemberRepository memberRepository;
     private final PostRepository postRepository;
+    private final NotRecommendedRepository notRecommendedRepository;
     private final NotiService notiService;
 
     // 댓글 작성 ✅
@@ -60,6 +63,10 @@ public class CommentCommandService {
         if (content.isBlank()) {
             throw new CommentException(CommentErrorCode.NOT_BLANK);
         }
+
+        // 차단 여부 확인
+        isBlocking(user, post.getMember().getId());
+
         log.info("[ 댓글 작성 ] postID:{}, member:{}, content:{}", post.getId(), member.getLoginId(), content);
         Comment comment = commentRepository.save(
                 CommentConverter.toComment(post, member, content)
@@ -84,18 +91,24 @@ public class CommentCommandService {
         // 유저 정보
         Member member = getMember(user);
 
+        // 댓글 정보
+        Comment comment = commentRepository.findById(commentId).orElseThrow(()->
+                new CommentException(CommentErrorCode.NOT_FOUND));
+
         // 게시글 정보
-        Post post = commentRepository.findById(commentId).orElseThrow(()->
-                new CommentException(CommentErrorCode.NOT_FOUND))
-                .getPost();
+        Post post = comment.getPost();
 
         // 대댓글 저장
         if (content.isBlank()) {
             throw new CommentException(CommentErrorCode.NOT_BLANK);
         }
+
+        // 차단 여부 확인
+        isBlocking(user, comment.getMember().getId());
+
         log.info("[ 대댓글 작성 ] postID:{}, member:{}, content:{}, commentID:{}",
                 post.getId(), member.getLoginId(), content, commentId);
-        Comment comment = commentRepository.save(
+        Comment result = commentRepository.save(
                 CommentConverter.toReply(post, member, content, commentId)
         );
 
@@ -105,7 +118,7 @@ public class CommentCommandService {
             throw new NotiException(NotiErrorCode.FCM_SEND_FAIL);
         }
 
-        return CommentConverter.toCommentUpload(comment);
+        return CommentConverter.toCommentUpload(result);
     }
 
     // 댓글 좋아요 ✅
@@ -120,6 +133,9 @@ public class CommentCommandService {
         // 댓글 좋아요
         Comment comment = commentRepository.findById(commentId).orElseThrow(()->
                 new CommentException(CommentErrorCode.NOT_FOUND));
+
+        // 차단 여부 확인
+        isBlocking(user, comment.getMember().getId());
 
         // 좋아요 여부 조회
         CommentReaction commentReaction= commentReactionRepository
@@ -203,5 +219,13 @@ public class CommentCommandService {
 
         return memberRepository.findByLoginId(user.getLoginId()).orElseThrow(() ->
                 new UsernameNotFoundException("로그인된 유저를 찾을 수 없습니다."));
+    }
+
+    // 차단당한 유저인지 확인
+    private void isBlocking(AuthUser targetUser, Long userId) {
+        List<Long> result = notRecommendedRepository.findBlockingUserList(userId);
+        if (result.contains(targetUser.getUserId())) {
+            throw new CommentException(CommentErrorCode.BLOCKING);
+        }
     }
 }

@@ -37,13 +37,15 @@ public class CommentController {
     public CustomResponse<CommentResDTO.PageableComment<CommentResDTO.Comment>> getComments(
             @PathVariable @NotNull(message = "게시글ID는 필수 입력입니다.")
             Long postId,
+            @CurrentUser
+            AuthUser authUser,
             @RequestParam(defaultValue = "-1") @Min(value = -1, message = "커서는 -1 이상이어야 합니다.")
             String cursor,
             @RequestParam(defaultValue = "1") @Min(value = 1, message = "댓글은 최소 하나 이상 조회해야 합니다.")
             int size
     ) {
         log.info("[ 댓글 목록 조회 ] postID:{}, cursor:{}, size:{}", postId, cursor, size);
-        return CustomResponse.onSuccess(commentQueryService.findComments(postId, cursor, size));
+        return CustomResponse.onSuccess(commentQueryService.findComments(authUser, postId, cursor, size));
     }
 
     // 대댓글 목록 조회 ✅
@@ -56,13 +58,15 @@ public class CommentController {
     public CustomResponse<CommentResDTO.PageableComment<CommentResDTO.Reply>> getReplies(
             @PathVariable @NotNull(message = "댓글ID는 필수 입력입니다.")
             Long commentId,
+            @CurrentUser
+            AuthUser authUser,
             @RequestParam(defaultValue = "-1") @Min(value = -1, message = "커서는 -1 이상이어야 합니다.")
             String cursor,
             @RequestParam(defaultValue = "1") @Min(value = 1, message = "대댓글은 최소 하나 이상 조회해야 합니다.")
             int size
     ) {
         log.info("[ 대댓글 목록 조회 ] commentID:{}, cursor:{}, size:{}", commentId, cursor, size);
-        return CustomResponse.onSuccess(commentQueryService.findReplyComments(commentId, cursor, size));
+        return CustomResponse.onSuccess(commentQueryService.findReplyComments(authUser, commentId, cursor, size));
     }
 
     // 내가 작성한 댓글 조회 ✅
@@ -100,13 +104,7 @@ public class CommentController {
             CommentReqDTO.Commenting content
     ) {
         log.info("[ 댓글 작성 ] postID:{}, user:{}, content:{}", postId, user.getLoginId(), content);
-        return CustomResponse.onSuccess(
-                commentCommandService.createComment(
-                        postId,
-                        user,
-                        content.content()
-                )
-        );
+        return CustomResponse.onSuccess(commentCommandService.createComment(postId, user, content.content()));
     }
 
     // 대댓글 작성✅
