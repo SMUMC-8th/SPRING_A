@@ -13,7 +13,7 @@ public class NotRecommendedQueryDslImpl implements NotRecommendedQueryDsl {
 
     private final JPAQueryFactory jpaQueryFactory;
 
-    // 차단한 유저 ID 조회
+    // 내가 차단한 유저 리스트 조회
     @Override
     public List<Long> findBlockingUserList(
             Long memberId
@@ -24,6 +24,20 @@ public class NotRecommendedQueryDslImpl implements NotRecommendedQueryDsl {
                 .select(notRecommended.targetMemberId)
                 .from(notRecommended)
                 .where(notRecommended.member.id.eq(memberId))
+                .fetch();
+    }
+
+    // 날 차단한 유저 리스트 조회
+    @Override
+    public List<Long> findBlockerList(
+            Long memberId
+    ){
+        QNotRecommended notRecommended = QNotRecommended.notRecommended;
+
+        return jpaQueryFactory
+                .select(notRecommended.member.id)
+                .from(notRecommended)
+                .where(notRecommended.targetMemberId.eq(memberId))
                 .fetch();
     }
 }

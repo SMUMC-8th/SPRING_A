@@ -1,7 +1,7 @@
 package com.project.teama_be.domain.post.service.query;
 
 import com.project.teama_be.domain.member.entity.QRecentlyViewed;
-import com.project.teama_be.domain.post.dto.request.PostReqDTO;
+import com.project.teama_be.domain.member.repository.NotRecommendedRepository;
 import com.project.teama_be.domain.post.dto.response.PostResDTO;
 import com.project.teama_be.domain.post.entity.QPost;
 import com.project.teama_be.domain.post.entity.QPostReaction;
@@ -26,22 +26,32 @@ import java.util.List;
 public class PostQueryService {
 
     private final PostRepository postRepository;
+    private final NotRecommendedRepository notRecommendedRepository;
 
     // 각 가게 최신 게시글 조회 ✅
     public PostResDTO.HomePost getPost(
-            List<PostReqDTO.Query> dto
+            AuthUser user,
+            List<String> dto
     ) {
-
-        // 쿼리 변환
-        List<String> query = dto.stream().map(PostReqDTO.Query::query).toList();
 
         // 조회할 객체 선언
         QPost post = QPost.post;
         BooleanBuilder builder = new BooleanBuilder();
 
-        builder.and(post.location.placeName.in(query));
+        // 내가 차단한 사용자 리스트 조회
+        List<Long> blackList = notRecommendedRepository.findBlockingUserList(user.getUserId());
 
-        return postRepository.getPostByPlaceName(builder, query);
+        // 날 차단한 사용자 리스트 조회
+        List<Long> blockers = notRecommendedRepository.findBlockerList(user.getUserId());
+
+        // 조건 부여
+        builder.and(post.location.placeName.in(dto))
+                // 내가 차단한 사용자의 Post 제공 X
+                .and(post.member.id.notIn(blackList))
+                // 상대방이 차단한 경우, 상대방 게시글 제공 X
+                .and(post.member.id.notIn(blockers));
+
+        return postRepository.getPostByPlaceName(builder, dto);
 
     }
 
@@ -50,7 +60,8 @@ public class PostQueryService {
             String query,
             String type,
             String cursor,
-            int size
+            int size,
+            AuthUser user
     ) {
 
         // 동적 쿼리 : 검색 타입에 따라 조건을 추가
@@ -66,6 +77,16 @@ public class PostQueryService {
                 throw new PostException(PostErrorCode.NOT_VALID_CURSOR);
             }
         }
+
+        // 차단한 유저 리스트 조회
+        List<Long> blackList = notRecommendedRepository.findBlockingUserList(user.getUserId());
+
+        // 날 차단한 사용자 리스트 조회
+        List<Long> blockers = notRecommendedRepository.findBlockerList(user.getUserId());
+
+        builder.and(post.member.id.notIn(blackList))
+                // 상대방이 차단한 경우, 상대방 게시글 제공 X
+                .and(post.member.id.notIn(blockers));
 
         switch (type.toLowerCase()) {
 
@@ -91,7 +112,8 @@ public class PostQueryService {
     public PostResDTO.PageablePost<PostResDTO.FullPost> getPostsByPlaceId(
             Long placeId,
             String cursor,
-            int size
+            int size,
+            AuthUser user
     ) {
         BooleanBuilder builder = new BooleanBuilder();
         QPost post = QPost.post;
@@ -104,6 +126,15 @@ public class PostQueryService {
                 throw new PostException(PostErrorCode.NOT_VALID_CURSOR);
             }
         }
+
+        // 차단한 유저 리스트 조회
+        List<Long> blackList = notRecommendedRepository.findBlockingUserList(user.getUserId());
+
+        // 날 차단한 사용자 리스트 조회
+        List<Long> blockers = notRecommendedRepository.findBlockerList(user.getUserId());
+
+        builder.and(post.member.id.notIn(blackList))
+                .and(post.member.id.notIn(blockers));
 
         log.info("[ 가게 게시글 모두 조회 ] subQuery:{}", builder);
         return postRepository.getPostsByPlaceId(builder, size);
@@ -119,7 +150,11 @@ public class PostQueryService {
         BooleanBuilder builder = new BooleanBuilder();
         QPost post = QPost.post;
 
-        builder.and(post.member.id.eq(user.getUserId()));
+        // 차단한 유저 리스트 조회
+        List<Long> blackList = notRecommendedRepository.findBlockingUserList(user.getUserId());
+
+        builder.and(post.member.id.eq(user.getUserId()))
+                .and(post.member.id.notIn(blackList));
         if (!cursor.equals("-1")) {
             try {
                 builder.and(post.id.loe(Long.parseLong(cursor)));
@@ -145,6 +180,16 @@ public class PostQueryService {
 
         builder.and(postReaction.member.id.eq(user.getUserId()))
                 .and(postReaction.reactionType.eq(ReactionType.LIKE));
+
+        // 차단한 유저 리스트 조회
+        List<Long> blackList = notRecommendedRepository.findBlockingUserList(user.getUserId());
+
+        // 날 차단한 사용자 리스트 조회
+        List<Long> blockers = notRecommendedRepository.findBlockerList(user.getUserId());
+
+        builder.and(post.member.id.notIn(blackList))
+                .and(post.member.id.notIn(blockers));
+
         if (!cursor.equals("-1")) {
             try {
                 builder.and(post.id.loe(Long.parseLong(cursor)));
@@ -168,6 +213,16 @@ public class PostQueryService {
         QRecentlyViewed recentlyViewed = QRecentlyViewed.recentlyViewed;
 
         builder.and(recentlyViewed.member.id.eq(user.getUserId()));
+
+        // 차단한 유저 리스트 조회
+        List<Long> blackList = notRecommendedRepository.findBlockingUserList(user.getUserId());
+
+        // 날 차단한 사용자 리스트 조회
+        List<Long> blockers = notRecommendedRepository.findBlockerList(user.getUserId());
+
+        builder.and(recentlyViewed.member.id.notIn(blackList))
+                .and(recentlyViewed.member.id.notIn(blockers));
+
         if (!cursor.equals("-1")) {
             try {
                 LocalDateTime newCursor = LocalDateTime.parse(cursor);

@@ -7,4 +7,9 @@ public interface NotRecommendedQueryDsl {
     List<Long> findBlockingUserList(
             Long memberId
     );
+
+    // 날 차단한 유저 리스트 조회
+    List<Long> findBlockerList(
+            Long memberId
+    );
 }

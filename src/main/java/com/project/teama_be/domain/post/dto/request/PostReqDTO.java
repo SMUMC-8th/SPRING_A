@@ -1,6 +1,5 @@
 package com.project.teama_be.domain.post.dto.request;
 
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
@@ -39,11 +38,5 @@ public class PostReqDTO {
             @Size(max = 5, message = "태그는 최대 5개까지 입력할 수 있습니다.")
             List<String> tags,
             Long placeId
-    ) {}
-
-    // 각 가게 최신 게시글 조회
-    public record Query(
-            @NotBlank(message = "쿼리는 필수 입력값입니다.")
-            String query
     ) {}
 }

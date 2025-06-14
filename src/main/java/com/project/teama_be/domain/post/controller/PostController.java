@@ -44,11 +44,13 @@ public class PostController {
     )
     public CustomResponse<PostResDTO.HomePost> getPostsByPlaceName(
             @RequestParam @Valid @NotEmpty(message = "쿼리는 필수 입력값입니다.")
-            List<PostReqDTO.Query> query
+            List<String> query,
+            @CurrentUser
+            AuthUser user
     ) {
 
         log.info("[ 각 가게 최신 게시글 조회 ] queryCnt:{}", query.size());
-        return CustomResponse.onSuccess(postQueryService.getPost(query));
+        return CustomResponse.onSuccess(postQueryService.getPost(user, query));
     }
 
     // 키워드 검색 ✅
@@ -71,10 +73,12 @@ public class PostController {
             String cursor,
             @RequestParam(defaultValue = "1") @NotNull(message = "조회할 데이터 사이즈를 요청해야 합니다.")
             @Min(value = 1, message = "게시글은 최소 하나 이상 조회해야 합니다.")
-            int size
+            int size,
+            @CurrentUser
+            AuthUser user
     ) {
         log.info("[ 키워드 검색 ] query:{}, type:{}, cursor:{}, size:{}", query, type, cursor, size);
-        return CustomResponse.onSuccess(postQueryService.getPostsByKeyword(query, type, cursor, size));
+        return CustomResponse.onSuccess(postQueryService.getPostsByKeyword(query, type, cursor, size, user));
     }
 
     // 가게 게시글 모두 조회 ✅
@@ -93,10 +97,12 @@ public class PostController {
             String cursor,
             @RequestParam(defaultValue = "1") @NotNull(message = "조회할 데이터 사이즈를 요청해야 합니다.")
             @Min(value = 1, message = "게시글은 최소 하나 이상 조회해야 합니다.")
-            int size
+            int size,
+            @CurrentUser
+            AuthUser user
     ) {
         log.info("[ 가게 게시글 모두 조회 ] placeId:{}, cursor:{}, size:{}", placeId, cursor, size);
-        return CustomResponse.onSuccess(postQueryService.getPostsByPlaceId(placeId, cursor, size));
+        return CustomResponse.onSuccess(postQueryService.getPostsByPlaceId(placeId, cursor, size, user));
     }
 
     // 내가 작성한 게시글 조회 (마이페이지) ✅
