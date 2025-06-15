@@ -93,7 +93,7 @@ public class CustomLoginFilter extends UsernamePasswordAuthenticationFilter {
         accessCookie.setMaxAge(Math.toIntExact(jwtUtil.getAccessExpMs() / 1000));
         // HTTPS를 사용하는 경우 활성화
          accessCookie.setSecure(false);
-//         accessCookie.setAttribute("SameSite", "Lax");
+         accessCookie.setAttribute("SameSite", "None");
 
         Cookie refreshCookie = new Cookie("refresh_token", refreshToken);
         refreshCookie.setHttpOnly(true);
