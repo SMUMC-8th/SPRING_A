@@ -264,7 +264,7 @@ public class PostQueryDslImpl implements PostQueryDsl{
         return PostConverter.toCursor(nextCursor.toString(), hasNext, pageSize);
     }
 
-    // SimplePost 부가 속성들 조회✅
+    // SimplePost 부가 속성들 조회: 여러번 쿼리문 날리는 방식 -> 서브쿼리로 묶는 방식 으로 변경해야 함
     private List<PostResDTO.SimplePost> findSimplePostAttribute(
             List<Post> postList,
             PostResDTO.Cursor cursor
@@ -305,7 +305,7 @@ public class PostQueryDslImpl implements PostQueryDsl{
         return result;
     }
 
-    // FullPost 부가 속성들 조회 ✅
+    // FullPost 부가 속성들 조회: 여러번 쿼리문 날리는 방식 -> 서브쿼리로 묶는 방식 으로 변경해야 함
     private List<PostResDTO.FullPost> findFullPostAttribute(
             List<Post> postList,
             PostResDTO.Cursor cursor
@@ -342,16 +342,18 @@ public class PostQueryDslImpl implements PostQueryDsl{
                                 GroupBy.list(postTag.tag.tagName)
                         )
                 );
-        // 게시글 댓글 조회
+
+        // 게시글 댓글 개수 조회
         Map<Long, Long> commentList = jpaQueryFactory
                 .from(comment)
-                .where(comment.post.id.in(postIdList))
+                .where(comment.post.id.in(postIdList).and(comment.parentId.eq(0L)))
                 .groupBy(comment.post.id)
                 .transform(
                         GroupBy.groupBy(comment.post.id).as(
                                 comment.count()
                         )
                 );
+
         // 합치기
         List<PostResDTO.FullPost> result = postList.stream()
                 .map(eachPost ->

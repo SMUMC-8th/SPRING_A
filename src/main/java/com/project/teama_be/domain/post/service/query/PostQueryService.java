@@ -1,7 +1,7 @@
 package com.project.teama_be.domain.post.service.query;
 
+import com.project.teama_be.domain.member.entity.QNotRecommended;
 import com.project.teama_be.domain.member.entity.QRecentlyViewed;
-import com.project.teama_be.domain.post.dto.request.PostReqDTO;
 import com.project.teama_be.domain.post.dto.response.PostResDTO;
 import com.project.teama_be.domain.post.entity.QPost;
 import com.project.teama_be.domain.post.entity.QPostReaction;
@@ -12,6 +12,7 @@ import com.project.teama_be.domain.post.exception.code.PostErrorCode;
 import com.project.teama_be.domain.post.repository.PostRepository;
 import com.project.teama_be.global.security.userdetails.AuthUser;
 import com.querydsl.core.BooleanBuilder;
+import com.querydsl.jpa.JPAExpressions;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -29,19 +30,31 @@ public class PostQueryService {
 
     // 각 가게 최신 게시글 조회 ✅
     public PostResDTO.HomePost getPost(
-            List<PostReqDTO.Query> dto
+            AuthUser user,
+            List<String> dto
     ) {
-
-        // 쿼리 변환
-        List<String> query = dto.stream().map(PostReqDTO.Query::query).toList();
 
         // 조회할 객체 선언
         QPost post = QPost.post;
+        QNotRecommended notRecommended = QNotRecommended.notRecommended;
         BooleanBuilder builder = new BooleanBuilder();
 
-        builder.and(post.location.placeName.in(query));
+        // 조건 부여
+        builder.and(post.location.placeName.in(dto))
+                // 내가 차단한 사용자의 게시글 제외
+                .and(post.member.id.notIn(
+                        JPAExpressions.select(notRecommended.targetMemberId)
+                                .from(notRecommended)
+                                .where(notRecommended.member.id.in(user.getUserId()))
+                ))
+                // 상대방이 차단한 경우, 상대방 게시글 제외
+                .and(post.member.id.notIn(
+                        JPAExpressions.select(notRecommended.member.id)
+                                .from(notRecommended)
+                                .where(notRecommended.targetMemberId.in(user.getUserId()))
+                ));
 
-        return postRepository.getPostByPlaceName(builder, query);
+        return postRepository.getPostByPlaceName(builder, dto);
 
     }
 
@@ -50,13 +63,15 @@ public class PostQueryService {
             String query,
             String type,
             String cursor,
-            int size
+            int size,
+            AuthUser user
     ) {
 
         // 동적 쿼리 : 검색 타입에 따라 조건을 추가
         BooleanBuilder builder = new BooleanBuilder();
         QPostTag postTag = QPostTag.postTag;
         QPost post = QPost.post;
+        QNotRecommended notRecommended = QNotRecommended.notRecommended;
 
         // 커서가 존재하면 이전에 조회한 게시글부터 조회
         if (!cursor.equals("-1")){
@@ -66,6 +81,19 @@ public class PostQueryService {
                 throw new PostException(PostErrorCode.NOT_VALID_CURSOR);
             }
         }
+
+        // 내가 차단한 유저 게시글 제외
+        builder.and(post.member.id.notIn(
+                        JPAExpressions.select(notRecommended.targetMemberId)
+                                .from(notRecommended)
+                                .where(notRecommended.member.id.in(user.getUserId()))
+                ))
+                // 상대방이 차단한 경우, 상대방 게시글 제외
+                .and(post.member.id.notIn(
+                        JPAExpressions.select(notRecommended.member.id)
+                                .from(notRecommended)
+                                .where(notRecommended.targetMemberId.in(user.getUserId()))
+                ));
 
         switch (type.toLowerCase()) {
 
@@ -91,10 +119,12 @@ public class PostQueryService {
     public PostResDTO.PageablePost<PostResDTO.FullPost> getPostsByPlaceId(
             Long placeId,
             String cursor,
-            int size
+            int size,
+            AuthUser user
     ) {
         BooleanBuilder builder = new BooleanBuilder();
         QPost post = QPost.post;
+        QNotRecommended notRecommended = QNotRecommended.notRecommended;
 
         builder.and(post.location.id.eq(placeId));
         if (!cursor.equals("-1")) {
@@ -104,6 +134,19 @@ public class PostQueryService {
                 throw new PostException(PostErrorCode.NOT_VALID_CURSOR);
             }
         }
+
+        // 내가 차단한 사용자의 게시글 제외
+        builder.and(post.member.id.notIn(
+                        JPAExpressions.select(notRecommended.targetMemberId)
+                                .from(notRecommended)
+                                .where(notRecommended.member.id.in(user.getUserId()))
+                ))
+                // 상대방이 차단한 경우, 상대방 게시글 제외
+                .and(post.member.id.notIn(
+                        JPAExpressions.select(notRecommended.member.id)
+                                .from(notRecommended)
+                                .where(notRecommended.targetMemberId.in(user.getUserId()))
+                ));
 
         log.info("[ 가게 게시글 모두 조회 ] subQuery:{}", builder);
         return postRepository.getPostsByPlaceId(builder, size);
@@ -118,6 +161,7 @@ public class PostQueryService {
 
         BooleanBuilder builder = new BooleanBuilder();
         QPost post = QPost.post;
+        QNotRecommended notRecommended = QNotRecommended.notRecommended;
 
         builder.and(post.member.id.eq(user.getUserId()));
         if (!cursor.equals("-1")) {
@@ -127,6 +171,19 @@ public class PostQueryService {
                 throw new PostException(PostErrorCode.NOT_VALID_CURSOR);
             }
         }
+
+        // 내가 차단한 사용자의 게시글 제외
+        builder.and(post.member.id.notIn(
+                        JPAExpressions.select(notRecommended.targetMemberId)
+                                .from(notRecommended)
+                                .where(notRecommended.member.id.in(user.getUserId()))
+                ))
+                // 상대방이 차단한 경우, 상대방 게시글 제외
+                .and(post.member.id.notIn(
+                        JPAExpressions.select(notRecommended.member.id)
+                                .from(notRecommended)
+                                .where(notRecommended.targetMemberId.in(user.getUserId()))
+                ));
 
         log.info("[ 내가 작성한 게시글 조회 ] subQuery:{}", builder);
         return postRepository.getMyPosts(builder, size);
@@ -142,9 +199,24 @@ public class PostQueryService {
         BooleanBuilder builder = new BooleanBuilder();
         QPost post = QPost.post;
         QPostReaction postReaction = QPostReaction.postReaction;
+        QNotRecommended notRecommended = QNotRecommended.notRecommended;
 
         builder.and(postReaction.member.id.eq(user.getUserId()))
                 .and(postReaction.reactionType.eq(ReactionType.LIKE));
+
+        // 내가 차단한 사용자의 게시글 제외
+        builder.and(post.member.id.notIn(
+                        JPAExpressions.select(notRecommended.targetMemberId)
+                                .from(notRecommended)
+                                .where(notRecommended.member.id.in(user.getUserId()))
+                ))
+                // 상대방이 차단한 경우, 상대방 게시글 제외
+                .and(post.member.id.notIn(
+                        JPAExpressions.select(notRecommended.member.id)
+                                .from(notRecommended)
+                                .where(notRecommended.targetMemberId.in(user.getUserId()))
+                ));
+
         if (!cursor.equals("-1")) {
             try {
                 builder.and(post.id.loe(Long.parseLong(cursor)));
@@ -166,8 +238,23 @@ public class PostQueryService {
 
         BooleanBuilder builder = new BooleanBuilder();
         QRecentlyViewed recentlyViewed = QRecentlyViewed.recentlyViewed;
+        QNotRecommended notRecommended = QNotRecommended.notRecommended;
 
         builder.and(recentlyViewed.member.id.eq(user.getUserId()));
+
+        // 내가 차단한 사용자의 게시글 제외
+        builder.and(recentlyViewed.member.id.notIn(
+                        JPAExpressions.select(notRecommended.targetMemberId)
+                                .from(notRecommended)
+                                .where(notRecommended.member.id.in(user.getUserId()))
+                ))
+                // 상대방이 차단한 경우, 상대방 게시글 제외
+                .and(recentlyViewed.member.id.notIn(
+                        JPAExpressions.select(notRecommended.member.id)
+                                .from(notRecommended)
+                                .where(notRecommended.targetMemberId.in(user.getUserId()))
+                ));
+
         if (!cursor.equals("-1")) {
             try {
                 LocalDateTime newCursor = LocalDateTime.parse(cursor);
