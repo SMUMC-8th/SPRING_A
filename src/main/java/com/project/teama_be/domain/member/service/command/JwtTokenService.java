@@ -28,20 +28,8 @@ public class JwtTokenService {
 
         JwtDTO jwt = jwtUtil.reissueToken(refreshToken);
 
-        Cookie accessCookie = new Cookie("access_token", jwt.accessToken());
-        accessCookie.setHttpOnly(true);
-        accessCookie.setPath("/");
-        accessCookie.setMaxAge(Math.toIntExact(jwtUtil.getAccessExpMs() / 1000));
-        accessCookie.setSecure(false); // HTTPS 환경
-
-        Cookie refreshCookie = new Cookie("refresh_token", jwt.refreshToken());
-        refreshCookie.setHttpOnly(true);
-        refreshCookie.setPath("/");
-        refreshCookie.setMaxAge(Math.toIntExact(jwtUtil.getRefreshExpMs() / 1000));
-        refreshCookie.setSecure(false);
-
-        response.addCookie(accessCookie);
-        response.addCookie(refreshCookie);
+        setCookieSettings(response, "access_token", jwt.accessToken(), jwtUtil.getAccessExpMs());
+        setCookieSettings(response, "refresh_token", jwt.refreshToken(), jwtUtil.getRefreshExpMs());
 
         log.info("[ JwtTokenService ] 토큰 재발급 성공. 쿠키 재설정 완료.");
         return jwt;
@@ -66,5 +54,15 @@ public class JwtTokenService {
     public boolean isTokenBlacklisted(String token) {
         String key = BLACKLIST_PREFIX + token;
         return Boolean.TRUE.equals(redisUtil.hasKey(key));
+    }
+
+    private void setCookieSettings(HttpServletResponse response, String name, String value, long expMs) {
+        Cookie cookie = new Cookie(name, value);
+        cookie.setHttpOnly(true);
+        cookie.setPath("/");
+        cookie.setMaxAge(Math.toIntExact(expMs / 1000));
+        cookie.setSecure(false); // 개발환경용
+        cookie.setAttribute("SameSite", "Lax");
+        response.addCookie(cookie);
     }
 }

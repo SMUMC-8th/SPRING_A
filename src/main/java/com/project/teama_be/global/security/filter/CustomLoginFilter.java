@@ -86,24 +86,8 @@ public class CustomLoginFilter extends UsernamePasswordAuthenticationFilter {
         String accessToken = jwtUtil.createJwtAccessToken(customUserDetails);
         String refreshToken = jwtUtil.createJwtRefreshToken(customUserDetails);
 
-        // 쿠키에 JWT 토큰 설정
-        Cookie accessCookie = new Cookie("access_token", accessToken);
-        accessCookie.setHttpOnly(true);  // JavaScript에서 접근 불가
-        accessCookie.setPath("/");      // 모든 경로에서 쿠키 접근 가능
-        accessCookie.setMaxAge(Math.toIntExact(jwtUtil.getAccessExpMs() / 1000));
-        // HTTPS를 사용하는 경우 활성화
-         accessCookie.setSecure(false);
-         accessCookie.setAttribute("SameSite", "Lax");
-
-        Cookie refreshCookie = new Cookie("refresh_token", refreshToken);
-        refreshCookie.setHttpOnly(true);
-        refreshCookie.setPath("/");
-        refreshCookie.setMaxAge(Math.toIntExact(jwtUtil.getRefreshExpMs() / 1000));
-        // HTTPS를 사용하는 경우 활성화
-         refreshCookie.setSecure(false);
-
-        response.addCookie(accessCookie);
-        response.addCookie(refreshCookie);
+        setCookieSettings(response, "access_token", accessToken, jwtUtil.getAccessExpMs());
+        setCookieSettings(response, "refresh_token", refreshToken, jwtUtil.getRefreshExpMs());
 
         // SendBird 토큰 발급
         ChatResDTO.SendBirdTokenInfo sendBirdToken = null;
@@ -173,5 +157,15 @@ public class CustomLoginFilter extends UsernamePasswordAuthenticationFilter {
         } else {
             return SecurityErrorCode.UNAUTHORIZED;
         }
+    }
+
+    private void setCookieSettings(HttpServletResponse response, String name, String value, long expMs) {
+        Cookie cookie = new Cookie(name, value);
+        cookie.setHttpOnly(true);
+        cookie.setPath("/");
+        cookie.setMaxAge(Math.toIntExact(expMs / 1000));
+        cookie.setSecure(false); // 개발환경용
+        cookie.setAttribute("SameSite", "Lax");
+        response.addCookie(cookie);
     }
 }
