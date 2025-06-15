@@ -32,13 +32,13 @@ public class JwtTokenService {
         accessCookie.setHttpOnly(true);
         accessCookie.setPath("/");
         accessCookie.setMaxAge(Math.toIntExact(jwtUtil.getAccessExpMs() / 1000));
-        accessCookie.setSecure(true); // HTTPS 환경
+        accessCookie.setSecure(false); // HTTPS 환경
 
         Cookie refreshCookie = new Cookie("refresh_token", jwt.refreshToken());
         refreshCookie.setHttpOnly(true);
         refreshCookie.setPath("/");
         refreshCookie.setMaxAge(Math.toIntExact(jwtUtil.getRefreshExpMs() / 1000));
-        refreshCookie.setSecure(true);
+        refreshCookie.setSecure(false);
 
         response.addCookie(accessCookie);
         response.addCookie(refreshCookie);

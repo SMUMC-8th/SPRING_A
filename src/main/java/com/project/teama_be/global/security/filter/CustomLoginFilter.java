@@ -92,7 +92,7 @@ public class CustomLoginFilter extends UsernamePasswordAuthenticationFilter {
         accessCookie.setPath("/");      // 모든 경로에서 쿠키 접근 가능
         accessCookie.setMaxAge(Math.toIntExact(jwtUtil.getAccessExpMs() / 1000));
         // HTTPS를 사용하는 경우 활성화
-         accessCookie.setSecure(true);
+         accessCookie.setSecure(false);
          accessCookie.setAttribute("SameSite", "Strict");
 
         Cookie refreshCookie = new Cookie("refresh_token", refreshToken);
@@ -100,7 +100,7 @@ public class CustomLoginFilter extends UsernamePasswordAuthenticationFilter {
         refreshCookie.setPath("/");
         refreshCookie.setMaxAge(Math.toIntExact(jwtUtil.getRefreshExpMs() / 1000));
         // HTTPS를 사용하는 경우 활성화
-         refreshCookie.setSecure(true);
+         refreshCookie.setSecure(false);
 
         response.addCookie(accessCookie);
         response.addCookie(refreshCookie);
