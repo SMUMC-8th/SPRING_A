@@ -164,8 +164,8 @@ public class CustomLoginFilter extends UsernamePasswordAuthenticationFilter {
         cookie.setHttpOnly(true);
         cookie.setPath("/");
         cookie.setMaxAge(Math.toIntExact(expMs / 1000));
-        cookie.setSecure(false); // 개발환경용
-        cookie.setAttribute("SameSite", "Lax");
+        cookie.setSecure(true); // 개발환경용
+        cookie.setAttribute("SameSite", "None");
         response.addCookie(cookie);
     }
 }
