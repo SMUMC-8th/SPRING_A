@@ -264,7 +264,7 @@ public class PostQueryDslImpl implements PostQueryDsl{
         return PostConverter.toCursor(nextCursor.toString(), hasNext, pageSize);
     }
 
-    // SimplePost 부가 속성들 조회✅
+    // SimplePost 부가 속성들 조회: 여러번 쿼리문 날리는 방식 -> 서브쿼리로 묶는 방식 으로 변경해야 함
     private List<PostResDTO.SimplePost> findSimplePostAttribute(
             List<Post> postList,
             PostResDTO.Cursor cursor
@@ -305,7 +305,7 @@ public class PostQueryDslImpl implements PostQueryDsl{
         return result;
     }
 
-    // FullPost 부가 속성들 조회: 양방향 매핑으로 인해 수정 필요
+    // FullPost 부가 속성들 조회: 여러번 쿼리문 날리는 방식 -> 서브쿼리로 묶는 방식 으로 변경해야 함
     private List<PostResDTO.FullPost> findFullPostAttribute(
             List<Post> postList,
             PostResDTO.Cursor cursor
