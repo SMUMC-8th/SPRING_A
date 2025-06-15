@@ -72,11 +72,12 @@ public class CommentCommandService {
                 CommentConverter.toComment(post, member, content)
         );
 
-        try {   //member:로그인된 사용자, post에서 member:알림을 받는 사람
-            notiService.sendMessage(member, post.getMember(), post, NotiType.COMMENT);
-        } catch (FirebaseMessagingException e) {
-            throw new NotiException(NotiErrorCode.FCM_SEND_FAIL);
-        }
+        // 알람 기능: 주석처리
+//        try {   //member:로그인된 사용자, post에서 member:알림을 받는 사람
+//            notiService.sendMessage(member, post.getMember(), post, NotiType.COMMENT);
+//        } catch (FirebaseMessagingException e) {
+//            throw new NotiException(NotiErrorCode.FCM_SEND_FAIL);
+//        }
 
         return CommentConverter.toCommentUpload(comment);
     }
@@ -112,11 +113,12 @@ public class CommentCommandService {
                 CommentConverter.toReply(post, member, content, commentId)
         );
 
-        try {   //member:로그인된 사용자, post에서 member:알림을 받는 사람
-            notiService.sendMessage(member, post.getMember(), post, NotiType.COMMENT_COMMENT);
-        } catch (FirebaseMessagingException e) {
-            throw new NotiException(NotiErrorCode.FCM_SEND_FAIL);
-        }
+        // 알람 기능: 주석처리
+//        try {   //member:로그인된 사용자, post에서 member:알림을 받는 사람
+//            notiService.sendMessage(member, post.getMember(), post, NotiType.COMMENT_COMMENT);
+//        } catch (FirebaseMessagingException e) {
+//            throw new NotiException(NotiErrorCode.FCM_SEND_FAIL);
+//        }
 
         return CommentConverter.toCommentUpload(result);
     }
@@ -168,11 +170,12 @@ public class CommentCommandService {
             // 알람 보낼 post
             Post post = comment.getPost();
 
-            try {
-                notiService.sendMessage(member, comment.getMember(), post, NotiType.COMMENT_LIKE);
-            } catch (FirebaseMessagingException e) {
-                throw new NotiException(NotiErrorCode.FCM_SEND_FAIL);
-            }
+            // 알람 기능: 주석처리
+//            try {
+//                notiService.sendMessage(member, comment.getMember(), post, NotiType.COMMENT_LIKE);
+//            } catch (FirebaseMessagingException e) {
+//                throw new NotiException(NotiErrorCode.FCM_SEND_FAIL);
+//            }
         }
 
         return CommentConverter.toCommentLike(commentReaction);

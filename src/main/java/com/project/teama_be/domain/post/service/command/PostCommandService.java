@@ -163,11 +163,13 @@ public class PostCommandService {
         if (reaction.getReactionType().equals(ReactionType.LIKE)) {
 
             post.updateLikeCount(post.getLikeCount() + 1);
-            try {
-                notiService.sendMessage(member, post.getMember(), post, NotiType.LIKE);
-            } catch (FirebaseMessagingException e) {
-                throw new NotiException(NotiErrorCode.FCM_SEND_FAIL);
-            }
+
+            // 알람 기능: 주석처리
+//            try {
+//                notiService.sendMessage(member, post.getMember(), post, NotiType.LIKE);
+//            } catch (FirebaseMessagingException e) {
+//                throw new NotiException(NotiErrorCode.FCM_SEND_FAIL);
+//            }
         }
 
         log.info("[ 게시글 좋아요 ] reactionID:{}", reaction.getId());
