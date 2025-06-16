@@ -53,6 +53,23 @@ public class PostController {
         return CustomResponse.onSuccess(postQueryService.getPost(user, query));
     }
 
+    // 메인화면에서 사용자 위치 중심 게시글 리턴
+    @GetMapping("/places/posts/nearby")
+    @Operation(
+            summary = "현재 위치 기준 각 가게 최신 게시글 조회 API by 신윤진",
+            description = "사용자의 현재 위치(위도, 경도)를 기준으로 일정 반경 내의 가게들 중 최신 게시글을 가져옵니다."
+    )
+    public CustomResponse<PostResDTO.HomePost> getNearbyPosts(
+            @RequestParam double latitude,
+            @RequestParam double longitude,
+            @RequestParam(required = false, defaultValue = "1.0") double radiusKm,
+            @CurrentUser AuthUser user
+    ) {
+
+        log.info("[근처 가게 최신 게시글 조회] 위도: {}, 경도: {}, 반경: {}km", latitude, longitude, radiusKm);
+        return CustomResponse.onSuccess(postQueryService.getNearbyPosts(latitude, longitude, radiusKm, user));
+    }
+
     // 키워드 검색 ✅
     @GetMapping("/posts")
     @Operation(

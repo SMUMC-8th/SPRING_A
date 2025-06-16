@@ -1,7 +1,10 @@
 package com.project.teama_be.domain.post.service.query;
 
+import com.project.teama_be.domain.location.entity.Location;
+import com.project.teama_be.domain.location.repository.LocationRepository;
 import com.project.teama_be.domain.member.entity.QNotRecommended;
 import com.project.teama_be.domain.member.entity.QRecentlyViewed;
+import com.project.teama_be.domain.post.converter.PostConverter;
 import com.project.teama_be.domain.post.dto.response.PostResDTO;
 import com.project.teama_be.domain.post.entity.QPost;
 import com.project.teama_be.domain.post.entity.QPostReaction;
@@ -17,9 +20,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeParseException;
 import java.util.List;
+import java.util.Objects;
 
 @Slf4j
 @Service
@@ -27,6 +32,7 @@ import java.util.List;
 public class PostQueryService {
 
     private final PostRepository postRepository;
+    private final LocationRepository locationRepository;
 
     // 각 가게 최신 게시글 조회 ✅
     public PostResDTO.HomePost getPost(
@@ -56,6 +62,34 @@ public class PostQueryService {
 
         return postRepository.getPostByPlaceName(builder, dto);
 
+    }
+
+    // 메인화면에서 사용자 위치 중심 게시글 리턴
+    public PostResDTO.HomePost getNearbyPosts(double lat, double lng, double radiusKm, AuthUser user) {
+        double latDelta = radiusKm / 111.0;
+        double lngDelta = radiusKm / (111.0 * Math.cos(Math.toRadians(lat)));
+
+        double minLat = lat - latDelta;
+        double maxLat = lat + latDelta;
+        double minLng = lng - lngDelta;
+        double maxLng = lng + lngDelta;
+
+        List<Location> locations = locationRepository.findByLatitudeBetweenAndLongitudeBetween(
+                BigDecimal.valueOf(minLat),
+                BigDecimal.valueOf(maxLat),
+                BigDecimal.valueOf(minLng),
+                BigDecimal.valueOf(maxLng)
+        );
+
+        List<PostResDTO.SimplePost> simplePosts = locations.stream()
+                .map(loc -> postRepository.findTopByLocationOrderByCreatedAtDesc(loc))
+                .filter(Objects::nonNull)
+                .map(PostConverter::toSimplePost)
+                .toList();
+
+        return PostResDTO.HomePost.builder()
+                .simplePost(simplePosts)
+                .build();
     }
 
     // 키워드 검색 ✅
