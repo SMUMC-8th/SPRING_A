@@ -128,6 +128,20 @@ public class PostConverter {
                 .build();
     }
 
+    // 홈화면용 위치기반 게시글 조회
+    public static PostResDTO.SimplePost toSimplePost(Post post) {
+        String imageUrl = post.getPostImages().isEmpty()
+                ? null
+                : post.getPostImages().get(0).getImageUrl();
+
+        return PostResDTO.SimplePost.builder()
+                .postId(post.getId())
+                .postImageUrl(imageUrl)
+                .placeId(post.getLocation().getId())
+                .placeName(post.getLocation().getPlaceName())
+                .build();
+    }
+
     // 커서 기반 게시글 조회 : List<T> -> PageablePost
     public static <T> PostResDTO.PageablePost<T> toPageablePost(
             List<T> posts,

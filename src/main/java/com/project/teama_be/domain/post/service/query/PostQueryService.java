@@ -4,6 +4,7 @@ import com.project.teama_be.domain.location.entity.Location;
 import com.project.teama_be.domain.location.repository.LocationRepository;
 import com.project.teama_be.domain.member.entity.QNotRecommended;
 import com.project.teama_be.domain.member.entity.QRecentlyViewed;
+import com.project.teama_be.domain.post.converter.PostConverter;
 import com.project.teama_be.domain.post.dto.response.PostResDTO;
 import com.project.teama_be.domain.post.entity.QPost;
 import com.project.teama_be.domain.post.entity.QPostReaction;
@@ -83,18 +84,7 @@ public class PostQueryService {
         List<PostResDTO.SimplePost> simplePosts = locations.stream()
                 .map(loc -> postRepository.findTopByLocationOrderByCreatedAtDesc(loc))
                 .filter(Objects::nonNull)
-                .map(post -> {
-                    String imageUrl = post.getPostImages().isEmpty()
-                            ? null
-                            : post.getPostImages().get(0).getImageUrl();
-
-                    return PostResDTO.SimplePost.builder()
-                            .postId(post.getId())
-                            .postImageUrl(imageUrl)
-                            .placeId(post.getLocation().getId())
-                            .placeName(post.getLocation().getPlaceName())
-                            .build();
-                })
+                .map(PostConverter::toSimplePost)
                 .toList();
 
         return PostResDTO.HomePost.builder()
