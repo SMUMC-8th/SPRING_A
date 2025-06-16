@@ -190,4 +190,19 @@ public class AuthCommandService {
                 .onErrorMap(e -> new MemberException(MemberErrorCode.OAUTH_USER_INFO_FAIL)) // 에러 처리
                 .block();
     }
+
+    public JwtDTO createTokensForNewMember(Long memberId) {
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new MemberException(MemberErrorCode.MEMBER_NOT_FOUND));
+
+        CustomUserDetails customUserDetails = new CustomUserDetails(member);
+
+        String accessToken = jwtUtil.createJwtAccessToken(customUserDetails);
+        String refreshToken = jwtUtil.createJwtRefreshToken(customUserDetails);
+
+        return JwtDTO.builder()
+                .accessToken(accessToken)
+                .refreshToken(refreshToken)
+                .build();
+    }
 }
