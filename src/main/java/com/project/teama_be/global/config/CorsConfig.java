@@ -29,6 +29,7 @@ public class CorsConfig {
         allowedOriginPatterns.add("http://127.0.0.1:5500");
         allowedOriginPatterns.add("https://api-smp.shop");
         allowedOriginPatterns.add("https://www.api-smp.shop");
+        allowedOriginPatterns.add("https://smp-os61.vercel.app");
 
         configuration.setAllowedOriginPatterns(allowedOriginPatterns); // 허용할 Origin 설정
 
